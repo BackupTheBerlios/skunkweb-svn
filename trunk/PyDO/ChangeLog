@@ -5,6 +5,10 @@
 	(PyDO.joinTable): now it is possible to add to the where clause, a
 	la getSome(), including order, limit, and offset, and add extra
 	tables to the select as well.
+	(arrayfetch): put in None rather than a PyDO object when all the
+	columns are null for an object.  This method, however, is probably
+	going bye-bye, to be replaced by a happy little family of Join
+	objects. 
 
 2005-03-15  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 

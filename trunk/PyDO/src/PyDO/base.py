@@ -677,7 +677,20 @@ def arrayfetch(objs, *args):
     for row in result:
         retrow=[]
         for o, cols in izip(objs, allcols):
-            retrow.append(o(**dict((c, row[c]) for c in cols)))
+            d=dict((c, row[c]) for c in cols)
+            # if all values are NULL, take that as meaning that this
+            # is a full join and the whole object is NULL, and append
+            # None
+            for v in d.itervalues():
+                if v is not None:
+                    notnull=True
+                    break
+            else:
+                notnull=False
+            if notnull:
+                retrow.append(o(**d))
+            else:
+                retrow.append(None)
         ret.append(tuple(retrow))
     return tuple(ret)
             
