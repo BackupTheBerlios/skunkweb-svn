@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: Component.py,v 1.2 2001/08/09 22:14:44 drew_csillag Exp $
+# $Id: Component.py,v 1.3 2001/08/09 22:53:40 drew_csillag Exp $
 # Time-stamp: <2001-07-10 12:20:38 drew>
 ########################################################################
 
@@ -247,9 +247,7 @@ defaultHandler=DefaultComponentHandler()
 def callComponent (name, argDict, cache = 0,
                    compType = DT_REGULAR,
                    srcModTime = None):
-    return fullCallComponent (name, argDict, cache = 0,
-                              compType = DT_REGULAR,
-                              srcModTime = None)[0]
+    return fullCallComponent (name, argDict, cache, compType, srcModTime)[0]
 
 def fullCallComponent (name, argDict, cache = 0,
                        compType = DT_REGULAR,
@@ -384,6 +382,12 @@ def _getAuxArgs( argDict ):
 
 ########################################################################
 # $Log: Component.py,v $
+# Revision 1.3  2001/08/09 22:53:40  drew_csillag
+# ok, I'm a moron...  Copied the argument list from the def: to the call,
+# default arguments included, which of course become keyword arguments....
+#
+# DUH!!!!!!
+#
 # Revision 1.2  2001/08/09 22:14:44  drew_csillag
 # made so if call fullCallComponent, can figure out if it:
 #   a) was rendered
