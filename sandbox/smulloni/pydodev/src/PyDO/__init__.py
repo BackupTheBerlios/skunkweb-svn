@@ -19,8 +19,7 @@ Possibly down the line:
    * SQL Server
 """
 
-
-from PyDO.connection import *
+from PyDO.exceptions import *
 from PyDO.field import *
 from PyDO.pydo import *
 from PyDO.operators import *

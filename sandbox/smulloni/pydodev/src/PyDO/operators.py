@@ -308,9 +308,9 @@ class BindingConverter(object):
         def fget(self):
             p=self.paramstyle
             if p in ('format', 'qmark', 'numeric'):
-                return self._values
+                return self._values[:]
             elif p in ('pyformat', 'named'):
-                return self._named_values
+                return self._named_values.copy()
         return (fget,)
     values=property(*values())
 
@@ -328,6 +328,8 @@ class BindingConverter(object):
         self._named_values.clear()
 
     def __call__(self, val):
+        if val is None:
+            return 'NULL'
         if isinstance(val, (CONSTANT, SET, SQLOperator)):
             return repr(val)
         elif self.paramstyle=='format':

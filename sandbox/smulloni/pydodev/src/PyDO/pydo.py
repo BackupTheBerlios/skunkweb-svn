@@ -217,132 +217,61 @@ class PyDO(dict):
                                       cls.table)
     _baseSelect=classmethod(_baseSelect)
     
-##     def _prepareSelect(cls, **fieldData):
-##         """ Prepare the SQL required to retrieve some objects by keyword.
-        
-##         Given the attribute/value pairs in fieldData, return sql statement,
-##         values to be used in a call to conn.execute.
-##         """
-##         sql = [cls._baseSelect()]
-##         where = []
-##         values = []
-##         order = []
-##         limit = 0
-##         offset = 0
-##         conn = cls.getDBI()
-##         for k, v in fieldData.items():
-##             if k == 'order':
-##                 if type(v) == types.StringType:
-##                     order.append(v)
-##                 else:
-##                     order.extend(v)
-##                 continue
-##             elif k == 'limit':
-##                 limit = v
-##                 continue
-##             elif k == 'offset':
-##                 offset = v
-##                 continue
-##             else:
-##                 lit, val = conn.sqlStringAndValue(v, cls._fields[k])
-##                 where.append("%s=%s" % (k, lit))
-##                 values.append(val)
-        
-##         if where:
-##             sql.extend([' WHERE ', 'AND '.join(where)])
-                
-##         if order:
-##             sql.append(cls._orderByString(order))
-        
-##         if limit:
-##             sql.append(' LIMIT %d' % limit)
-            
-##         if offset:
-##             sql.append(' OFFSET %d' % offset)
-            
-##         return ''.join(sql), values
-##     _prepareSelect=classmethod(_prepareSelect)
-    
-##     def getSome(cls, **fieldData):
-##         """ Retrieve some objects by keyword
-        
-##         Given the attribute/value pairs in fieldData, return a (potentially
-##         empty) list of data class instances representing the rows that
-##         fulfill the constraints in fieldData.
-##         """
-##         cls._validateFields(fieldData)                           
-##         sql, values=cls._prepareSelect(**fieldData)
-##         conn=cls.getDBI()
-##         results = conn.execute(sql, values, cls._fields)
-##         if type(results)==types.ListType:
-##             return map(cls, results)
-##         else:
-##             return []
-##     getSome=classmethod(getSome)
-    
     def class_getSome(cls,
-                      order=None,
-                      limit=None,
-                      offset=None,
                       *args,
                       **fieldData):
         """ Retrieve some objects of this particular class.
-        
-        Allows you to use the operator objects in PyDO.operators to be
-        able to use sql operators other than the implicit AND as
-        used by the other static get methods.
-        
-        The **fieldData argument is the same as the other static get methods.
-        The *args argument however allows you to combine operators to
-        do operations like OR, NOT, LIKE, etc. For example, the following
-        would get all rows where the last name field was LIKE Ingers%.
-        
-        obj.getSomeWhere(LIKE(FIELD('last_name'), ('Ingers%')))
+
+        [todo: examples of use of operators, column-name keyword args,
+        order, limit, and offset.]
         
         """
-        if len(args)==1 and isinstance(args[0], str):
+        order=fieldData.pop('order', None)
+        limit=fieldData.pop('limit', None)
+        offset=fieldData.pop('offset', None)
+        
+        conn=cls.getDBI()
+
+        if isinstance(args[0], str):
             if fieldData:
                 raise ValueError, "cannot pass keyword args when including sql string"
             sql=args[0]
+            values=args[1:]
+            # if you use SQL directly and pass variables, it is up to
+            # you to use the same paramstyle as the underlying driver.
+            # mention this in docstring! XXX
+            if len(values)==1 and isinstance(values[0], dict):
+                values=values[0]
         else:
             cls._validateFields(fieldData)
             andValues=list(args)
+            converter=conn.getConverter()
             for k, v in fieldData.items():
-                if k not in ('order', 'offset', 'limit'):
-                    andValues.append(operators.EQ(operators.FIELD(k), v))
+                    andValues.append(EQ(FIELD(k), v, converter=converter))
             andlen=len(andValues)
+            converter.reset()            
             if andlen > 1:
-                sql=repr(AND(*andValues))
+                sql=repr(AND(*andValues, converter=converter))
             elif andlen==1:
                 sql=repr(andValues[0])
             else:
                 sql=''
-        
-            if order:
-                if isinstance(order, str):
-                    order=[order]
-
+            values=converter.values
+            
         query=[cls._baseSelect()]
         if sql:
             query.extend(['WHERE', sql])
-        if order:
-            query.append(cls._orderByString(order))
-        # this will have to delegate to the driver,
-        # to deal with mysql....
-        if limit:
-            query.append('LIMIT %d' % limit)
-        if offset:
-            query.append('OFFSET %d' % offset)
+        if filter(None, (order, limit, offset)):
+            query.append(conn.orderByString(order, limit, offset))
         query=' '.join(query)
-        conn = cls.getDBI()
-        ## XXXX
-        # what about values?  What am I giving up re Oracle?
-        results = conn.execute(query, (), cls._fields)
+
+        results = conn.execute(query, values, cls._fields)
         if results and isinstance(results, list):
             return map(cls, results)
         else:
             return []
 
+## BELOW ISN'T WORKED ON YET....
 
     def scatterFetchSQL(cls, objs):
         """ Select objects from multiple tables
