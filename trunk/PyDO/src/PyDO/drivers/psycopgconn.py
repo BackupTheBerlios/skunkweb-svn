@@ -103,8 +103,6 @@ class PsycopgConverter(BindingConverter):
 
 class PsycopgDBI(DBIBase):
     
-    auto_increment=False
-
     def __init__(self, connectArgs, pool=None, verbose=False):
        if pool and not hasattr(pool, 'connect'):
           pool=ConnectionPool()

@@ -33,5 +33,11 @@ PyDO 2 has several enhancements:
 
 PyDO 2 requires Python 2.4 or later.
 
+More documentation is available in the doc/ subdirectory of the PyDO
+distribution:  
+
+    * the PyDO manual (manual.rst)
+    * epydoc-generated API documentation (in api/html)
+
 This library is available under either of two licenses: the GNU Public
 License (see COPYING) or a BSD license (see LICENSE).

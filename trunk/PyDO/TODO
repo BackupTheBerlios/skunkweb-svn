@@ -1,4 +1,3 @@
-  * postgresql driver needs fixing to work with pool.
   * mysql needs type wrapper converters, connection pool, test improvements
   * docs -- joins, complete example, type wrappers.
   * tests: many more.  creating PyDO classes within the test might
