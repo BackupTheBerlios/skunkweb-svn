@@ -18,8 +18,6 @@ def _tupleize(item):
 def _setize(item):
     """ turns an atom into a frozenset with one element,
     and a non-atom into a frozenset"""
-    s1=frozenset
-    s2=set
     if isinstance(item, frozenset):
         return item
     if isinstance(item, (tuple, set, list)):

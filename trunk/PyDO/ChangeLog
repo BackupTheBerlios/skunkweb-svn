@@ -1,4 +1,9 @@
+2005-03-15  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO/base.py (_setize): removed spurious variable
+	assignments (left in by mistake).
+
 2005-03-15  Jacob Smullyan  <smulloni@smullyan.org>
 
-	* src/PyDO/__init__.py (__version__): cutting first alpha release.
+	* src/PyDO/__init__.py (__version__): cutting first alpha release (2.0a0).
 
