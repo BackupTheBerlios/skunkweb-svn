@@ -2,7 +2,8 @@ PyDO2 Manual
 ~~~~~~~~~~~~
 
 :Author: Jacob Smullyan <smulloni@smullyan.org>
-:Version: 0.1
+:Revision: $Revision$
+:date: $LastChangedDate$
 :Status: Draft
 
 .. contents:: Table of Contents
