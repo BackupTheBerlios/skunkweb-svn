@@ -1,31 +1,45 @@
-try:
-    set
-except NameError:
-    # Python 2.3 compat
-    from sets import Set as set
-
 from PyDO.dbi import getConnection
 from PyDO.field import Field
 from PyDO.exceptions import PyDOError
 from PyDO.operators import AND, EQ, FIELD
 from PyDO.dbtypes import unwrap
 
+
 def _tupleize(item):
+    """ turns an atom into a tuple with one element,
+    and a non-atom into a tuple"""
     if isinstance(item, tuple):
         return item
+    if isinstance(item, (set, frozenset, list)):
+        return tuple(item)
     return (item,)
+
+def _setize(item):
+    """ turns an atom into a frozenset with one element,
+    and a non-atom into a frozenset"""
+    s1=frozenset
+    s2=set
+    if isinstance(item, frozenset):
+        return item
+    if isinstance(item, (tuple, set, list)):
+        return frozenset(item)
+    return frozenset((item,))
 
 def _restrict(flds, coll):
     """private method for cleaning a set or dict of any items that aren't
     in a field list (or dict); needed for handling attribute inheritance
     for projections"""
-    # handle sets (_unique).  Sets may contain tuples of fieldnames for
-    # multi-column unique constraints; this tests each member of the tuple
-    # (and lists are tolerated also).
+    
+    # handle sets (_unique).  Sets may contain groupings of fieldnames
+    # for multi-column unique constraints; this tests each member of
+    # the grouping (sets, frozensets, lists, and tuples are tolerated)
+    
     if isinstance(coll, set):
         s=set()
         for v in coll:
-            if isinstance(v, (tuple, list)):
+            # this isn't where the type of the set element
+            # is enforced
+            if isinstance(v, (set, frozenset, tuple, list)):
                 for v1 in v:
                     if v1 not in flds:
                         break
@@ -34,7 +48,7 @@ def _restrict(flds, coll):
                         continue
                 else:
                     # if we get here, the fields in the
-                    # tuple are in the projection
+                    # grouping are in the projection
                     s.add(v)
             elif v in flds:
                 s.add(v)
@@ -47,15 +61,19 @@ class _metapydo(type):
     """metaclass for _pydobase.
     Manages attribute inheritance.
     """
-
     def __init__(cls, cl_name, bases, namespace):
 
         # create Field objects declared locally in this class
         # and store them in a temporary dict
         fielddict={}
+        # we keep track of which fields are declared just with a string;
+        # inheritance semantics are a little different for these
+        simplefields=set()
+        
         for f in namespace.get('fields', ()):
-            # support for tuple syntax for plain Jane fields
+            # support for tuple syntax for plain Jane fields.
             if isinstance(f, str):
+                simplefields.add(f)                
                 f=Field(f)
             elif isinstance(f, dict):
                 f=Field(**f)
@@ -66,40 +84,50 @@ class _metapydo(type):
                 
             # add to field container
             fielddict[f.name]=f
-        
-        # handle inheritance of (private) class attributes
+
+        # handle inheritance of fields and unique declarations.
+        # skipping object and dict is a trivial optimization,
+        # because we know those classes won't be relevant
         revbases=[x for x in bases[::-1] if x not in (object, dict)]
-        
-        for a, t in (('_fields', dict),
-                     ('_unique', set),
-                     ('_sequenced', dict)):
-            setattr(cls, a, t())
-            # projections don't inherit fields!
-            if cls._is_projection and a=='_fields':
-                continue
-            for b in revbases:
-                o=getattr(b, a, None)
-                if o:
-                    # for projections, restrict the other field attributes
-                    # to those referencing the projection's fields
-                    if cls._is_projection:
-                        o=_restrict(fielddict, o)
-                    # set & dict both have update()
-                    getattr(cls, a).update(o)
 
-        # manage this class's declared attributes.  Don't inherit here
-        # by mistake!  The public variables are just declarations; the
-        # real data is in the private variables.
-        cls._fields.update(fielddict)
-        # N.B.: NOT cls.unique!
-        cls._unique.update(namespace.get('unique', ()))
+        cls._fields={}
+        uniqueset=set()
+        for b in revbases:
+            flds=getattr(b, '_fields', None)
+            if flds:
+                if cls._is_projection:
+                    flds=_restrict(fielddict, flds)
+                cls._fields.update(flds)
+            uniq=getattr(b, 'unique', None)
+            if uniq:
+                # transform into a set of sets.  This way,
+                # multi-column unique constraints are
+                # unordered.
+                uniq=set((_setize(x) for x in uniq))
+                if cls._is_projection:
+                    uniq=_restrict(fielddict, uniq)
+                uniqueset.update(uniq)
 
-        # fields may declare sequences
+        # If a field is declared upstream and you redeclare it in a
+        # subclass as a simple field (just a fieldname), then the
+        # previous field definition is inherited; otherwise, the
+        # subclass's definition wins.  This is useful for projections.
+        updatefields=dict([(x, y) for x, y in fielddict.iteritems() \
+                           if not (x in cls._fields and x in simplefields)])
+        cls._fields.update(updatefields)
+        uniqueset.update((_setize(x) for x in namespace.get('unique', ())))
+
+        # We now have all the inherited declarations, and figure out
+        # sequences and additional unique constraints.
+        cls._sequenced={}
         for f in cls._fields.itervalues():
             if f.sequence:
                 cls._sequenced[f.name]=f.sequence
             if f.unique:
-                cls._unique.add(f.name)
+                uniqueset.add(f.name)
+
+        # this doesn't need to be 
+        cls._unique=frozenset(uniqueset)
 
         # add attribute access to fields
         if cls.use_attributes:
@@ -121,6 +149,7 @@ class PyDO(dict):
    
     _projections={}
 
+    @classmethod
     def project(cls, fields):
         s=[]
         for f in fields:
@@ -143,7 +172,7 @@ class PyDO(dict):
         kls=type(klsname, (cls,), dict(fields=fields, _is_projection=True))
         cls._projections[t]=kls
         return kls
-    project=classmethod(project)
+
 
     def update(self, adict):
         """ Part of dictionary interface for field access"""
@@ -189,7 +218,7 @@ class PyDO(dict):
         if result > 1:
             raise PyDOError, "updated %s rows instead of 1" % result        
 
-
+    @classmethod
     def updateSome(cls, adict, *args, **fieldData):
         """update possibly many records at once, and return the number updated"""
         if not cls.mutable:
@@ -212,14 +241,27 @@ class PyDO(dict):
             sqlbuff.extend([' WHERE ', where])
             values+=wvals
         return conn.execute(''.join(sqlbuff), values)
-    updateSome=classmethod(updateSome)
+
 
     def dict(self):
         return dict(self)
 
     def copy(self):
         return self.__class__(dict(self))
+    
+    def clear(self):
+        raise NotImplementedError, "PyDO classes don't implement clear()"
 
+    def pop(self):
+        raise NotImplementedError, "PyDO classes don't implement pop()"
+
+    def popitem(self):
+        raise NotImplementedError, "PyDO classes don't implement popitem()"
+
+    def setdefault(self, key, val):
+        raise NotImplementedError, "PyDO classes don't implement setdefault()"
+    
+    @classmethod
     def getColumns(cls, qualified=False):
         """Returns a list of all columns in this table, in no particular order.
 
@@ -231,16 +273,18 @@ class PyDO(dict):
         else:
             t=cls.table
             return ["%s.%s" % (t, x) for x in cls._fields.iterkeys()]
-    getColumns=classmethod(getColumns)
 
+    @classmethod
     def getFields(cls):
+        """returns the effective fields of the class"""
         return cls._fields
-    getFields=classmethod(getFields)
 
-    def getUnique(cls):
+    @classmethod
+    def getUniqueConstraints(cls):
+        """returns the effective unique constraints of the class"""
         return cls._unique
-    getUnique=classmethod(getUnique)
 
+    @classmethod
     def _validateFields(cls, adict):
         """a simple field validator that verifies that the keys
         in the dictionary passed are declared fields in the class.
@@ -249,26 +293,25 @@ class PyDO(dict):
             if not cls._fields.has_key(k):
                 raise KeyError, "object %s has no field %s" %\
                       (cls, k)
-    _validateFields=classmethod(_validateFields)
 
     # DB interface
-
+    @classmethod
     def getDBI(cls):
         """return the database interface"""
         conn=getConnection(cls.connectionAlias)
         return conn
-    getDBI=classmethod(getDBI)
 
+    @classmethod
     def commit(cls):
         """ Commit changes to database"""
         cls.getDBI().commit()
-    commit=classmethod(commit)
 
+    @classmethod
     def rollback(cls):
         """ Rollback current transaction"""
         cls.getDBI().rollback()
-    rollback=classmethod(rollback)
 
+    @classmethod
     def new(cls, refetch=None,  **fieldData):
         """create and return a new data class instance using the values in
         fieldData.  This will also effect an INSERT into the database.  If refetch
@@ -309,9 +352,8 @@ class PyDO(dict):
         if not refetch:
             return cls(fieldData)
         return cls.getUnique(**fieldData)
-    new=classmethod(new)
 
-
+    @classmethod
     def _matchUnique(cls, kw):
         """return a tuple of column names that will uniquely identify
         a row given the choices from kw
@@ -326,8 +368,8 @@ class PyDO(dict):
                         break
                 else:
                     return unique
-    _matchUnique=classmethod(_matchUnique)
 
+    @classmethod
     def _uniqueWhere(cls, conn, kw):
         """given a connection and kw, using _matchUnique, generate a
         where clause to select a unique row.
@@ -342,9 +384,9 @@ class PyDO(dict):
         else:
             sql=str(AND(converter=converter, *[EQ(FIELD(u), kw[u]) for u in unique]))
         return sql, converter.values
-    _uniqueWhere=classmethod(_uniqueWhere)
+
     
-    
+    @classmethod
     def getUnique(cls, **fieldData):
         """ Retrieve one particular instance of this class.
         
@@ -364,14 +406,15 @@ class PyDO(dict):
             raise PyDOError, 'got more than one row on unique query!'
         if results:
             return cls(results[0]) 
-    getUnique=classmethod(getUnique)    
-            
+
+    @classmethod
     def _baseSelect(cls, qualified=False):
         """returns the beginning of a select statement for this object's table."""
         return 'SELECT %s FROM %s' % (', '.join(cls.getColumns(qualified)),
                                       cls.table)
-    _baseSelect=classmethod(_baseSelect)
 
+
+    @classmethod
     def _processWhere(cls, conn, args, fieldData):
         if args and isinstance(args[0], str):
             if fieldData:
@@ -401,8 +444,9 @@ class PyDO(dict):
                 sql=repr(AND(converter=converter, *andValues))
             values=converter.values
         return sql, values
-    _processWhere=classmethod(_processWhere)
-    
+
+
+    @classmethod
     def getSome(cls,
                 *args,
                 **fieldData):
@@ -433,8 +477,9 @@ class PyDO(dict):
             return map(cls, results)
         else:
             return []
-    getSome=classmethod(getSome)
 
+
+    @classmethod
     def deleteSome(cls, *args, **fieldData):
         """delete possibly many records at once, and return the number deleted"""
         if not cls.mutable:
@@ -445,12 +490,9 @@ class PyDO(dict):
         if sql:
             query.extend(['WHERE', sql])
         return conn.execute(query, values)
-    deleteSome=classmethod(deleteSome)
 
 
 
-    def clear(self):
-        raise AttributeError, "PyDO classes don't implement clear()"
 
     def delete(self):
         """remove the row that represents me in the database"""

@@ -1,17 +1,7 @@
 from itertools import izip
-from threading import Lock
+from threading import Lock, local
 from marshal import dumps as marshal_dumps
 from collections import deque
-
-try:
-    from threading import local
-except ImportError:
-    # threading goes out the window....
-    import warnings
-    warnings.warn("PyDO.ConnectionCache is not threadsafe for this python version!")
-    class local:
-        pass
-    
 from PyDO.log import *
 from PyDO.operators import BindingConverter
 from PyDO.exceptions import PyDOError

@@ -63,11 +63,11 @@ below, that return single instances or lists thereof.
 If the class is declared mutable and has a unique constraint, it is
 possible to mutate it by calling::
 
-    MyInstance.fieldname=newValue
-
-or, equivalently::
-
     MyInstance['fieldname']=newValue
+
+or, equivalently, if ``use_attributes`` is true for the class::
+
+    MyInstance.fieldname=newValue
 
 Multiple updates can be done together via ``update()``::
 
@@ -181,6 +181,7 @@ that you wish to include in the projection::
 The return value is a new PyDO class. This class is cached, so if you
 call ``project()`` again with the same arguments you'll get a
 reference to the same class.
+
 
 Making Queries: ``getSome()`` and ``getUnique()``
 -------------------------------------------------

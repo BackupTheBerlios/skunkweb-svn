@@ -31,7 +31,7 @@ PyDO 2 has several enhancements:
 
    * Overall, the API has been tightened and the code restructured.
 
-PyDO 2 requires Python 2.4 for full functionality. 
+PyDO 2 requires Python 2.4 or later.
 
 This library is available under either of two licenses: the GNU Public
 License (see COPYING) or a BSD license (see LICENSE).

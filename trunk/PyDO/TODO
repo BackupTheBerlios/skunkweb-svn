@@ -43,13 +43,36 @@ but keep unique/sequence information for those fields.  That seems a
 bit inconsistent.  I do think that if a projection is stated with just
 a string, it should inherit more verbose descriptions, including
 unique/sequence, but not otherwise.  (This is a buglet which would
-only become apparent if you were using custom field classes.)
+only become apparent if you were using custom field classes.)  -- this
+is now implemented, in part.  Unique/sequenced is still inherited
+separately, so that information is inherited regardless of how you
+redeclare the field in a subclass; this is wrong and needs to be
+redone.  Tests should be added for this.  
 
 -- 
 
-I put in, and commented out, code that moves "fields" and "unique" out
-of the class namespace.  That is probably silly.
+I put in accessor methods for _fields and _unique (getFields() and
+getUniqueConstraints()).
 
+-- 
+
+Since the cache requires Python 2.4, and that is what I am testing on,
+I am dropping 2.3 compatibility for the time being.  I've put in
+decorators, which typographically I see as superior to putting the
+classmethod stuff at the end of the function.  Generator
+comprehensions would also be logical to add; wherever I'm using a list
+comprehension nested in something that would take an iterator I'll
+switch to using them.
+
+
+
+..
+   Local Variables:
+   mode: rst
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
 
 
 
