@@ -217,7 +217,6 @@ def __makeOperators():
     generates the operator classes;
     more need to be added, here are some obvious ones
     """
-    import new
     _factory=((MonadicOperator,
                ('NOT', 'NOT'),
                ('ISNULL', 'ISNULL'),
@@ -251,18 +250,20 @@ def __makeOperators():
                ('DIV', '/'),
                )
               )
+    temp_classes={}
     for tup in _factory:
         base=tup[0]
         for specs in tup[1:]:
             klname, sym=specs
-            kl=new.classobj(klname, (base,), {})
-            kl.operator=sym
-            globals()[klname]=kl
-            __all__.append(klname)
-
+            temp_classes[klname]=type(klname, (base,), dict(operator=sym))
+    globals().update(temp_classes)
+    __all__.extend(temp_classes.keys())
+    #commit suicide
+    global __makeOperators
+    del __makeOperators
 
 __makeOperators()
-del __makeOperators
+
 
 
 class BindingConverter(object):

@@ -181,6 +181,14 @@ class SqliteTest(unittest.TestCase):
         for u in PyDOUser.getSome():
             u.getGroups()
 
+    def test_project(self):
+        projection=Article.project(('id', 'title'))
+        a=projection.getSome()
+        self.assertEqual(len(a),
+                         len(Article.getSome()))
+        self.assertEqual(2, len(projection.getColumns()))
+    
+
 initAlias('sqlitetest', 'sqlite', dict(database=SQLITE_DB), verbose=True)        
 
 if __name__=='__main__':

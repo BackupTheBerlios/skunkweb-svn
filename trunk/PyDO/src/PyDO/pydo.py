@@ -1,6 +1,7 @@
 try:
     set
 except NameError:
+    # Python 2.3 compat
     from sets import Set as set
 
 from PyDO.dbi import getConnection
@@ -13,26 +14,45 @@ def _tupleize(item):
         return item
     return (item,)
 
+def _restrict(flds, coll):
+    """private method for cleaning a set or dict of any items that aren't
+    in a field list (or dict); needed for handling attribute inheritance
+    for projections"""
+    # handle sets (_unique).  Sets may contain tuples of fieldnames for
+    # multi-column unique constraints; this tests each member of the tuple
+    # (and lists are tolerated also).
+    if isinstance(coll, set):
+        s=set()
+        for v in coll:
+            if isinstance(v, (tuple, list)):
+                for v1 in v:
+                    if v1 not in flds:
+                        break
+                    else:
+                        # (added just to make indentation clearer)
+                        continue
+                else:
+                    # if we get here, the fields in the
+                    # tuple are in the projection
+                    s.add(v)
+            elif v in flds:
+                s.add(v)
+        return s
+    # It isn't necessary to test for multi-column keys in dicts
+    # (auto-increment and sequenced)
+    elif isinstance(coll, dict):
+        return dict([(x, y) for x, y in coll.iteritems() if x in flds])
+
 class _metapydo(type):
     """metaclass for _pydobase.
     Manages attribute inheritance.
     """
     
     def __init__(cls, cl_name, bases, namespace):
-        # handle inheritance of (private) class attributes
-        revbases=[x for x in bases[::-1] if x not in (object, dict)]
-        for a, t in (('_fields', dict),
-                     ('_unique', set),
-                     ('_sequenced', dict),
-                     ('_auto_increment', dict)):
-            setattr(cls, a, t())
-            for b in revbases:
-                o=getattr(b, a, None)
-                if o:
-                    # set & dict both have update()
-                    getattr(cls, a).update(o)
-                    
-        # add attributes declared for this class
+
+        # create Field objects declared locally in this class
+        # and store them in a temporary dict
+        fielddict={}
         for f in cls.fields:
             # support for tuple syntax for plain Jane fields
             if isinstance(f, str):
@@ -40,9 +60,31 @@ class _metapydo(type):
             elif not isinstance(f, Field):
                 f=Field(*f)
             # add to field container
-            cls._fields[f.name]=f
+            fielddict[f.name]=f
+        
+        # handle inheritance of (private) class attributes
+        revbases=[x for x in bases[::-1] if x not in (object, dict)]
+        
+        for a, t in (('_fields', dict),
+                     ('_unique', set),
+                     ('_sequenced', dict),
+                     ('_auto_increment', dict)):
+            setattr(cls, a, t())
+            # projections don't inherit fields!
+            if cls._is_projection and a=='_fields':
+                continue
+            for b in revbases:
+                o=getattr(b, a, None)
+                if o:
+                    # for projections, restrict the other field attributes
+                    # to those referencing 
+                    if cls._is_projection:
+                        o=_restrict(fielddict, o)
+                    # set & dict both have update()
+                    getattr(cls, a).update(o)
 
         # manage this class's declared attributes
+        cls._fields.update(fielddict)        
         cls._unique.update(cls.unique)
         cls._sequenced.update(cls.sequenced)
         cls._auto_increment.update(cls.auto_increment)
@@ -59,6 +101,7 @@ class PyDO(dict):
     """ Base class for PyDO data classes."""
 
     __metaclass__=_metapydo
+    _is_projection=False
 
     table=None
     mutable=1
@@ -69,6 +112,32 @@ class PyDO(dict):
     unique=[]
     sequenced={}
     auto_increment={}
+
+    _projections={}
+
+    def project(cls, fields):
+        s=[]
+        for f in fields:
+            if isinstance(f, Field):
+                s.append(f.name.lower())
+            elif isinstance(f, str):
+                s.append(f.lower())
+            elif isinstance(f, tuple):
+                if not len(f):
+                    raise ValueError, "empty tuple in field list"
+                s.append(f[0].lower())
+            else:
+                raise ValueError, "weird thing in field list: %s" % f
+        s.sort()
+        t=tuple(s)
+        if cls._projections.has_key(t):
+            return cls._projections[t]
+        klsname='projection_%s__%s' % (cls.__name__,
+                                       '_'.join(s))
+        kls=type(klsname, (cls,), dict(fields=fields, _is_projection=True))
+        cls._projections[t]=kls
+        return kls
+    project=classmethod(project)
 
     def update(self, adict):
         """ Part of dictionary interface for field access"""

@@ -1,0 +1,9 @@
+2005-02-16  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO/pydo.py (PyDO.project): implemented projections.
+
+	* tests/sqlite_test.py (SqliteTest.test_project): test for projections.
+
+	* src/PyDO/operators.py (__makeOperators): removed use of deprecated new module;
+	a little code tightening.
+
