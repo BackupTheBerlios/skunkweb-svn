@@ -26,7 +26,7 @@ class SocketManager(ProcessManager):
     # shadow ProcessManager's _defaults
     _defaults=ProcessManager._defaults.copy()
     _defaults.update(dict(maxRequests=None,
-                          connections=[]))
+                          connections={}))
 
     
     def __init__(self,
@@ -38,8 +38,8 @@ class SocketManager(ProcessManager):
                                             config=config,
                                             **kw)
         self.socketMap = {}
-        for addr, func in self.connections:
-            self.addConnection(addr, func)
+        for addr, func in self.connections.iteritems():
+            self._add_connection(addr, func)
             
     def preHandle(self):
         pass
@@ -141,12 +141,7 @@ class SocketManager(ProcessManager):
         
     def reload(self):
         super(SocketManager, self).reload()
-        # problem here -- in this version, where configuration is
-        # doesn't yet play a role, reset() doesn't work, because
-        # the server isn't being created during the bootloading
-        # process and its connections aren't being added.
-
-        #self._reset()
+        self._reset()
 
     def retrying_bind(self, sock, addr, retries):
         # mayhap it's not quite dead, so retry a few times
@@ -162,7 +157,9 @@ class SocketManager(ProcessManager):
             else:
                 break
 
-    def addConnection(self, addrspec, handler_func):
+    def _add_connection(self, addrspec, handler_func):
+        if addrspec not in self.connections:
+            self.connections[addrspec]=handler_func
         euid=None
         if hasattr(os, 'geteuid') and os.getuid() != os.geteuid():
             # uid to switch back to
@@ -170,14 +167,14 @@ class SocketManager(ProcessManager):
             if hasattr(os, 'seteuid'):
                 os.seteuid(0)
         try:
-            self._addConnection(addrspec, handler_func)
+            self._real_add_connection(addrspec, handler_func)
         finally:
             # make sure we go back to the initial user
             if euid is not None and hasattr(os, 'seteuid'):
                 os.seteuid(euid)
         
         
-    def _addConnection(self, addrspec, handler_func):
+    def _real_add_connection(self, addrspec, handler_func):
         if addrspec[0] == 'TCP':
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.setsockopt (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -237,7 +234,8 @@ class SocketManager(ProcessManager):
                                 ' for the best') % a[1])
 
         self.socketMap = {}
-
+        for addr, func in self.connections.iteritems():
+            self._add_connection(addr, func)
 
 
 

@@ -14,7 +14,7 @@ def test1():
     logging.basicConfig()
     logger.setLevel(logging.DEBUG)
     tempname='/tmp/socketmgr_test.pid'
-    mgr=SocketManager(tempname, numProcs=2, logger=logger, maxRequests=30)
+
     def handler(socket, addr):
         logger.info("addr is %s", addr)
         # read some off the socket
@@ -28,7 +28,8 @@ def test1():
                 socket.close()
                 break
             socket.send('%s\n' % stuff.upper())
-    mgr.addConnection(('TCP', 'localhost', 8888), handler)
+    mgr=SocketManager(tempname, numProcs=2, logger=logger, maxRequests=30,
+                      connections={('TCP', 'localhost', 8888): handler})            
     mgr.mainloop()
         
         
