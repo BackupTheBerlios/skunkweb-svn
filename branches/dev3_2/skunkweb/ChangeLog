@@ -1,5 +1,7 @@
 2001-09-19  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* pylibs/scopeable/_scope.c: fixed typo in _scope.c.
+
 	* pylibs/vfs.py: added vfs interface and LocalFS implementation.
 
 	* SkunkWeb/Services/templating/Handler.py (requestHandler): modified templating 
