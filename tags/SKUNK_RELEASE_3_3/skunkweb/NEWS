@@ -1,0 +1,149 @@
+Changes in 3.3 
+======================================== 
+* Developer's manual updated
+* fix to PyDO/mysql so that you can put NULL values into columns
+* minor change to handling of python code files (__name__ is now set
+  to '__main__' in the document namespace), so precompiled Cheetah
+  templates work.
+---3.3 beta 0 cut
+* the build process was revised to facilitate changing the installed
+  directory structure using standard configure options; FHS-compliant
+  packaging and installation is now feasible.
+* PSP support added.  For now should be considered alpha
+* Prebuilt documentation is now included in the distribution (HTML and
+  paper-formats in letter dimensions)
+* now can have skunkweb started as root (can set who you actually want
+  it to run as) so you can bind to low ports
+* new extcgi service so you can run CGI's from SkunkWeb!
+* new pycgi service for running Python CGI's in process -- still in
+  alpha.
+* vfs.FS has new method, split_extra(), that finds extra path info;
+  the rewrite service has a new DynamicRewriter subclass,
+  ExtraPathFinder, which takes advantage of it (although a simple
+  rewrite rule is still more efficient to use when possible -- see the
+  FAQ).
+* fixed userModuleCleanup bugs when using MySQL service and/or used
+  <:img:> tag with PIL installed.
+* pydo/mysql now supports connection caching using the mysql service.
+* PyDO documentation updates
+* The userdir service will now function properly when operating with a
+  scoped docroot
+* Now converts non-native line-endings in exprs to the native line
+  ending so that when editing templates on non-native machines,
+  expressions will work properly
+* auth service fix when using multiple auth schemes simultaneously --
+  BACKWARD INCOMPATIBLE CHANGE AHEAD---
+  If you customized the login/logout pages copied from the auth
+  service directory, NOTE THE FOLLOWING CHANGE!!
+  change the <:import SkunkWeb Configuration:> to <:import auth:>
+  change the Configuration.authAuthorizer bits to auth.getAuthorizer().
+  If you copied them and didn't change them, recopy them.
+* the logger now handles some really bizarre cases that shouldn't ever
+  happen in reality (but of course have, or I wouldn't have fixed
+  them).  Oh the benefits of a machine with bad memory to make you
+  test for things that shouldn't happen.
+
+Changes in 3.2.3
+========================================
+* added support for the SCGI Protocol 
+  - http://www.mems-exchange.org/software/scgi/
+* document updates/revamps (currently stmlrefer)
+* now is more persistant about the timeout exception (it's reraised each
+  second after a timeout occurs)
+* now should build with non-GNU makes (specifically BSD make)
+* many fixes -- thanks to pychecker!
+* fixed error handling weirdnesses
+
+Changes in 3.2.2
+========================================
+* The <:compargs:> tag can now be used in an STML block (used to only work
+  at the top level)
+* Works with Python 2.1 again (broke in 3.2.1)
+* new geeknews feed from python.org
+* fixed lwn geeknews feed 
+* added support for DCOracle2
+
+Changes in 3.2.1 
+========================================
+* new auth service
+* Assorted PyDO fixes, notably support for more PostgreSQL types
+* Caching fix for stale 
+* Apache 2 support.
+* DateTime objects can now be used as arguments to cacheable components
+* rewrite fixes and feature additions
+* usual array of general bug fixes
+* mod_skunkweb now properly reports its existence in the Server header
+* UNIX socket fixes
+* server restart fixes
+
+Changes in 3.2 beta 3
+========================================
+* added a product service and product-packaging utility, which permits components and python
+  modules, including services, to be bundled together and deployed.  Requires MultiFS as the 
+  documentRootFS, which is now a single FS.
+* userModuleCleanup now off by default.
+* vfs fixes.
+* MySQL fixes.
+* rewrite service, for url rewriting (contributed by Spruce Weber)
+* added extract_args method to HTTPConnection, corresponding to the STML <:args:> tag.
+* Hook and KeyedHook now live in a pylib (hooks.py)
+
+Changes in 3.2 beta 1
+========================================
+* pars removed (since we have zipfs and tarfs, pars is redundant)
+* vfs fixes
+* new vfs properties
+* sapdb fix - Ulrich Eck
+* remote component call exception fix
+* beginnings of a test suite
+* static/PyDO now *actually* works on Python 2.2
+
+Changes in 3.2 beta 0
+========================================
+* remote component fixes
+* doc updates
+* caching fixes
+* misc output fixes
+* Now have a CGI adaptor -- swcgi.  See docs for details
+* new image gallery demo, with auto-generated (and cached) thumbnails;
+  requires PIL
+* new suffixes for includes (.inc and .pyinc)
+* optional enhancement to <:img:> tag if PIL is installed 
+  (auto-generates height and width)
+* many PyDO improvements, including a SAP driver and *three* 
+  new ways of specifying custom WHERE clauses; pydoObj.get(column,
+  default) will now return default where the value for column is
+  NULL. 
+* services can now easily provide mime-type-specific request 
+  handlers
+* upgraded MySQL support to use MySQLdb
+* works with Python 2.2 as well as 2.1.x
+* now accesses resources via a vfs layer; resources can be stored in 
+  zip and tar archives as well as the local filesystem.  The pars
+  service, which used a python-specific archive format, is no longer
+  supported. 
+* Because of the vfs, Configuration.documentRoot is being gradually
+  phased out, and will probably not be present in 3.2 final.
+  The new mechanism for controlling where resources come from is 
+  Configuration.documentRootFS, which in this release, is a list of
+  possible filesystems (for various reasons this will probably change
+  quite soon to a single fs rather than a list).
+
+Changes from 3.0 to 3.1
+========================================
+* Major performance tweaks.  Should now be about 30% faster overall.
+* Now supports FastCGI
+* PyDO improvements (mainly PostgreSQL related)
+* new service - userdir - which makes it so that requests to /~user/foo
+  will go to <users_home_directory>/public_html/foo
+* print statements in <:call:> tags now work.
+* <:call:> tag now handles multiline expr argument properly.  Now you
+  can do things like:
+<:call `def foo(x):
+   return 'the value is %s' % x
+print foo(3)`:>
+* PostgreSQL fixes
+* UNIX domain socket fixes
+* PyDO classes can now be defined in non-modules
+* Now can have a template that gets executed for directories that don't
+  have an index document.
