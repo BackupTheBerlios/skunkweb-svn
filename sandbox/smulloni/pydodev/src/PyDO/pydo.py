@@ -5,7 +5,7 @@ except NameError:
     
 from PyDO.field import Field
 from PyDO.exceptions import PyDOError
-from PyDO.dict_delegate import dictdelegate
+from PyDO.operators import *
 
 class _metapydo(type):
     """metaclass for _pydobase"""
@@ -219,70 +219,75 @@ class PyDO(dict):
                                       cls.table)
     _baseSelect=classmethod(_baseSelect)
     
-    def _prepareSelect(cls, **fieldData):
-        """ Prepare the SQL required to retrieve some objects by keyword.
+##     def _prepareSelect(cls, **fieldData):
+##         """ Prepare the SQL required to retrieve some objects by keyword.
         
-        Given the attribute/value pairs in fieldData, return sql statement,
-        values to be used in a call to conn.execute.
-        """
-        sql = [cls._baseSelect()]
-        where = []
-        values = []
-        order = []
-        limit = 0
-        offset = 0
-        conn = cls.getDBI()
-        for k, v in fieldData.items():
-            if k == 'order':
-                if type(v) == types.StringType:
-                    order.append(v)
-                else:
-                    order.extend(v)
-                continue
-            elif k == 'limit':
-                limit = v
-                continue
-            elif k == 'offset':
-                offset = v
-                continue
-            else:
-                lit, val = conn.sqlStringAndValue(v, cls._fields[k])
-                where.append("%s=%s" % (k, lit))
-                values.append(val)
+##         Given the attribute/value pairs in fieldData, return sql statement,
+##         values to be used in a call to conn.execute.
+##         """
+##         sql = [cls._baseSelect()]
+##         where = []
+##         values = []
+##         order = []
+##         limit = 0
+##         offset = 0
+##         conn = cls.getDBI()
+##         for k, v in fieldData.items():
+##             if k == 'order':
+##                 if type(v) == types.StringType:
+##                     order.append(v)
+##                 else:
+##                     order.extend(v)
+##                 continue
+##             elif k == 'limit':
+##                 limit = v
+##                 continue
+##             elif k == 'offset':
+##                 offset = v
+##                 continue
+##             else:
+##                 lit, val = conn.sqlStringAndValue(v, cls._fields[k])
+##                 where.append("%s=%s" % (k, lit))
+##                 values.append(val)
         
-        if where:
-            sql.extend([' WHERE ', 'AND '.join(where)])
+##         if where:
+##             sql.extend([' WHERE ', 'AND '.join(where)])
                 
-        if order:
-            sql.append(cls._orderByString(order))
+##         if order:
+##             sql.append(cls._orderByString(order))
         
-        if limit:
-            sql.append(' LIMIT %d' % limit)
+##         if limit:
+##             sql.append(' LIMIT %d' % limit)
             
-        if offset:
-            sql.append(' OFFSET %d' % offset)
+##         if offset:
+##             sql.append(' OFFSET %d' % offset)
             
-        return ''.join(sql), values
-    _prepareSelect=classmethod(_prepareSelect)
+##         return ''.join(sql), values
+##     _prepareSelect=classmethod(_prepareSelect)
     
-    def getSome(cls, **fieldData):
-        """ Retrieve some objects by keyword
+##     def getSome(cls, **fieldData):
+##         """ Retrieve some objects by keyword
         
-        Given the attribute/value pairs in fieldData, return a (potentially
-        empty) list of data class instances representing the rows that
-        fulfill the constraints in fieldData.
-        """
-        cls._validateFields(fieldData)                           
-        sql, values=cls._prepareSelect(**fieldData)
-        conn=cls.getDBI()
-        results = conn.execute(sql, values, cls._fields)
-        if type(results)==types.ListType:
-            return map(cls, results)
-        else:
-            return []
-    getSome=classmethod(getSome)
+##         Given the attribute/value pairs in fieldData, return a (potentially
+##         empty) list of data class instances representing the rows that
+##         fulfill the constraints in fieldData.
+##         """
+##         cls._validateFields(fieldData)                           
+##         sql, values=cls._prepareSelect(**fieldData)
+##         conn=cls.getDBI()
+##         results = conn.execute(sql, values, cls._fields)
+##         if type(results)==types.ListType:
+##             return map(cls, results)
+##         else:
+##             return []
+##     getSome=classmethod(getSome)
     
-    def class_getSomeWhere(cls, *args, **kw):
+    def class_getSome(cls,
+                      order=None,
+                      limit=None,
+                      offset=None,
+                      *args,
+                      **fieldData):
         """ Retrieve some objects of this particular class.
         
         Allows you to use the operator objects in PyDO.operators to be
@@ -297,94 +302,45 @@ class PyDO(dict):
         obj.getSomeWhere(LIKE(FIELD('last_name'), ('Ingers%')))
         
         """
-        kw = cls._convertKW(kw)
-        andValues=list(args)
-        for k, v in kw.items():
-            if k not in ('order', 'offset', 'limit'):
-                andValues.append(operators.EQ(operators.FIELD(k), v))
-        andlen=len(andValues)
-        if andlen > 1:
-            daOp=operators.AND(*andValues)
-        elif andlen==1:
-            daOp=andValues[0]
+        if len(args)==1 and isinstance(args[0], str):
+            if fieldData:
+                raise ValueError, "cannot pass keyword args when including sql string"
+            sql=args[0]
         else:
-            daOp=None
-        sql=(daOp and daOp.asSQL()) or ''
-        
-        order=[]
-        limit=0
-        offset=0
-        if kw.get('order'):
-            if type(kw['order']) == types.StringType:
-                order.append(kw['order'])
+            cls._validateFields(fieldData)
+            andValues=list(args)
+            for k, v in fieldData.items():
+                if k not in ('order', 'offset', 'limit'):
+                    andValues.append(operators.EQ(operators.FIELD(k), v))
+            andlen=len(andValues)
+            if andlen > 1:
+                sql=repr(AND(*andValues))
+            elif andlen==1:
+                sql=repr(andValues[0])
             else:
-                order.extend(kw['order'])
-        if kw.get('limit'):
-            limit = kw['limit']
-        if kw.get('offset'):
-            offset = kw['offset']
+                sql=''
         
-        return cls.getSQLWhere(sql, order=order, limit=limit, offset=offset)
-    
-    def class_getTupleWhere(cls, opTuple, order=(), limit=0, offset=0, **kw):
-        """ Retrieve objects using Lisp-like queries
-        
-        Allows you to use a somewhat Lispish notation for generating
-        SQL queries, like so:
-        
-        obj.getTupleWhere(('OR', 
-        ('LIKE', FIELD('last_name'), 'Ingers%'), 
-        ('OR', ('<>', FIELD('id'), 355),
-        ('=', FIELD('id'), 356))))
-        
-        Strings are used to represent operators rather than the SQLOperator
-        class wrappers used in getSomeWhere(), but the FIELD and SET classes
-        are still useful. The kw argument is treated the same as in
-        getSome() and getSomeWhere().
-        
-        """
-        kw = cls._convertKW(kw)
-        
-        if kw:
-            _and=opTuple and ['AND', opTuple] or []
-            for k, v in kw.items():
-                _and.append(('=', FIELD(k), v))
-            opTuple=tuple(_and)
-        sql=opTuple and operators.tupleToSQL(opTuple) or ''
-        
-        order_list=[]
+            if order:
+                if isinstance(order, str):
+                    order=[order]
 
-        if order:
-            if type(order) == types.StringType:
-                order_list.append(order)
-            else:
-                order_list.extend(order)        
-        
-        return cls.getSQLWhere(sql, order=order_list, limit=limit, offset=offset)
-    
-    def class_getSQLWhere(cls, sql, values=(), order=(), limit=0, offset=0):
-        """ Retrieve objects with custom 'where' clause.
-        
-        Executes a sql statement to fetch the object type where
-        you supply the where clause (without the WHERE keyword) and
-        values in the case that you bind variables.
-        """
-        base=cls._baseSelect()
+        query=[cls._baseSelect()]
         if sql:
-            sql="%s WHERE %s" % (base, sql)
-        else:
-            sql=base
-
-        if len(order):
-            sql += cls._orderByString(order)
+            query.extend(['WHERE', sql])
+        if order:
+            query.append(cls._orderByString(order))
+        # this will have to delegate to the driver,
+        # to deal with mysql....
         if limit:
-            sql += ' LIMIT %d' % limit
+            query.append(' LIMIT %d' % limit)
         if offset:
-            sql += ' OFFSET %d' % offset
-
+            query.append(' OFFSET %d' % offset)
+        query=' '.join(query)
         conn = cls.getDBI()
-        results = conn.execute(sql, values, cls._fields)
-        if results and type(results)==types.ListType:
+        ## XXXX
+        # what about values?  What am I giving up re Oracle?
+        results = conn.execute(query, (), cls._fields)
+        if results and isinstance(results, list):
             return map(cls, results)
         else:
             return []

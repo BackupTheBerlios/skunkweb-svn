@@ -1,3 +1,45 @@
+""" This module permits a useful subset of SQL where clauses to be
+defined with a Lispo-Pythonic syntax:
+
+  >>> g=SQLOperator(('AND', ('LIKE', FIELD('username'), 'bilbo_bag%'),
+  ...                       ('>', FIELD('x'), 40)))
+  >>> print g
+  ((username LIKE 'bilbo_bag%') AND (x > 40))
+
+SQLOperator is a tuple subclass that represents itself as a SQL
+string.  The first element of the tuple is the SQL operator, and the
+remaining elements are arguments, which may be atoms or nested tuples,
+which are recursively converted to SQLOperator tuples.
+
+The FIELD class is a helper class which distinguishes field names (and
+names of constants, like NULL) from plain strings, which will appear
+in the SQL output as string literals.  NULL in particular is available
+as a constant, due to the understandable popularity of nullity; it is
+equal to FIELD('NULL').  Another helper class, SET, is available to
+help use the IN operator:
+
+  >>> print SQLOperator(('IN', FIELD('x'), SET(1, 2, 3, 4)))
+  (x IN (1, 2, 3, 4))
+
+For convenience, most SQL operators are additionally wrapped in
+operator-specific SQLOperator subclasses, which are exactly equivalent
+to the explicit tuple notation and are exactly equivalent:
+
+  >>> print IN(FIELD('x'), SET(1, 2, 3, 4))
+  (x IN (1, 2, 3, 4))
+  >>> print AND(OR(EQ(FIELD('x'),
+  ...                 FIELD('y')),
+  ...              LT_EQ(FIELD('a'),
+  ...                    MULT(FIELD('b'),
+  ...                         EXP(FIELD('c'), 2)))),
+  ...           IN(FIELD('e'), SET('Porthos', 'Athos', 'Aramis')))
+  (((x = y) OR (a <= (b * (c ^ 2)))) AND (e IN ('Porthos', 'Athos', 'Aramis')))
+
+"""
+
+
+__all__=['FIELD', 'SET', 'SQLOperator', 'NULL']
+
 class FIELD(object):
     """a way to represent a fieldname in a sql expression"""
 
@@ -10,6 +52,8 @@ class FIELD(object):
 
     def __repr__(self):
         return self.fieldname
+
+NULL=FIELD('NULL')    
 
 class SET(object):
     """a way of passing a set into PyDO where clauses (for IN), e.g.:
@@ -79,7 +123,7 @@ class PolyadicOperator(SQLOperator):
     def __init__(self, *values):
         super(PolyadicOperator, self).__init__(self, (self.__class__.operator,)+values)
 
-symbol_table={}
+
 def __makeOperators():
     """
     generates the operator classes;
@@ -87,7 +131,9 @@ def __makeOperators():
     """
     import new
     _factory=((MonadicOperator,
-               ('NOT', '!'),
+               ('NOT', 'NOT'),
+               ('ISNULL', 'ISNULL'),
+               ('NOTNULL', 'NOTNULL')
                ),
               (DyadicOperator,
                ('EQ', '='),
@@ -96,8 +142,15 @@ def __makeOperators():
                ('LT_EQ', '<='),
                ('GT', '>'),
                ('GT_EQ', '>='),
+               ('MOD', '%'),
+               ('EXP', '^'),
                ('LIKE', 'LIKE'),
+               ('ILIKE', 'ILIKE'),
+               ('SIMILAR', 'SIMILAR'),
+               ('BETWEEN', 'BETWEEN'),
+               ('OVERLAPS', 'OVERLAPS'),
                ('IN', 'IN'),
+               ('IS', 'IS'),
                ),
               (PolyadicOperator,
                ('AND', 'AND'),
@@ -115,9 +168,14 @@ def __makeOperators():
             kl=new.classobj(klname, (base,), {})
             kl.operator=sym
             globals()[klname]=kl
-            symbol_table[sym]=kl
+            __all__.append(klname)
+
 
 __makeOperators()
 del __makeOperators
+
         
 
+if __name__=='__main__':
+    import doctest
+    doctest.testmod()
