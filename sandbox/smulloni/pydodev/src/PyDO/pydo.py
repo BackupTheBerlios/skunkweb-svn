@@ -8,6 +8,11 @@ from PyDO.field import Field
 from PyDO.exceptions import PyDOError
 from PyDO.operators import *
 
+def _tupleize(item):
+    if isinstance(item, tuple):
+        return item
+    return (item,)
+
 class _metapydo(type):
     """metaclass for _pydobase.
     Manages attribute inheritance.
@@ -311,6 +316,16 @@ class PyDO(dict):
             return []
     getSome=classmethod(getSome)
 
+    def deleteSome(cls, *args, **fieldData):
+        """delete possibly many records at once, and return the number deleted"""
+        raise NotImplementedError, "not done yet"
+    deleteSome=classmethod(deleteSome)
+
+    def updateSome(cls, *args, **fieldData):
+        """update possibly many records at once, and return the number updated"""
+        raise NotImplementedError, "not done yet"
+    updateSome=classmethod(updateSome)
+
     def clear(self):
         raise AttributeError, "PyDO classes don't implement clear()"
 
@@ -345,7 +360,28 @@ class PyDO(dict):
         super(PyDO, self).update(obj)
 
 
-    
+    def joinTable(self,
+                  thisAttrNames,
+                  pivotTable,
+                  thisSideColumns,
+                  thatSideColumns,
+                  thatObject,
+                  thatAttrNames):
+        """see joinTableSQL for arguments
+        
+        This method executes the statement returned by joinTableSQL
+        with the arguments and produces object from them.
+        """
+        
+        conn = self.getDBI()
+        sql, vals = self.joinTableSQL(thisAttrNames, pivotTable,
+        thisSideColumns, thatSideColumns,
+        thatObject, thatAttrNames)
+        results = conn.execute(sql, vals, thatObject.dbColumns)
+        return map(thatObject, results)        
+
+
+
     def joinTableSQL(self,
                      thisAttrNames,
                      pivotTable,
@@ -365,6 +401,8 @@ class PyDO(dict):
         """
         if extraTables is None:
             extraTables=[]
+
+
         
         thisAttrNames = self._convertTupleKW(_tupleize(thisAttrNames))
         thisSideColumns = _tupleize(thisSideColumns)
@@ -406,25 +444,6 @@ class PyDO(dict):
         return sql, vals
     
     
-    def joinTable(self,
-                  thisAttrNames,
-                  pivotTable,
-                  thisSideColumns,
-                  thatSideColumns,
-                  thatObject,
-                  thatAttrNames):
-        """see joinTableSQL for arguments
-        
-        This method executes the statement returned by joinTableSQL
-        with the arguments and produces object from them.
-        """
-        
-        conn = self.getDBI()
-        sql, vals = self.joinTableSQL(thisAttrNames, pivotTable,
-        thisSideColumns, thatSideColumns,
-        thatObject, thatAttrNames)
-        results = conn.execute(sql, vals, thatObject.dbColumns)
-        return map(thatObject, results)        
     
 
 
@@ -555,10 +574,7 @@ class PyDO(dict):
     
 
 
-def _tupleize(item):
-    if type(item) == types.TupleType:
-        return item
-    return (item,)
+
 
 
     
