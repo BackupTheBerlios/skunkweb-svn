@@ -383,13 +383,14 @@ class PyDO(dict):
                 andValues.append(EQ(FIELD(k), v, converter=converter))
             andlen=len(andValues)
             # discard converter.values, we'll regenerate that next
-            converter.reset()            
-            if andlen > 1:
-                sql=repr(AND(converter=converter, *andValues))
+            converter.reset()
+            if andlen==0:
+                sql=''
             elif andlen==1:
+                andValues[0].converter=converter
                 sql=repr(andValues[0])
             else:
-                sql=''
+                sql=repr(AND(converter=converter, *andValues))
             values=converter.values
         return sql, values
     _processWhere=classmethod(_processWhere)

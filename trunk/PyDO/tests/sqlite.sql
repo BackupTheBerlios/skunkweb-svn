@@ -20,7 +20,7 @@ CREATE TABLE article (
    title TEXT NOT NULL,
    body TEXT NOT NULL,
    creator INTEGER NOT NULL REFERENCES pydouser,
-   created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+   created TIMESTAMP NOT NULL
 );
 
 

@@ -54,4 +54,7 @@ Let's find a way to specify fields in an easy way.
            'thing',
            'blah')
 
-A sequence field
+---
+
+Problem -- does the driver sometimes need to know the datatype meant
+for the Python value being passed (for updates, comparisons, etc.).  
