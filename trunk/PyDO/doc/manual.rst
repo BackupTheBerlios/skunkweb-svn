@@ -270,35 +270,35 @@ Operators
 In addition to specifying selection criteria by keyword argument, PyDO
 gives you three other ways:
 
-  1. If you supply a string as the first argument to ``getSome()``, it
-     will be placed as-is in a WHERE clause.  Remaining positional
-     arguments will be taken to be values for bind variables in the
-     string::
+1. If you supply a string as the first argument to ``getSome()``, it
+   will be placed as-is in a WHERE clause.  Remaining positional
+   arguments will be taken to be values for bind variables in the
+   string::
 
-         >>> myFungi.getSome("comment != %s", None)
+       >>> myFungi.getSome("comment != %s", None)
 
-     If you use bind variables, the paramstyle you use must be the
-     same as that of the underlying Python DBAPI driver.  To support
-     the ``pyformat`` and ``named`` paramstyles, in which variables
-     are passed in a dictionary, you can pass in a dictionary as the
-     second argument.  When using this style with ``getSome()``, you
-     cannot use keyword arguments to express column equivalence.
+   If you use bind variables, the paramstyle you use must be the
+   same as that of the underlying Python DBAPI driver.  To support
+   the ``pyformat`` and ``named`` paramstyles, in which variables
+   are passed in a dictionary, you can pass in a dictionary as the
+   second argument.  When using this style with ``getSome()``, you
+   cannot use keyword arguments to express column equivalence.
 
-  2. You can use ``SQLOperator`` instances::
+2. You can use ``SQLOperator`` instances::
        
-       >>> myFungi.getSome(OR(EQ(FIELD('comment'), 'has pincers'),
-       ...                    LT(FIELD('id'), 40),
-       ...                    LIKE(FIELD('species'), '%micromega%')))
-       [{'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' :  None}]
+     >>> myFungi.getSome(OR(EQ(FIELD('comment'), 'has pincers'),
+     ...                    LT(FIELD('id'), 40),
+     ...                    LIKE(FIELD('species'), '%micromega%')))
+     [{'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' :  None}]
 
-  3. You can use tuples that are turned into ``SQLOperator`` instances
-     for you; this is equivalent to the above::
+3. You can use tuples that are turned into ``SQLOperator`` instances
+   for you; this is equivalent to the above::
 
-       >>> myFungi.getSome(('OR', 
-       ...                  ('=', FIELD('comment'), 'has pincers'),
-       ...                  ('<', FIELD('id'), 40),
-       ...                  ('LIKE', FIELD('species', '%micromega%'))))
-       [{'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' :  None}]
+     >>> myFungi.getSome(('OR', 
+     ...                  ('=', FIELD('comment'), 'has pincers'),
+     ...                  ('<', FIELD('id'), 40),
+     ...                  ('LIKE', FIELD('species', '%micromega%'))))
+     [{'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' :  None}]
 
 Either operator syntax can be mixed freely with each other and with
 keyword arguments to express column equivalence.
