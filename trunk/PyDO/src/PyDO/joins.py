@@ -1,11 +1,12 @@
 """
 
-The joins module contains a Join class that enables you to get
-multiple PyDO objects in one join operation.
+The joins module contains a number of Join classes that enables you to
+get multiple PyDO objects in one join operation.
 
 N.B.: this is still experimental!  And in any case, not every database
 system will necessarily support every join, and this won't attempt to
-deal with that, except by documenting what the limits are.
+deal with that, except by (eventually) documenting what the limits
+are.
 
 Current limits:
 
@@ -196,38 +197,47 @@ class joinbase(object):
 # classes that curry the constructor by jointype....
 
 class CrossJoin(joinbase):
+    """performs a CROSS JOIN"""
     def __init__(self, objL, objR):
         super(CrossJoin, self).__init__(objL, objR, 'CROSS')
 
 class LeftJoin(joinbase):
+    """performs a LEFT OUTER JOIN"""
     def __init__(self, objL, objR, on=None, using=None):
         super(LeftJoin, self).__init__(objL, objR, 'LEFT OUTER', on=on, using=using)
 
 class NaturalLeftJoin(joinbase):
+    """performs a NATURAL LEFT OUTER JOIN"""
     def __init__(self, objL, objR):
         super(NaturalLeftJoin, self).__init__(objL, objR, 'NATURAL LEFT OUTER')
 
 class RightJoin(joinbase):
+    """performs a RIGHT OUTER JOIN"""
     def __init__(self, objL, objR, on=None, using=None):
         super(RightJoin, self).__init__(objL, objR, 'RIGHT OUTER', on=on, using=using)
 
 class NaturalRightJoin(joinbase):
+    """performs a NATURAL RIGHT OUTER JOIN"""
     def __init__(self, objL, objR):
         super(NaturalRightJoin, self).__init__(objL, objR, 'NATURAL RIGHT OUTER')
 
 class FullJoin(joinbase):
+    """performs a FULL OUTER JOIN"""
     def __init__(self, objL, objR, on=None, using=None):
         super(FullJoin, self).__init__(objL, objR, 'FULL OUTER', on=on, using=using)
 
 class NaturalFullJoin(joinbase):
+    """performs a NATURAL FULL OUTER JOIN"""
     def __init__(self, objL, objR):
         super(NaturalFullJoin, self).__init__(objL, objR, 'NATURAL FULL OUTER')
 
 class InnerJoin(joinbase):
+    """performs an INNER JOIN"""
     def __init__(self, objL, objR, on=None, using=None):
         super(InnerJoin, self).__init__(objL, objR, 'INNER', on=on, using=using)
 
 class NaturalInnerJoin(joinbase):
+    """performs a NATURAL INNER JOIN"""
     def __init__(self, objL, objR):
         super(NaturalInnerJoin, self).__init__(objL, objR, 'NATURAL INNER')        
 
