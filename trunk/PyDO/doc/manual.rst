@@ -1,6 +1,13 @@
-
 PyDO2 Manual
 ~~~~~~~~~~~~
+
+:Author: Jacob Smullyan <smulloni@smullyan.org>
+:Version: 0.1
+:Status: Draft
+
+.. contents:: Table of Contents
+.. section-numbering::
+
 
 Introduction
 ------------
@@ -227,15 +234,15 @@ gives you three other ways:
      second argument.  When using this style with ``getSome()``, you
      cannot use keyword arguments to express column equivalence.
 
-  2. You can use ``SQLOperator``s::
+  2. You can use ``SQLOperator`` instances::
        
        >>> myFungi.getSome(OR(EQ(FIELD('comment'), 'has pincers'),
        ...                    LT(FIELD('id'), 40),
        ...                    LIKE(FIELD('species'), '%micromega%')))
        [{'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' :  None}]
 
-  3. You can use tuples that are turned into ``SQLOperator``s for you;
-     this is equivalent to the above::
+  3. You can use tuples that are turned into ``SQLOperator`` instances
+     for you; this is equivalent to the above::
 
        >>> myFungi.getSome(('OR', 
        ...                  ('=', FIELD('comment'), 'has pincers'),
@@ -253,28 +260,37 @@ don't need to use them, as they are purely syntactical sugar.
 Order, Offset and Limit
 +++++++++++++++++++++++
 
+[TBD]
 
 
 Inserts, Updates, and Deletes
 -----------------------------
 
+[TBD]
+
 
 Joins
 -----
+
+[TBD]
 
 
 Connection Parameters
 ---------------------
 
+[TBD]
+
 
 Caveats
 -------
+
+[TBD]
 
 
 A Complete Example
 ------------------
 
-
+[TBD]
 
 
 
