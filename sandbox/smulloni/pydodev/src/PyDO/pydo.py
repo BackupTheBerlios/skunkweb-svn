@@ -2,7 +2,8 @@ try:
     set
 except NameError:
     from sets import Set as set
-    
+
+from PyDO.dbi import GetConnection
 from PyDO.field import Field
 from PyDO.exceptions import PyDOError
 from PyDO.operators import *
@@ -111,7 +112,7 @@ class PyDO(dict):
 
     def getDBI(cls):
         """return the database interface"""
-        conn=DBIGetConnection(cls.connectionAlias)
+        conn=GetConnection(cls.connectionAlias)
         conn.resetQuery()
         return conn
     getDBI=classmethod(getDBI)
