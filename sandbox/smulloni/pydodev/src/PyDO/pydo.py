@@ -6,7 +6,7 @@ except NameError:
 from PyDO.dbi import getConnection
 from PyDO.field import Field
 from PyDO.exceptions import PyDOError
-from PyDO.operators import *
+from PyDO.operators import AND, EQ, FIELD
 
 def _tupleize(item):
     if isinstance(item, tuple):
