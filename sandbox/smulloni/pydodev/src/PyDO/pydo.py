@@ -3,56 +3,12 @@ try:
 except NameError:
     from sets import Set as set
     
-from pydo.field import Field
-
-class _fieldproperty(object):
-    __slots__=('_fieldname', '_dbname')
-
-    def __init__(self, dbname, fieldname=None):
-        self._dbname=dbname
-        if fieldname is None:
-            self._fieldname=dbname
-        else:
-            self._fieldname=fieldname
-        
-    def __get__(self, obj, type_):
-        return obj[self._dbname]
-    
-    def __set__(self, obj, value):
-        return obj.update[{self._dbname:value}]
-
-class _fieldset(object):
-    __slots__=('attrnames', 'dbnames', 'fields')
-    
-    def __getstate__(self):
-        return (self.attrnames, self.dbnames, self.fields)
-
-    def __setstate__(self, state):
-        (self.attrnames, self.dbnames, self.fields)=state
-        
-    def __init__(self, iterable=None):
-        self.attrnames={}
-        self.dbnames={}
-        self.fields=[]
-        if iterable:
-            self.update(iterable)
-
-    def register(self, field):
-        self.attrnames[field.attrname]=field
-        self.dbnames[field.dbname]=field
-        self.fields.append(field)
-
-    def unregister(self.field):
-        del self.attrnames[field.attrname]
-        del self.dbnames[field.dbname]
-        self.fields.remove(field)
-
-    def update(self, fieldlist):
-        for x in fieldlist:
-            self.register(x)
+from PyDO.field import Field, _fieldset
+from PyDO.exceptions import PyDOError
 
 class _metapydo(type):
     """metaclass for _pydobase"""
+    
     def __init__(cls, cl_name, bases, namespace):
         # handle inheritance of (private) class attributes
         revbases=[x for x in bases[::-1] if x is not object]
@@ -64,36 +20,39 @@ class _metapydo(type):
             for b in revbases:
                 o=getattr(b, a, None)
                 if o:
-                    # sets and dicts both have update(), as does fieldset
+                    # set, dict and fieldset all have update()
                     getattr(cls, a).update(o)
                     
         # add attributes declared for this class
         for f in cls.fields:
+            # support for tuple syntax for plain Jane fields
             if not isinstance(f, Field):
                 f=Field(*f)
-            # index field by dbname and attrname
+            # add to field container
             cls._fields.register(f)
 
+        # manage this class's declared attributes
         cls._unique.update(cls.unique)
         cls._sequenced.update(cls.sequenced)
         cls._auto_increment.update(cls.auto_increment)
         
         # add attribute access to fields
         if cls.use_attributes:
-            for f in cls._fields.fields:
-                if not hasattr(cls, f.attrname):
-                    setattr(cls, f.attrname, _fieldproperty(f.dbname, f.attrname))
+            for f in cls._fields:
+                if not hasattr(cls, f.pyname):
+                    # a field is also a descriptor
+                    setattr(cls, f.pyname, f)
 
 
 class PyDO(object):
-    """ Base class for PyDO data classes.
-    """
+    """ Base class for PyDO data classes."""
+
     __metaclass__=_metapydo
 
     table=None
     mutable=1
     use_attributes=1
-    connAlias=None
+    connectionAlias=None
     
     fields=()
     unique=[]
@@ -101,6 +60,10 @@ class PyDO(object):
     auto_increment={}
 
     def __init__(self, adict):
+        """Constructor.  Normally users don't use this directly,
+        but obtain instances through class methods like new()
+        and getSome().
+        """
         self._dict=adict
 
     def getDBI(cls):
@@ -112,21 +75,33 @@ class PyDO(object):
 
     def commit(cls):
         """ Commit changes to database"""
-        return cls.getDBI().commit()
+        cls.getDBI().commit()
     commit=classmethod(commit)
 
     def rollback(cls):
         """ Rollback current transaction"""
-        return cls.getDBI().rollback()
+        cls.getDBI().rollback()
     rollback=classmethod(rollback)
 
     def _translate_key(cls, key):
-        return cls._fields.attrnames[key].dbname
+        """translate pyname to dbname.  pyname must be valid for the class."""
+        return cls._fields.pynames[key].dbname
     _translate_key=classmethod(_translate_key)
 
     def _reverse_translate_key(cls, key):
-        return cls._fields.dbnames[key].attrname
+        """translate dbname to pyname.  dbname must be valid for the class."""        
+        return cls._fields.dbnames[key].pyname
     _reverse_translate_key=classmethod(_reverse_translate_key)
+
+    def _translate_dict(cls, adict):
+        """translate a dict with pyname keys to a dict with dbname keys.
+        The keys must be valid pynames for the class."""
+        return dict([(cls._translate_key(k), v) for k, v in adict.iteritems()])
+
+    def _translate_seq(cls, seq):
+        """translate a sequence of pynames to a sequence of dbnames.
+        The pynames must be valid for the class."""
+        return map(cls._translate_key, seq)
 
     def __getitem__(self, key):
         """ Part of dictionary interface for field access"""
@@ -161,8 +136,7 @@ class PyDO(object):
         return self._dict.keys()
     
     def values(self):
-        """ Part of dictionary interface for field access
-        """                                             
+        """ Part of dictionary interface for field access"""
         return self._dict.values()
     
     def get(self, key, default=None):
@@ -170,24 +144,31 @@ class PyDO(object):
         return self._dict.get(key), default)
     
     def update(self, adict):
-        """ Part of dictionary interface for field access
-        """
-        for k in adict:
-            if not self._fields.dbnames.has_key(k):
-                raise KeyError, "object %s has no field %s" %\
-                      (self.__class__, k)
-        self.updateValues(adict)
+        """ Part of dictionary interface for field access"""
+        # call (normally empty) hook for modifying the update   
+        self.onUpdate(adict)
+        # translate to real field names.  This also checks that the
+        # fields in the dictionary kosher, and blows up otherwise.
+        d=dict([(self._translate_key(k), v) for k, v in adict.iteritems()])
+        # do the actual update
+        self.updateRawValues(self, d)
+        # if successful, modify the object's field data
         self._dict.update(adict)
 
-    def updateValues(self, adict):
-        """ Updates underlying database table
-        
-        Called whenever fields are updated.
-        """
-        raise NotImplementedError, "no way to update"
-    
+    def onUpdate(self, adict):
+        """a hook for subclasses to modify updates; by default does nothing."""
+        pass
+
+    def dictRaw(self):
+        """ Returns a dict mapping unescaped field names to their current values."""
+        return dict([(self._translate_key(k), v) for k, v in self._dict.iteritems()])
+
     def dict(self):
-        """ Returns a dictionary containing of all fields """
+        
+        """ Returns a dict mapping escaped field names to their current values.
+        (Escaping consists of appending an underscore to a field name if
+        the name is a Python keyword.)
+        """
         return self._dict.copy()
     
     def copy(self):
@@ -206,11 +187,10 @@ class PyDO(object):
         """
         return self._dict
 
-
     def getColumns(cls, qualified=False):
         """Returns a list of all columns in this table, in no particular order.
 
-        If qualifed is true, returns fully qualified column names
+        If qualified is true, returns fully qualified column names
         (i.e., table.column)
         """
         if not qualified:
@@ -220,69 +200,67 @@ class PyDO(object):
             return ["%s.%s" % (t, x) for x in cls._fields.dbnames.iterkeys()]
     getColumns=classmethod(getColumns)
 
-
     def _validateFields(cls, adict):
         """a simple field validator that verifies that the keys
-        in the dictionary passed are declared fields in the class."""
+        in the dictionary passed are declared fields in the class.
+        """
         for k in adict:
-            if k not in cls._fields.dbnames:
-                raise KeyError, "object has no field %s" % k
+            if not cls._fields.pynames.has_key(k):
+                raise KeyError, "object %s has no field %s" %\
+                      (cls, k)
     _validateFields=classmethod(_validateFields)
         
-    def _baseSelect(cls, qualified=None):
+    def _baseSelect(cls, qualified=False):
         return 'SELECT %s FROM %s' % (', '.join(cls.getColumns(qualified)),
-                                      cls.getTable())
+                                      cls.table)
     _baseSelect=classmethod(_baseSelect)
-    
 
-    def new(cls, refetch = None, **kw):
+    def new(cls, refetch = None, values=None, **kw):
         """create and return a new data class instance using the values in
         kw.  This will also effect an INSERT into the database.  If refetch
         is true, effectively do a getUnique on cls.
         """
-        kw = cls._convertKW(kw)
         if not cls.mutable:
             raise ValueError, 'cannot make a new immutable object!'
+        tkw = cls._translate_dict(kw)
         conn = cls.getDBI()
-        sql = "INSERT INTO %s " % cls.getTable()
-        cls._validateFields(kw)
-        extryKV = {}
-        for s, sn in cls.sequenced.items():
-            if not kw.has_key(s):
-                extryKV[s] = conn.getSequence(sn)
         
-        kw.update(extryKV)
+        extra = {}
+        for s, sn in cls.sequenced.items():
+            if not tkw.has_key(s):
+                extra[s] = conn.getSequence(sn)
+        tkw.update(extra)
         
         cols = []
         values = []
         vals = []
         atts = []
-        for k, v in kw.iteritems():
-            cols.append(k)
-            field = cls.dbColumns[k]
-            atts.append(field)
-            lit, val = conn.sqlStringAndValue(v, k, field)
+        for dbname, v in tkw.iteritems():
+            cols.append(dbname)
+            dbtype = cls._fields.typedict[dbname]
+            atts.append(dbtype)
+            lit, val = conn.sqlStringAndValue(v, dbname, dbtype)
             values.append(lit)
             vals.append(val)
-        sql = sql + '(%s) VALUES ' % ', '.join(cols)
-        sql = sql + '(%s)' % ', '.join(values)
-        res = conn.execute(sql, vals, cls.dbColumns)
-        
-        if len(cls.auto_increment):
-            for k, v in cls.auto_increment.items():
-                if not kw.has_key(k):
-                    kw[k] = conn.getAutoIncrement(v)
-        
+        sql = 'INSERT INTO %s (%s) VALUES  (%s)' \
+              % (cls.table,
+                 ', '.join(cols),
+                 ', '.join(values))
+        res = conn.execute(sql, vals, cls._fields.typedict)
         if res != 1:
             raise PyDOError, "inserted %s rows instead of 1" % res
         
-        conn.postInsertUpdate(cls, kw, 1)
+        if cls.auto_increment:
+            for k, v in cls.auto_increment.items():
+                if not tkw.has_key(k):
+                    tkw[k] = conn.getAutoIncrement(v)
+        
+        conn.postInsertUpdate(cls, tkw, 1)
         if not refetch:
-            return cls(kw)
-        return apply(cls.getUnique, (), kw)
+            return cls(tkw)
+        return cls.getUnique(**tkw)
 
     new=classmethod(new)
-    
     
     def getUnique(cls, **kw):
         """ Retrieve one particular instance of this class.
@@ -290,7 +268,7 @@ class PyDO(object):
         Given the attribute/value pairs in kw, retrieve a unique row
         and return a data class instance representing said row or None
         if no row was retrieved.
-            """
+        """
         kw = cls._convertKW(kw)
         
         unique = cls._matchUnique(kw)
@@ -529,7 +507,7 @@ class PyDO(object):
         cols = []
         for obj in objs:
             cols.extend(obj[0].getColumns(1))
-        tabs = map(lambda x:x[0].getTable(), objs)
+        tabs = map(lambda x:x[0].table, objs)
         sql = "SELECT %s FROM %s WHERE " % (', '.join(cols),
                                             ', '.join(tabs))
         j = []
@@ -541,13 +519,13 @@ class PyDO(object):
                     obj, dobj)
                 
                 for attri, dattri in map(None, attr, dattr):
-                    j.append('%s.%s = %s.%s' % (obj.getTable(), cls._field_dict[attri]['dbName'],
-                    dobj.getTable(), cls._field_dict[dattri]['dbName']))
+                    j.append('%s.%s = %s.%s' % (obj.table, cls._field_dict[attri]['dbName'],
+                    dobj.table, cls._field_dict[dattri]['dbName']))
                 
             else:
                 if dobj:
-                    j.append('%s.%s = %s.%s' % (obj.getTable(), cls._field_dict[attr]['dbName'],
-                    dobj.getTable(), cls._field_dict[dattr]['dbName']))
+                    j.append('%s.%s = %s.%s' % (obj.table, cls._field_dict[attr]['dbName'],
+                    dobj.table, cls._field_dict[dattr]['dbName']))
         sql = sql + ' AND '.join(j)
         return sql, cols, objs
     scatterFetchSQL=classmethod(scatterFetchSQL)
@@ -616,7 +594,7 @@ class PyDO(object):
             lit, val = conn.sqlStringAndValue(v, k, cls.dbColumns[k])
             
             where.append("%s.%s %s= %s" % (
-            cls.getTable(), k, notFlag, lit))
+            cls.table, k, notFlag, lit))
             values.append(val)
         whereClause = ' AND '.join(where)
         if whereClause:
@@ -630,24 +608,23 @@ class PyDO(object):
     ## Public instance methods
     ##############################
     
-    def updateValues(self, dict):
+    def updateRawValues(self, dict):
         """update self in database with the values in dict"""
         if not self.mutable:
             raise ValueError, "instance isn't mutable!"
-        sql = "UPDATE %s SET " % self.getTable()
+        sql = "UPDATE %s SET " % self.table
         sets = []
         values = []
         conn = self.getDBI()
         atts = []
         
-        for k, v in dict.items():
-            fieldName = self._field_dict[k].dbname
-            fieldType = self._field_dict[k].dbtype
-            conn.typeCheckAndConvert(v, fieldName, fieldType)
-            lit, val = conn.sqlStringAndValue(v, fieldName, fieldType)
-            atts.append(fieldType)
+        for dbname, value in dict.items():
+            dbtype = self._fields.dbnames[dbname].dbtype
+            conn.typeCheckAndConvert(v, dbname, dbtype)
+            lit, val = conn.sqlStringAndValue(v, dbname, dbtype)
+            atts.append(dbtype)
             values.append(val)
-            sets.append("%s = %s" % (fieldName, lit))
+            sets.append("%s = %s" % (dbname, lit))
         
         where, wvalues = self._uniqueWhere(conn, self._dict)
         values = values + wvalues
@@ -664,7 +641,7 @@ class PyDO(object):
             raise ValueError, "instance isn't mutable!"
         conn = self.getDBI()
         unique, values = self._uniqueWhere(conn, self._dict)
-        sql = 'DELETE FROM %s WHERE %s' % (self.getTable(), unique)
+        sql = 'DELETE FROM %s WHERE %s' % (self.table, unique)
         conn.execute(sql, values, self.dbColumns)
         # shadow the class attribute with an instance attribute
         self.mutable = 0
@@ -678,15 +655,20 @@ class PyDO(object):
         self._dict = obj._dict
     #        self.mutable = self._cls.mutable
     
-    def joinTableSQL(self, thisAttrNames, pivotTable, thisSideColumns,
-        thatSideColumns, thatObject, thatAttrNames,
-        extraTables = []):
+    def joinTableSQL(self,
+                     thisAttrNames,
+                     pivotTable,
+                     thisSideColumns,
+                     thatSideColumns,
+                     thatObject,
+                     thatAttrNames,
+                     extraTables = []):
         """Handle many to many relations.  In short, do a
         
         SELECT thatObject.getColumns(1)
-        FROM thatObject.getTable(), pivotTable
+        FROM thatObject.table, pivotTable
         WHERE pivotTable.thisSideColumn = self[myAttrName]
-        AND pivotTable.thatSideColumn = thatObject.getTable().thatAttrName
+        AND pivotTable.thatSideColumn = thatObject.table.thatAttrName
         
         and return a list of thatObjects representing the resulting rows.
         """
@@ -713,14 +695,14 @@ class PyDO(object):
         
         for attr, col in map(None, thisAttrNames, thisSideColumns):
             lit, val = conn.sqlStringAndValue(
-            self[attr], attr, self.dbColumns[attr])
+                self[attr], attr, self.dbColumns[attr])
             thisJoin.append('%s.%s = %s' % (pivotTable, col, lit))
             vals.append(val)
         
         sql = '%s%s AND ' % (sql, ' AND '.join(thisJoin))
         
         thatJoin = []
-        thatTable = thatObject.getTable()
+        thatTable = thatObject.table
         for attr, col in map(None, thatAttrNames, thatSideColumns):
             thatJoin.append('%s.%s = %s.%s' % (pivotTable,
                                                col,
@@ -731,13 +713,19 @@ class PyDO(object):
         return sql, vals
     
     
-    def joinTable(self, thisAttrNames, pivotTable, thisSideColumns,
-        thatSideColumns, thatObject, thatAttrNames):
+    def joinTable(self,
+                  thisAttrNames,
+                  pivotTable,
+                  thisSideColumns,
+                  thatSideColumns,
+                  thatObject,
+                  thatAttrNames):
         """see joinTableSQL for arguments
         
-        This method executes the statement returned by joinTableSQL with
-        the arguments and produces object from them.
+        This method executes the statement returned by joinTableSQL
+        with the arguments and produces object from them.
         """
+        
         conn = self.getDBI()
         sql, vals = self.joinTableSQL(thisAttrNames, pivotTable,
         thisSideColumns, thatSideColumns,
@@ -746,19 +734,11 @@ class PyDO(object):
         return map(thatObject, results)        
     
     
-    ####################################################
-    ##
-    ## Private methods start here
-    ##
-    ## Following methods are not part of the public
-    ## interface.
-    ##
-    ##
 
-    @classmethod
     def _matchUnique(cls, kw):
         """return a tuple of column names that will uniquely identify
-        a row given the choices from kw"""
+        a row given the choices from kw
+        """
         for unique in cls._unique:
             if isinstance(unique, str):
                 if kw.has_key(unique) and kw[unique] is not None:
@@ -769,8 +749,8 @@ class PyDO(object):
                         break
                 else:
                     return unique
-    
-    @classmethod
+    _matchUnique=classmethod(_matchUnique)
+
     def _uniqueWhere(cls, conn, kw):
         """given a connection and kw, using _matchUnique, generate a
         where clause to select a unique row.
@@ -787,45 +767,7 @@ class PyDO(object):
             where.append("%s = %s" % (u, lit))
             values.append(val)
         return ' AND '.join(where), values
-    
-    # following two methods are helper functions to convert
-    # either a dict or a tuple containing Python attribute names
-    # into their corresponding database column names. This is
-    # to allow a difference between attribute name and column
-    # name without putting the burden of conversion on the
-    # developer.
-    
-    # for tuples, used in scatterFetch etc.
-    @classmethod
-    def _convertTupleKW(cls, tup):
-        nt = []
-        for i in tup:
-            try:
-                nt.append(cls._field_dict[i]['dbName'])
-            except KeyError:
-                # apparently already converted
-                # or just bogus. Neither way should we
-                # worry about it here. Return original
-                # input and let it (perhaps) go wrong
-                # somewhere else.
-                return tup
-        return tuple(nt)
-    
-    # for dicts, used in getSome, getUnique etc.
-    @classmethod
-    def _convertKW(cls, kw):
-        nkw = {}
-        for k, v in kw.iteritems():
-            try:
-                nkw[cls._field_dict[k]['dbName']] = v
-            except KeyError:
-                # apparently already converted
-                # or just bogus. Neither way should we
-                # worry about it here. Return original
-                # input and let it (perhaps) go wrong
-                # somewhere else. 
-                return kw
-        return nkw
+    _uniqueWhere=classmethod(_uniqueWhere)
 
 
 def _tupleize(item):
@@ -834,51 +776,5 @@ def _tupleize(item):
     return (item,)
 
 
-
-# 2003-10-20 
-#   Brian Olsen <brian@qinternet.com>
-#
-# Added the offset, limit, and order parameters to getSome(), getSomeSQL()
-# getTupleWhere(), getSomeWhere(), and getSQLWhere(). A PyDO statement like
-# this:
-#
-# MyTable.getSome(id=1, order=('id',), limit=1, offset=2)
-#
-# will produce something like this:
-#
-# SELECT id FROM my_table WHERE id=1 ORDER BY id LIMIT 1 OFFSET 2
-#
-# 2003-08-24 several modifications by:
-#   Jacob Smullyan <smulloni@smullyan.org>
-#   Jeroen van Dongen <jeroen@vthings.net>
-#
-# Following modifications are made in an effort to
-# make PyDO's more like regular Python classes:
-#
-# - The static module is no longer used. PyDO classes are now
-#   regular Python classes.
-# - mro matches the mro for Python new-style classes
-#   So diamond-shaped class hierarchies are possible (although
-#   I'm not sure how to reflect that in SQL, but that's your
-#   problem :-). 
-# - Fields can be accessed either dictionary-style or
-#   attribute-style
-# - The name of the field in the database may differ from the
-#   Python attribute name (hence you can have database fields with names like
-#   'pass', 'class', etc.)
-# - It is now possible to associate other attributes with a
-#   a field, besides its database-type
-#
-# The following modifications are still on the wishlist:
-# - it should work in multithreaded environments;
-#   review assumptions made about drivers.
-#   [JvD: probably best is to just use a multithread-aware driver, such
-#    as Psycopg?]
-# - it should be possible to get a subclass of an object
-#   to have a subset of the full list of fields.
-#   [JvD: perhaps drop requirement? Or create a method which fetches
-#    only a few attributes, based on a getUnique?]
-#
-
-                
     
+__all__=['PyDO']
