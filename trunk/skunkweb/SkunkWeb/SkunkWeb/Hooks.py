@@ -1,5 +1,5 @@
-# Time-stamp: <01/09/08 22:32:08 smulloni>
-# $Id: Hooks.py,v 1.6 2001/09/09 02:37:41 smulloni Exp $
+# Time-stamp: <01/09/18 21:37:31 smulloni>
+# $Id: Hooks.py,v 1.7 2001/09/19 02:11:52 smulloni Exp $
 
 ########################################################################
 #  
@@ -72,7 +72,7 @@ class KeyedHook:
         return funcList
 
     def __call__(self, jobName, *args, **kw):
-        for f in self_getFuncList(jobName):
+        for f in self._getFuncList(jobName):
             retVal=f(*args, **kw)
             if retVal is not None:
                 return retVal
@@ -108,6 +108,9 @@ class SearchablePairList:
 
 ########################################################################
 # $Log: Hooks.py,v $
+# Revision 1.7  2001/09/19 02:11:52  smulloni
+# fixed typo
+#
 # Revision 1.6  2001/09/09 02:37:41  smulloni
 # performance enhancements, removal of sundry nastinesses and erasure of
 # reeking rot.
