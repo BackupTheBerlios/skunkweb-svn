@@ -277,12 +277,17 @@ class PyDO(dict):
     @classmethod
     def getFields(cls):
         """returns the effective fields of the class"""
-        return cls._fields
+        return cls._fields.copy()
 
     @classmethod
-    def getUniqueConstraints(cls):
-        """returns the effective unique constraints of the class"""
+    def getUniquenessConstraints(cls):
+        """returns the effective uniqueness constraints of the class"""
         return cls._unique
+
+    @classmethod
+    def getSequences(cls):
+        """returns the effective sequences for the class"""
+        return cls._sequenced.copy()
 
     @classmethod
     def _validateFields(cls, adict):

@@ -60,7 +60,7 @@ Instances are obtained, not by directly invoking the PyDO class's
 constructor, but by calling one of various class methods, discussed
 below, that return single instances or lists thereof.
 
-If the class is declared mutable and has a unique constraint, it is
+If the class is declared mutable and has a uniqueness constraint, it is
 possible to mutate it by calling::
 
     MyInstance['fieldname']=newValue
@@ -119,18 +119,20 @@ table-like entity (set function, for instance).  If the database
 supports schemas, like later version of postgresql, the schema name
 can be included here, if desired (e.g., ``myschema.mytable``).
 
-The ``fields`` attribute should be a tuple or list of either
-``PyDO.Field`` instances (of which ``Sequence`` and ``Unique`` are
-subclasses), strings (which should be column names), or tuples that
-can be passed to the ``PyDO.Field`` constructor (i.e.,
-``PyDO.Field(**fieldTuple)``).   
+The ``fields`` attribute should be a tuple or list of either ``Field``
+instances (of which ``Sequence`` and ``Unique`` are subclasses),
+strings (which should be column names), or tuples that can be passed
+to the ``Field`` constructor (i.e., ``Field(**fieldTuple)``).  You can
+use your own ``Field`` subclasses if you wish to store additional
+information about fields (e.g., data type, validators, etc.).
 
 A ``Sequence`` field is used to represent either an auto-increment
 column, for databases like MySQL that use that mechanism, or a
 sequence column, as used in PostgreSQL.  These columns are implicitly
 unique.  A ``Unique`` field is used to represent a column that has a
-single-column unique constraint.  Multiple-column unique constraints
-can also be indicated, with the ``unique`` class attribute::
+single-column uniqueness constraint.  Multiple-column uniqueness
+constraints can also be indicated, with the ``unique`` class
+attribute::
 
    from PyDO import PyDO
  
@@ -142,12 +144,26 @@ can also be indicated, with the ``unique`` class attribute::
                'keyword_id')
        unique=(('article_id', 'keyword_id'),)
 
-It is not necessary to declare any unique constraints in a ``PyDO``
-class.  However, if your table has no unique constraints, an instance
-of the corresponding ``PyDO`` class won't be able to identify the
-unique row in the database to which it corresponds, and hence will not
-be mutable.  (If the class is mutable, however, it will still be
-possible to perform inserts and mass updates and deletes.)
+The ``unique`` attribute can be thought of as analogous to how, in
+SQL, you may declare uniqueness constraints in a separate clause after
+you have declared the fields; it is optional to do so for
+single-column uniqueness constraints, which are more conveniently
+declared inline with the field, but necessary for the multi-column
+case.  
+
+It is not necessary to declare any uniqueness constraints in a
+``PyDO`` class at all, either implicitly with the ``Unique`` field
+class, or via the ``unique`` class attribute.  However, if your table
+has no uniqueness constraints, an instance of the corresponding
+``PyDO`` class won't be able to identify the unique row in the
+database to which it corresponds, and hence will not be mutable.  (If
+the class is mutable, however, it will still be possible to perform
+inserts and mass updates and deletes.)
+
+The inherited fields, uniqueness constraints, and sequences of a class
+may be read, but not changed, through the class methods
+``getFields()``, ``getUniquenessConstraints()``, and
+``getSequences()``, respectively.
 
 
 Inheritance Semantics
@@ -155,32 +171,58 @@ Inheritance Semantics
 
 PyDO classes are normal Python classes which use a metaclass to parse
 the ``field`` and ``unique`` class attribute declarations and store
-the derived information in private fields (currently ``_fields``,
-``_unique``, and ``_sequenced``, but that is subject to
-reimplementation).  This private fields have special inheritance
-semantics, in that fields, and their associated unique/sequenced
-properties, are inherited from superclasses even if they are not
-declared in the subclass.  (This behavior is applicable not only to
-PostgreSQL table inheritance, but to defining base or mixin classes,
-which need not be PyDO subclasses themselves, that define groups of
-fields that are shared by multiple tables.)
+the derived information in private fields.  Special inheritance
+semantics obtain for ``field`` and ``unique`` in that the privately
+stored parsed values corresponding to those declarations are inherited
+from superclasses even if they are not declared in the subclass.
+Subclasses therefore augment the field listing of their base classes.
+This behavior is applicable not only to PostgreSQL table inheritance,
+but to defining base or mixin classes, which need not be PyDO
+subclasses themselves, that define groups of fields that are shared by
+multiple tables.  Normally, if a subclasses redeclares a field
+declared by a base class, the subclass's declaration overrides, but an
+exception is made for declarations that simply state the fieldname as
+a string; in that case, any previous, more informative declaration
+will be inherited.  
+
+    *Caveat*: This is generally useful (in the case of projections
+    particularly --see below) but if you wished to override a
+    superclass's definition, say, of ``Unique('species')``, just to
+    the non-unique ``Field('species')``, you would have to explicitly
+    use the ``Field`` constructor rather than simply ``'species'``.
+
 
 Projections
 +++++++++++
 
 An exception is made to the default inheritance behavior -- that
-subclasses inherit their superclasses' fields -- for the case of
-projection subclasses, in which fields are not inherited.  Projections
-are useful when you wish to select only a few columns of a larger
-table.  To derive a projection from a PyDO class, simply call the
-class method ``project()`` on the class, passing in a tuple of fields
-that you wish to include in the projection::
+subclasses augment their superclasses' field listing -- for the case
+of projection subclasses, in which the local declaration of fields
+overrides that of superclasses.  Projections are useful when you wish
+to select only a few columns from a larger table.  To derive a
+projection from a PyDO class, simply call the class method
+``project()`` on the class, passing in a tuple of fields that you wish
+to include in the projection::
 
    myProjection=MyBaseClass.project(('id', 'title'))
 
 The return value is a new PyDO class. This class is cached, so if you
 call ``project()`` again with the same arguments you'll get a
 reference to the same class.
+
+Because of the special inheritance semantics for simple string field
+declarations, if ``MyBaseClass`` in the above example is defined as
+follows::
+
+   class myBaseClass(PyDO):
+       fields=(Sequenced('id'),
+               Unique('title'),
+               'author'
+               'ISBN',
+               'first_chapter')
+
+``myProjection`` will still know that ``id`` and ``title`` are unique,
+and that ``id`` is sequenced.
 
 
 Making Queries: ``getSome()`` and ``getUnique()``
@@ -194,9 +236,9 @@ There are two class methods provided for performing SELECTs.
    {'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' : None}]
 
 ``getUnique`` returns a single instance.  You must provide enough
-information to getUnique to satisfy an unique constraint; this is
+information to getUnique to satisfy an uniqueness constraint; this is
 accomplished by passing in keyword parameters where the keywords are
-column names corresponding to the columns of a unique constraint
+column names corresponding to the columns of a uniqueness constraint
 declared for the object, and the values are what you are asserting
 those columns equal::
 
@@ -251,12 +293,23 @@ gives you three other ways:
        ...                  ('LIKE', FIELD('species', '%micromega%'))))
        [{'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' :  None}]
 
-Either operator syntax can be mixed freely with keyword arguments to
-express column equivalence.
+Either operator syntax can be mixed freely with each other and with
+keyword arguments to express column equivalence.
 
 The basic idea of operators is that they renotate SQL in a prefix
 rather than infix syntax, which may not be to everyone's taste; you
-don't need to use them, as they are purely syntactical sugar.  
+don't need to use them, as they are purely syntactical sugar.  One
+convenient thing about them is that they automatically convert values
+included in them to bind variables in the style of the underlying
+DBAPI driver.
+
+To represent an unquoted value, like a fieldname, a constant, or a
+function, use the ``FIELD`` or ``CONSTANT`` classes (actually, they
+are synonyms).  Another helper class is ``SET``, for use with the
+``IN`` operator::
+
+    >>> myFungi.getSome(IN(FIELD('comment'), 
+    ...                    SET('nice shroom!', 'has pincers')))
 
 Order, Offset and Limit
 +++++++++++++++++++++++
