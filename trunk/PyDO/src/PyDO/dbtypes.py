@@ -48,6 +48,6 @@ timestamp_formats=['%Y-%m-%d %H:%M:%S',
 __all__=['DATE',
          'TIMESTAMP',
          'INTERVAL',
-         'BINARY',
-         'unwrap']
+         'BINARY']
+
 

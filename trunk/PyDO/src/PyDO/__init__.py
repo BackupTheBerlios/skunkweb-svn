@@ -7,16 +7,6 @@ persisted at the RDBMS level.  Supported databases are:
    * mysql
    * sqlite
 
-Others that may be supported:
-
-   * gadfly
-   * firebird 
-   * maxdb (==sapdb)
-   * oracle
-
-Possibly down the line:   
-   * sybase
-   * SQL Server
 """
 
 from PyDO.exceptions import *
@@ -24,6 +14,7 @@ from PyDO.field import *
 from PyDO.base import *
 from PyDO.operators import *
 from PyDO.dbi import *
+from PyDO.dbtypes import *
 from PyDO.log import *
 
 __version__='2.0a0'
