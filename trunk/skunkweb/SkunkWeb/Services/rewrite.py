@@ -1,5 +1,5 @@
-# Time-stamp: <02/05/01 12:59:44 smulloni>
-# $Id: rewrite.py,v 1.3 2002/05/01 21:32:37 smulloni Exp $
+# Time-stamp: <02/05/10 14:02:25 smulloni>
+# $Id: rewrite.py,v 1.4 2002/05/10 18:05:12 smulloni Exp $
 
 ########################################################################
 #  
@@ -30,6 +30,7 @@ from SkunkWeb.LogObj import DEBUG, logException
 from hooks import Hook
 from SkunkWeb.ServiceRegistry import REWRITE
 import re
+import sys
 from requestHandler.protocol import PreemptiveResponse
 
 Configuration.mergeDefaults(rewriteRules = [],
@@ -78,6 +79,32 @@ class Redirect(DynamicRewriter):
         url=match.expand(self.url_template)
         self.connection.redirect(url)
         raise PreemptiveResponse, self.connection.response()
+
+# use templating's 404 handler if it is already imported
+if sys.modules.has_key('templating'):
+    import templating
+    fourOhFourHandler=templating.Handler.fourOhFourHandler
+
+else:
+    def fourOhFourHandler(connection, sessionDict):
+        connection.setStatus(404)
+        connection.responseHeaders['Content-Type']='text/html'
+        connection.write(
+            'Sorry the requested document (<tt>%s</tt>) is not available' \
+            % connection.uri)
+        return  connection.response()
+    
+class Status404(DynamicRewriter):
+    """
+    raises a 404 error
+    """
+    def __init__(self, handler=fourOhFourHandler):
+        self.handler=handler
+    def __call__(self, match):
+        raise PreemptiveResponse, self.handler(
+            self.connection,
+            self.sessionDict)
+
 
 ########################################################################
 
@@ -167,6 +194,9 @@ __initHooks()
 
 ########################################################################
 # $Log: rewrite.py,v $
+# Revision 1.4  2002/05/10 18:05:12  smulloni
+# added a rewriter that returns a 404.
+#
 # Revision 1.3  2002/05/01 21:32:37  smulloni
 # fixing typos and goofs
 #
