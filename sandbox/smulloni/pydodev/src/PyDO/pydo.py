@@ -8,7 +8,9 @@ from PyDO.exceptions import PyDOError
 from PyDO.operators import *
 
 class _metapydo(type):
-    """metaclass for _pydobase"""
+    """metaclass for _pydobase.
+    Manages attribute inheritance.
+    """
     
     def __init__(cls, cl_name, bases, namespace):
         # handle inheritance of (private) class attributes
@@ -82,7 +84,6 @@ class PyDO(dict):
     def copy(self):
         return self.__class__(dict(self).copy())
 
-    #@classmethod
     def getColumns(cls, qualified=False):
         """Returns a list of all columns in this table, in no particular order.
 
@@ -96,7 +97,6 @@ class PyDO(dict):
             return ["%s.%s" % (t, x) for x in cls._fields.iterkeys()]
     getColumns=classmethod(getColumns)
 
-    #@classmethod
     def _validateFields(cls, adict):
         """a simple field validator that verifies that the keys
         in the dictionary passed are declared fields in the class.
@@ -108,7 +108,7 @@ class PyDO(dict):
     _validateFields=classmethod(_validateFields)
 
     # DB interface
-    #@classmethod
+
     def getDBI(cls):
         """return the database interface"""
         conn=DBIGetConnection(cls.connectionAlias)
@@ -116,19 +116,19 @@ class PyDO(dict):
         return conn
     getDBI=classmethod(getDBI)
 
-    #@classmethod
+
     def commit(cls):
         """ Commit changes to database"""
         cls.getDBI().commit()
     commit=classmethod(commit)
 
-    #@classmethod
+
     def rollback(cls):
         """ Rollback current transaction"""
         cls.getDBI().rollback()
     rollback=classmethod(rollback)
 
-    #@classmethod
+
     def new(cls, refetch=None,  **fieldData):
         """create and return a new data class instance using the values in
         fieldData.  This will also effect an INSERT into the database.  If refetch
@@ -182,9 +182,7 @@ class PyDO(dict):
         """
                          
         cls._validateFields(fieldData)
-                           
         unique = cls._matchUnique(fieldData)
-        
         conn = cls.getDBI()
         where, values = cls._uniqueWhere(conn, fieldData)
         sql = "%s WHERE %s" % (cls._baseSelect(), where)

@@ -1,11 +1,17 @@
+try:
+    import mx.DateTime as M
+    haveMx=True
+except ImportError:
+    haveMx=False
 
-class connection(object):
-    """base class for connections"""
+import datetime
+
+class DBIBase(object):
+    """base class for db connection wrappers"""
     bindVariables=False
 
     def __init__(self, connectArgs):
-        self.connectArgs=connectArgs
-        self.conn=self._connect()
+        self.conn=self._connect(connectArgs)
 
     def _connect(self):
         raise NotImplementedError
@@ -20,10 +26,6 @@ class connection(object):
         return (fget, fset, None, None)
     autocommit=property(autocommit())
     
-    def getConnection(self):
-        """Get the actual database connection"""
-        return self.conn
-    
     def sqlStringAndValue(self, val, field):
         """Returns a sql string and a value.  The literal is to be put into
 	the sql query, the value should is put into the value list that is
@@ -36,10 +38,23 @@ class connection(object):
 
         """
 
-    def execute(self, sql, values, fields):
+    def execute(self, sql, fields, values=None):
         """Executes the statement with the values and does conversion
         of the return result as necessary.
         result is list of dictionaries, or number of rows affected"""
+        if self.verbose:
+            self.log(sql)
+        c=self.conn.cursor()
+        if values:
+            c.execute(sql, values)
+        else:
+            c.execute(sql)
+        result=cur.fetchall()
+        if not result:
+            return cur.rowcount
+        fldnames=[x[0] for x in cur.description]
+        
+
 
     def convertResultRows(self, fields, rows):
         """converts the result list into a list of dictionaries keyed
@@ -79,4 +94,16 @@ class connection(object):
         isInsert is a boolean stating whether or not this is an insert (true)
                  or an update (false).
         """
+
+strftimeTypes=[datetime.datetime]
+if haveMx:
+    strftimeTypes.append(M.DateTimeType)
+
+class ConverterBase(object):
+    def __init__(self):
+        self.values=[]
+        
+    def __call__(self, val):
+        if isinstance(val, strftimeTypes):
+            return repr(val.strftime(DT_FORMAT))
     

@@ -41,10 +41,31 @@ converter=myFunc).  Nested operators will inherit the conversion
 function from the enclosing operator class if they don't define one
 themselves.
 
+The BindingConverter manages bind variables by inserting the
+appropriate formats and accumulating the values inside the converter.
+
+  >>> c=BindingConverter('format')
+  >>> op=AND(OR(EQ(FIELD('x'),
+  ...              FIELD('y')),
+  ...           LT_EQ(FIELD('a'),
+  ...                 MULT(FIELD('b'),
+  ...                      EXP(FIELD('c'), 2)))),
+  ...        IN(FIELD('e'), SET('Porthos', 'Athos', 'Aramis')), converter=c)
+  >>> print op
+  (((x = y) OR (a <= (b * (c ^ %s)))) AND (e IN (%s, %s, %s)))
+  >>> c.values
+  [2, 'Porthos', 'Athos', 'Aramis']
+  >>> c.paramstyle='pyformat'
+  >>> c.reset()
+  >>> print op
+  (((x = y) OR (a <= (b * (c ^ %(n1)s)))) AND (e IN (%(n2)s, %(n3)s, %(n4)s)))
+  >>> c.values
+  {'n1': 2, 'n2': 'Porthos', 'n3': 'Athos', 'n4': 'Aramis'}
+
 """
 
 
-__all__=['FIELD', 'CONSTANT', 'NULL', 'SET', 'SQLOperator' ]
+__all__=['FIELD', 'CONSTANT', 'NULL', 'SET', 'SQLOperator', 'BindingConverter']
 
 class CONSTANT(object):
     """a way to represent a constant or field name in a sql expression"""
@@ -65,58 +86,75 @@ FIELD=CONSTANT
 class SET(object):
     """a way of passing a set into PyDO where clauses (for IN), e.g.:
     
-    IN(FIELD('foo'), SET('spam', 'eggs', 'nougat'))
+    >>> IN(FIELD('foo'), SET('spam', 'eggs', 'nougat'))
+    (foo IN ('spam', 'eggs', 'nougat'))
     """
-    __slots__=('values',)
+    __slots__=('values','converter')
     
     def __init__(self, *values):
         if not len(values):
             raise ValueError, "you must supply some values"
         self.values=tuple(values)
+        self.converter=None
+
+    def setConverter(self, converter):
+        self.converter=converter
+        for x in self.values:
+            if hasattr(x, 'setConverter'):
+                x.setConverter(converter)
+
+    def _convert(self, val):
+        if self.converter:
+            return self.converter(val)
+        # default converter is repr()
+        return repr(val)
         
     def __repr__(self):
         l=len(self.values)
         if l>1:
-            return "(%s)" % ', '.join([repr(x) for x in self.values])
+            return "(%s)" % ', '.join([self._convert(x) for x in self.values])
         else:
-            return "(%r)" % self.values[0]
+            return "(%s)" % self._convert(self.values[0])
 
 
 class SQLOperator(tuple):
     """A special kind of tuple that knows how to represent itself as a SQL string."""
     def __new__(cls, t, converter=None):
-        L=len(t)
-        if not (2 <= L):
+        if not (2 <= len(t)):
             raise ValueError, "invalid SQL condition"
         if not isinstance(t, SQLOperator):
             tl=[t[0]]
             for x in t[1:]:
-                if isinstance(x, tuple):
-                    if isinstance(x, SQLOperator):
-                        if converter and not x.converter:
-                            x.converter=converter
-                        tl.append(x)                            
+                if isinstance(x, (SET, tuple)):
+                    if not isinstance(x, (SET, SQLOperator)):
+                        x=SQLOperator(x, converter)
                     else:
-                        tl.append(SQLOperator(x, converter))
-                else:
-                    tl.append(x)
+                        x.setConverter(converter)
+                tl.append(x)
             t=tuple(tl)
         return tuple.__new__(cls, t)
 
     def __init__(self, t, converter=None):
         super(SQLOperator, self).__init__(t)
+        self.setConverter(converter)
+
+    def setConverter(self, converter):
         self.converter=converter
+        for x in self:
+            if hasattr(x, 'setConverter'):
+                x.setConverter(converter)
 
     def _convert(self, val):
         if self.converter:
             return self.converter(val)
-        return val
+        # default converter is repr()
+        return repr(val)
     
     def __repr__(self):
         op=" %s " % self[0]
         if len(self)==2:
-            return "(%s %r)" % (op, self._convert(self[1]))
-        args=[repr(self._convert(a)) for a in self[1:]]
+            return "(%s %s)" % (op, self._convert(self[1]))
+        args=[self._convert(a) for a in self[1:]]
         return "(%s)" % op.join(args)
 
 
@@ -205,6 +243,89 @@ def __makeOperators():
 __makeOperators()
 del __makeOperators
 
+
+class BindingConverter(object):
+    """A value converter that uses bind variables.
+    
+    >>> op=EQ(FIELD('x'), 45, converter=BindingConverter('format'))
+    >>> print op
+    (x = %s)
+    >>> c=BindingConverter('format')
+    >>> op=AND(EQ(FIELD('x'), 400), NE(FIELD('y'), ('^', FIELD('z'), 2)), converter=c)
+    >>> type(op.converter)==BindingConverter
+    True
+    >>> type(op[1].converter)==BindingConverter
+    True
+    >>> type(op[2].converter)==BindingConverter
+    True
+    >>> type(op[2][2].converter)==BindingConverter
+    True
+    >>> print op
+    ((x = %s) AND (y != (z ^ %s)))
+    >>> c.values
+    [400, 2]
+    """
+    supported_styles=('format', 'pyformat', 'qmark', 'named', 'numeric')
+
+    def __init__(self, paramstyle):
+        self._values=[]
+        self._named_values={}
+        self._seed=1
+        self._set_paramstyle(paramstyle)
+
+    def _get_paramstyle(self):
+        return self._paramstyle
+
+    def _set_paramstyle(self, paramstyle):
+        if paramstyle not in BindingConverter.supported_styles:
+            raise ValueError, "unsupported paramstyle: %s" % paramstyle
+        self._paramstyle=paramstyle
+        
+    paramstyle=property(_get_paramstyle, _set_paramstyle)
+
+    def values():
+        def fget(self):
+            p=self.paramstyle
+            if p in ('format', 'qmark'):
+                return self._values
+            elif p in ('pyformat', 'numeric', 'named'):
+                return self._named_values
+        return (fget,)
+    values=property(*values())
+
+    def _genName(self):
+        return "n%d" % self._genNumber()
+
+    def _genNumber(self):
+        x=self._seed
+        self._seed+=1
+        return x
+
+    def reset(self):
+        self._seed=1
+        del self._values[:]
+        self._named_values.clear()
+
+    def __call__(self, val):
+        if isinstance(val, (CONSTANT, SET, SQLOperator)):
+            return repr(val)
+        elif self.paramstyle=='format':
+            self._values.append(val)
+            return '%s'
+        elif self.paramstyle=='qmark':
+            self._values.append(val)
+            return '?'
+        elif self.paramstyle=='numeric':
+            self._values.append(val)
+            return ":%d" % self._genNumber()
+        elif self.paramstyle=='named':
+            name=self._genName()
+            self._named_values[name]=val
+            return ":%s" % name
+        elif self.paramstyle=='pyformat':
+            name=self._genName()
+            self._named_values[name]=val
+            return "%%(%s)s" % name
 
 if __name__=='__main__':
     import doctest
