@@ -1,5 +1,5 @@
-# Time-stamp: <03/04/22 22:34:02 smulloni>
-# $Id: __init__.py,v 1.9 2003/04/23 02:36:37 smulloni Exp $
+# Time-stamp: <03/04/23 17:57:46 smulloni>
+# $Id: __init__.py,v 1.10 2003/04/23 21:58:33 smulloni Exp $
 
 ########################################################################
 #  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>
@@ -63,6 +63,7 @@ def cleanUser(connUser):
 
     del _users[connUser]
     if _connections.has_key(connUser):
+        _connections[connUser].close()
         del _connections[connUser]
 
 def getConnection(connUser):
