@@ -62,6 +62,13 @@ Instances are obtained, not by directly invoking the PyDO class's
 constructor, but by calling one of various class methods, discussed
 below, that return single instances or lists thereof.
 
+PyDO is not an attempt to model all of SQL or its relational model.
+Its focus is on modelling those relations that tend to be both
+selectable and updateable, namely, tables.  Since PyDO does not
+provide a complete abstraction layer over SQL, it is entirely
+appropriate for PyDO-generated queries to be mixed with raw SQL
+queries in real applications (although that may be hidden in your own
+abstraction layer).
 
 Defining Table Classes
 ----------------------
@@ -401,6 +408,21 @@ To delete many rows at once, use the class method ``deleteSome()``::
 The parameters accepted are again the same as for ``getSome())``,
 except for ``order``, ``limit``, and ``offset``, and the return value
 is the number of affected rows.
+
+Python and SQL Data Types
++++++++++++++++++++++++++
+
+The marshalling of SQL datatypes into Python is entirely left to the
+DBAPI drivers which underlie PyDO.  Ideally, the reverse would also be
+true, but PyDO drivers are able to perform some conversion where the
+DBAPI drivers fail to (e.g., this is necessary to handle
+``mx.DateTime`` in the ``psycopg`` driver when using ``psycopg1``).
+PyDO also includes some typewrapper classes -- ``DATE``,
+``TIMESTAMP``, ``BINARY``, and ``INTERVAL`` -- which can be used for
+updates to coerce data to the appropriate SQL type.  The main feature
+of these wrapper classes is that PyDO knows how to unwrap them, so
+that after an update the column in question will contain the wrapped
+value, not the wrapper instance itself.
 
 
 Joins

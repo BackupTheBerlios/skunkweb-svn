@@ -693,4 +693,4 @@ def arrayfetch(objs, *args):
 
     
 
-__all__=['PyDO']
+__all__=['PyDO', 'arrayfetch']
