@@ -7,6 +7,7 @@ from PyDO.dbi import GetConnection
 from PyDO.field import Field
 from PyDO.exceptions import PyDOError
 from PyDO.operators import *
+from PyDO.log import debug
 
 class _metapydo(type):
     """metaclass for _pydobase.
@@ -166,6 +167,41 @@ class PyDO(dict):
             return cls(fieldData)
         return cls.getUnique(**fieldData)
     new=classmethod(new)
+
+
+    def _matchUnique(cls, kw):
+        """return a tuple of column names that will uniquely identify
+        a row given the choices from kw
+        """
+        for unique in cls._unique:
+            if isinstance(unique, (unicode,str)):
+                if kw.get(unique)!=None:
+                    return (unique,)
+            elif isinstance(unique, (list,tuple)):
+                for u in unique:
+                    if not kw.has_key(u):
+                        break
+                else:
+                    return unique
+    _matchUnique=classmethod(_matchUnique)
+
+    def _uniqueWhere(cls, conn, kw):
+        """given a connection and kw, using _matchUnique, generate a
+        where clause to select a unique row.
+        """
+        unique = cls._matchUnique(kw)
+        debug(unique)
+        if not unique:
+            raise ValueError, 'No way to get unique row! %s %s' % \
+                  (str(kw), unique)
+        converter=conn.getConverter()        
+        if len(unique)==1:
+            sql=str(EQ(FIELD(unique[0]), kw[unique[0]], converter=converter))
+        else:
+            sql=str(AND(converter=converter, *[EQ(FIELD(u), kw[u]) for u in unique]))
+        return sql, converter.values
+    _uniqueWhere=classmethod(_uniqueWhere)
+    
     
     def getUnique(cls, **fieldData):
         """ Retrieve one particular instance of this class.
@@ -174,7 +210,6 @@ class PyDO(dict):
         and return a data class instance representing said row or None
         if no row was retrieved.
         """
-                         
         cls._validateFields(fieldData)
         unique = cls._matchUnique(fieldData)
         conn = cls.getDBI()
@@ -505,39 +540,6 @@ class PyDO(dict):
     
     
 
-    def _matchUnique(cls, kw):
-        """return a tuple of column names that will uniquely identify
-        a row given the choices from kw
-        """
-        for unique in cls._unique:
-            if isinstance(unique, str):
-                if kw.has_key(unique) and kw[unique] is not None:
-                    return (unique,)
-            elif isinstance(unique, tuple):
-                for u in unique:
-                    if not kw.has_key(u):
-                        break
-                else:
-                    return unique
-    _matchUnique=classmethod(_matchUnique)
-
-    def _uniqueWhere(cls, conn, kw):
-        """given a connection and kw, using _matchUnique, generate a
-        where clause to select a unique row.
-        """
-        unique = cls._matchUnique(kw)
-        if not unique:
-            raise ValueError, 'No way to get unique row! %s %s' % (
-            str(kw), unique)
-        
-        where = []
-        values = []
-        for u in unique:
-            lit, val = conn.sqlStringAndValue(kw[u], u, cls.dbColumns[u])
-            where.append("%s = %s" % (u, lit))
-            values.append(val)
-        return ' AND '.join(where), values
-    _uniqueWhere=classmethod(_uniqueWhere)
 
 
 def _tupleize(item):
