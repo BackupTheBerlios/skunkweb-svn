@@ -1,7 +1,7 @@
 
   * drivers (no new ones for first release)
     - mysql needs type wrapper converters, connection cache, test improvements
-  * connection caching and pooling -- test, refine
+  * connection caching and pooling -- refactor
   * docs
   * tests
   * first release
@@ -46,7 +46,9 @@ and tests added.
 I'm using Python 2.4 constructs now -- decorators and generator
 expressions.
 
+--
 
+Refactoring of pools is underway; needs to be finalized, tested, documented.
 
 
 ..
