@@ -1,4 +1,4 @@
-# $Id: loader.py,v 1.9 2003/05/01 20:45:53 drew_csillag Exp $
+# $Id: loader.py,v 1.10 2003/11/17 16:47:45 smulloni Exp $
 # Time-stamp: <03/02/08 19:16:23 smulloni>
 
 ########################################################################
@@ -147,6 +147,11 @@ class Product:
             libdir=normpath2('%s/%s' % (self.file, self.libs))
             if os.path.exists(libdir) and libdir not in sys.path:
                 sys.path.append(libdir)
+        # if using Python 2.3 or better, using zipimport
+        elif self.format=='.zip' and sys.version_info >=(2,3):
+            libdir='%s/%s' % (self.file, self.libs)
+            sys.path.append(libdir)
+            newfs=self.__fsclass(self.file, root=self.docroot)
         else:
             newfs=self.__fsclass(self.file, root=self.docroot)
             libfs=self.__fsclass(self.file, root=self.libs)
