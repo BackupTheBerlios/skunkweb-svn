@@ -333,6 +333,17 @@ Order, Limit and Offset
         an integer
 
 
+Refreshing An Instance
+++++++++++++++++++++++
+
+If you have reason to believe that the data you have for an object is
+inaccurate or out of date, you can refresh it by calling
+``myObj.refresh()``, as long as the object has uniqueness constraints
+so it is possible to get the unique row to which it corresponds.
+
+
+
+
 Inserts, Updates, and Deletes
 -----------------------------
 
@@ -344,9 +355,10 @@ To insert a new record in the database and create the corresponding
    >>> subscription
    {'email' : 'alvin@krinst.org', 'magazine' : 'NYRB'}
 
-If the object has a sequenced field and you want to get the default
-value for it rather than specifying an out-of-sequence value, pass the
-keyword argument ``refetch`` with a true value::
+If the object has a field which will acquire a default non-null value
+even though you haven't specified a value for it, PyDO will refetch it
+for you of you pass the additional keyword argument ``refetch`` with a
+true value::
 
    >>> poem=Sonnet.new(refetch=True,
                        title='Anguished Parsnips',
@@ -354,14 +366,44 @@ keyword argument ``refetch`` with a true value::
    >>> poem.id
    456740
 
+This is equivalent to calling ``refresh()`` after ``new()``, and also
+requires that a uniqueness constraint be been declared for the class.
+
 Updating an instance has already been described::
  
    >>> poem.title='Sayings of the Robo-Rabbi'
 
 It is also possible to update potentially many rows at once with the
-class method ``updateSome``::
+class method ``updateSome()``::
 
-   >>> # TBD   
+   >>> Article.updateSome(dict(slug="nonsense"), 
+   ...                    LT(FIELD("created"),
+   ...                       CONSTANT("CURRENT_TIMESTAMP")),
+   ...                    author='Smullyan')
+   6
+  
+The first argument to ``updateSome()`` is a dictionary of values to
+set for affected rows; remains positional and keyword args accept the
+same arguments as ``getSome()`` (with the exception of ``order``,
+``limit``, and ``offset`` which wouldn't make sense in this context).
+The return value is the number of affected rows.
+
+To delete an instance, call the instance method ``delete()``::
+
+  >>> Article.getUnique(id=44).delete()
+
+The method returns nothing; the instance in question is marked as
+immutable.
+
+To delete many rows at once, use the class method ``deleteSome()``::
+
+  >>> Article.deleteSome(LT(FIELD("created"), 
+  ...                       CONSTANT("CURRENT_TIMESTAMP")),
+  ...                    author="Grisby Holloway")
+
+The parameters accepted are again the same as for ``getSome())``,
+except for ``order``, ``limit``, and ``offset``, and the return value
+is the number of affected rows.
 
 
 Joins

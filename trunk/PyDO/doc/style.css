@@ -9,13 +9,19 @@ Default cascading style sheet for the HTML output of Docutils.
 */
 
 body {
-  background-color: #eeeeee;
-  font-family: Arial, sans-serif;
+  margin-top: 5px;
+  margin-left: 100px;
+  margin-right: 100px;
+  
+  padding: 0;
+  border: 0;
+  color: #530;
+  font: 11pt verdana, "Bitstream Vera Sans", geneva, arial, helvetica, helve, sans-serif; 
 }
 
-em {
+/* em {
   font-family: Times New Roman, Times, serif;
-}
+}*/
 
 li {
   list-style-type: circle;
@@ -29,7 +35,7 @@ a.toc-backref {
   color: black }
 
 a:hover {
-  background-color: #cccccc;
+  /* background-color: #cccccc; */
 }
 
 cite {
@@ -105,14 +111,15 @@ div.topic {
   margin: 2em }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: Helvetica, Arial, sans-serif;
-  border: thin solid black;
-  -moz-border-radius: 8px;
+  /* font-family: Helvetica, Arial, sans-serif; */
+  /* border: thin solid black; */
+  /* -moz-border-radius: 4px; */
   padding: 4px;
+  /* background-color: lightgrey; */
  }
 
-h1 {
-  background-color: #444499;
+/* h1 {
+  background-color: lightgrey;
   border: medium solid black;
   color: #ffffff;
 }
@@ -127,13 +134,14 @@ h3, h4, h5, h6 {
   background-color: #cccccc;
   color: #000000;
 }
+*/
 
 h1.title {
   text-align: center;
-  background-color: #444499;
+  /* background-color: #444499; */
   color: #eeeeee;
-  border: thick solid black;
-  -moz-border-radius: 20px;
+  /* border: thick solid black; */
+  /* -moz-border-radius: 20px; */
  }
 
 h2.subtitle {
@@ -189,7 +197,7 @@ pre.line-block {
 pre.literal-block, pre.doctest-block {
   margin-left: 2em ;
   margin-right: 2em ;
-  background-color: #ffffff;
+  background-color: #EEE;
   border: thin black solid;
   padding: 5px;
 }
@@ -268,7 +276,3 @@ ul.auto-toc {
 .htmlstring {color: #006600;}
 .htmlattr {color: #000000;}
 
-.stmlfunction {color: #000077; font-weight: bold}
-.stmlattr {color: #000000;}
-.stmlstring {color: #006600;}
-.stmlexpr {color: #004444;}
