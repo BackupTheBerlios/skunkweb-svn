@@ -1,0 +1,64 @@
+# -*-python-*-
+# $Id: bootloader.py.in,v 1.9 2003/05/01 20:45:55 drew_csillag Exp $
+# Time-stamp: <03/04/18 12:52:53 smulloni>
+#  
+#  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>
+#  
+#      You may distribute under the terms of either the GNU General
+#      Public License or the SkunkWeb License, as specified in the
+#      README file.
+#   
+########################################################################
+import confvars as _c
+SkunkRoot = _c.SKUNK_ROOT
+DEFAULT_CONFIG_FILE_NAME = _c.DEFAULT_CONFIG_FILE_NAME
+
+_servicesRoot = _c.SERVICES_ROOT
+_pylibsRoot = _c.PYLIBS_ROOT
+
+#handle if we've not been run through configure
+if DEFAULT_CONFIG_FILE_NAME[0] == '@': #not populated by configure
+    DEFAULT_CONFIG_FILE_NAME = 'sw.conf'
+
+if SkunkRoot[0] == '@':
+    SkunkRoot = '/usr/local/skunk'
+
+def init(configFiles, SkunkRoot):
+    # necessary for restart
+    import vfs; vfs.importer.uninstall()
+    import ConfigLoader
+    import KickStart
+    #get the configuration module
+    from SkunkWeb import Configuration
+    #set default for skunkroot
+    Configuration.mergeDefaults(SkunkRoot = SkunkRoot)
+
+    #do stupid function to import modules so our module snapshot will be
+    #complete since we have to grab it before the configuration is loaded
+    #but would otherwise have to import SkunkWeb.Server to get everything
+    def _stupidfunc():
+        import sys
+        import Logger, traceback, signal, LogObj, pwd, grp
+        from SocketMan.SocketMan import SocketMan
+        mods = sys.modules.keys() + ['SkunkWeb.Server']
+        mods.sort()
+        return mods
+    
+    mods = _stupidfunc()
+
+    #load config files
+    for c in configFiles:
+        ConfigLoader.loadConfigFile(c, KickStart.CONFIG_MODULE)
+
+    Configuration.mergeDefaults(_config_files_ = configFiles,
+                                SkunkWebVersion = _c.SKUNKWEB_VERSION)
+    return mods
+
+def load():
+    from SkunkWeb import Configuration, LogObj, ServiceRegistry, Hooks 
+    for serviceName in Configuration.services:
+	LogObj.LOG("Loading service %s" % serviceName)
+	__import__(serviceName)
+    ServiceRegistry.debugRegisteredServices(Configuration.initialDebugServices)
+    Hooks.ServerStart()
+

@@ -1,0 +1,39 @@
+#  
+#  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>
+#  
+#      You may distribute under the terms of either the GNU General
+#      Public License or the SkunkWeb License, as specified in the
+#      README file.
+#   
+prefix          = @prefix@
+doc_prefix      = $(prefix)/doc
+
+LYNX=@LYNX@
+LATEX=@LATEX@
+PDFLATEX=@PDFLATEX@
+DVIPS=@DVIPS@
+PYTHON=@PYTHON@
+
+#
+# Who to install as and what modes to set
+owner		= @OWNER@
+group		= @GROUP@
+dirmode		= 0755
+confmode	= 0640
+execmode	= 0755
+
+# Commands used
+INSTALL		= @INSTALL@ -o $(owner) -g $(group)
+INSTALL_DATA	= @INSTALL_DATA@ -o $(owner) -g $(group)
+
+all:
+
+SkunkWebIPC10.dvi: SkunkWebIPC10.tex SkunkWebIPC10.bib
+	$(LATEX) SkunkWebIPC10
+	bibtex SkunkWebIPC10
+	$(LATEX) SkunkWebIPC10
+	$(LATEX) SkunkWebIPC10
+
+clean: 
+	-rm -f SkunkWebIPC10.aux SkunkWebIPC10.bbl SkunkWebIPC10.blg
+	-rm -f SkunkWebIPC10.dvi SkunkWebIPC10.log
