@@ -14,7 +14,7 @@ def _initDB():
 
 base.connectionAlias='sqlitetest'    
 
-initAlias('sqlitetest', 'sqlite', SQLITE_DB, pool=True, autorelease=False, verbose=True)        
+initAlias('sqlitetest', 'sqlite', SQLITE_DB, pool=True, verbose=True)        
 
 if __name__=='__main__':
     _initDB()

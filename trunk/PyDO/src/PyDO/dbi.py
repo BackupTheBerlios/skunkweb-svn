@@ -21,7 +21,6 @@ class DBIBase(object):
                  connectArgs,
                  connectFunc,
                  pool=None,
-                 autorelease=False,
                  verbose=False):
         """
         constructor.
@@ -29,17 +28,11 @@ class DBIBase(object):
           DBAPI driver.
         * connectFunc is the connect function from the DBAPI module.
         * pool is a connection pool instance.
-        * autorelease is whether or not to release connections
-          automatically at the close of a transaction.
-          This only has meaning for the case when a pool is not in use
-          (when using a pool, a connection is released to the pool
-           at the end of a transaction anyway).
         * verbose is whether or not to log the sql being executed.
         """
         self.connectArgs=connectArgs
         self.connectFunc=connectFunc        
         self.pool=pool
-        self.autorelease=autorelease
         self.verbose=verbose
         self._local=local()
 
@@ -79,14 +72,14 @@ class DBIBase(object):
     def commit(self):
         """commits a transaction"""
         self.conn.commit()
-        if self.pool or self.autorelease:
+        if self.pool:
             # release connection
             del self.conn
 
     def rollback(self):
         """rolls back a transaction"""
         self.conn.rollback()
-        if self.pool or self.autorelease:
+        if self.pool:
             # release connection
             del self.conn
 
@@ -124,7 +117,7 @@ class DBIBase(object):
             return c.rowcount
         res=self._convertResultSet(c.description, resultset, qualified)
         c.close()
-        if self.autocommit and (self.pool or self.autorelease):
+        if self.autocommit and self.pool:
             # release connection
             del self.conn
         return res
@@ -205,10 +198,10 @@ def _real_connect(connfunc, connargs):
     else:
         return connfunc(connargs)
 
-def _connect(driver, connectArgs, pool=None, autorelease=False, verbose=False):
+def _connect(driver, connectArgs, pool=None, verbose=False):
     if isinstance(driver, str):
         driver=_get_driver_class(driver)
-    return driver(connectArgs, pool, autorelease, verbose)
+    return driver(connectArgs, pool, verbose)
 
 def _import_a_class(fqcn):
     lastDot=fqcn.rfind('.')   
@@ -233,7 +226,7 @@ def _get_driver_class(name):
         return cls
     return _loadedDrivers[name]
              
-def initAlias(alias, driver, connectArgs, pool=None, autorelease=False, verbose=False):
+def initAlias(alias, driver, connectArgs, pool=None, verbose=False):
     """initializes a connection alias with the stated connection arguments.
     
     It can cause confusion to let this be called repeatedly; you might
@@ -250,7 +243,6 @@ def initAlias(alias, driver, connectArgs, pool=None, autorelease=False, verbose=
     data=dict(driver=driver,
               connectArgs=connectArgs,
               pool=pool,
-              autorelease=autorelease,
               verbose=verbose)
     _connlock.acquire()
     try:

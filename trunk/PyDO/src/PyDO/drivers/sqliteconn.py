@@ -83,10 +83,10 @@ class SqliteDBI(DBIBase):
    # sqlite uses an auto increment approach to sequences
    auto_increment=True
 
-   def __init__(self, connectArgs, pool=None, autorelease=False, verbose=False):
+   def __init__(self, connectArgs, pool=None, verbose=False):
       if pool and not hasattr(pool, 'connect'):
          pool=ConnectionPool()
-      super(SqliteDBI, self).__init__(connectArgs, sqlite.connect, pool, autorelease, verbose)
+      super(SqliteDBI, self).__init__(connectArgs, sqlite.connect, pool, verbose)
    
    def getConverter(self):
       return SqliteConverter(self.paramstyle)
