@@ -15,12 +15,15 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: Date.py,v 1.1 2001/08/05 15:01:01 drew_csillag Exp $
+# $Id: Date.py,v 1.2 2001/12/20 17:35:34 drew_csillag Exp $
 
 import types
 import string
 import time
-import DateTime
+try:
+    from mx import DateTime
+except:
+    import DateTime
 from Format import isDateTime
 import DateTime.ISO  # to bypass LazyModule and save us...
 _parseDate = DateTime.ISO.ParseDateTime

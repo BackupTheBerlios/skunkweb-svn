@@ -16,9 +16,12 @@
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
 """miscellaneous time routines"""
-#$Id: TimeUtil.py,v 1.1 2001/08/05 15:00:59 drew_csillag Exp $
+#$Id: TimeUtil.py,v 1.2 2001/12/20 17:35:34 drew_csillag Exp $
 
-import DateTime
+try:
+    from mx import DateTime
+except:
+    import DateTime
 import sys
 import time
 import types
