@@ -49,7 +49,7 @@ to <tt>'localhost'</tt>.</li>
 </ul>
 
 """
-# $Id: MailServices.py,v 1.1 2001/08/05 15:00:11 drew_csillag Exp $
+# $Id: MailServices.py,v 1.2 2002/06/18 20:25:06 drew_csillag Exp $
 
 import smtplib
 import socket
@@ -138,8 +138,7 @@ def sendmail_smtp ( to_addrs, subj, msg,
             errs = conn.sendmail ( from_addr, to_addrs, msg )
         except smtplib.SMTPException, val:
             # Log, in case the template catches the exception
-            WARN ( 'URL %s: sendmail: %s' % 
-                      ( AED._session._request.uri, str(val) ) )
+            WARN ( 'sendmail: %s' % str(val)  )
 
             # Raise the error
             raise MailError, 'error while sending mail: %s' % str(val)
