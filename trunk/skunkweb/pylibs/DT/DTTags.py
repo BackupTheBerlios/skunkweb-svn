@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: DTTags.py,v 1.7 2002/06/07 14:46:09 drew_csillag Exp $
+# $Id: DTTags.py,v 1.8 2003/04/07 16:32:09 smulloni Exp $
 # Time-stamp: <2001-04-24 17:11:43 drew>
 ########################################################################
 
@@ -34,8 +34,11 @@ import DTCompilerUtil
 import DTCommon
 from SkunkExcept import *
 import DTExcept
+import re
 
 ValFmtRgy=DTCommon.ValFmtRgy
+
+
 
 class DTTag:
     """
@@ -636,6 +639,9 @@ class SpoolTag(DTTag):
         codeout.write(indent, '__h.OUTPUT = %s' % oldout)
         codeout.write(indent, 'del %s' % oldout)
 
+
+_splitter=re.compile(r', ?')
+
 class ImportTag(DTTag):
     def __init__(self):
         DTTag.__init__ ( self, 'import', isempty=1,  
@@ -658,8 +664,15 @@ class ImportTag(DTTag):
         if oargs['items'] != None:
             items = DTCompilerUtil.checkName('import', 'items', args['items'],
                                              oargs['items'])
-            codeout.write(indent, 'from %s import %s%s' % (
-                module, string.join(string.split(items),','), asStr))
+            # allow items to be separated by commas or spaces
+            if ',' in items:
+                formattedItems=','.join(_splitter.split(items))
+            else:
+                formattedItems=','.join(items.split())
+            codeout.write(indent,
+                          'from %s import %s%s' % (module,
+                                                   formattedItems,
+                                                   asStr))
         else:
             codeout.write(indent, 'import %s%s' % (module, asStr))
 
@@ -692,6 +705,9 @@ class DocTag ( GenericCommentTag ):
 
 ########################################################################
 # $Log: DTTags.py,v $
+# Revision 1.8  2003/04/07 16:32:09  smulloni
+# the import tag now accepts comma-separated items.
+#
 # Revision 1.7  2002/06/07 14:46:09  drew_csillag
 # * added documentation for genCode in DTTag.
 # * added meta argument to genCode methods of the for, if, while,
