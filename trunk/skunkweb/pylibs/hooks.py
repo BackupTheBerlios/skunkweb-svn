@@ -1,5 +1,5 @@
-# Time-stamp: <02/11/22 17:29:36 smulloni>
-# $Id: hooks.py,v 1.2 2002/11/25 18:13:49 smulloni Exp $
+# Time-stamp: <03/03/06 13:47:12 smulloni>
+# $Id: hooks.py,v 1.3 2003/03/06 18:55:08 smulloni Exp $
 
 ########################################################################
 #  
@@ -23,12 +23,14 @@
 ########################################################################
 
 try:
-    list
+    object
 except NameError:
-    from UserList import UserList as list
+    from UserList import UserList as _list
+else:
+    _list=list
 from fnmatch import fnmatchcase
 
-class Hook(list):
+class Hook(_list):
     def __call__(self, *args, **kw):
         for i in self:
             ret = i(*args, **kw)
@@ -106,15 +108,3 @@ class SearchablePairList:
         else:
             self.orderedPairs.insert(index, (key, value))
 
-########################################################################
-# $Log: hooks.py,v $
-# Revision 1.2  2002/11/25 18:13:49  smulloni
-# hooks now uses list rather than UserList in Python 2.2; formlib tests
-# revised so as not to "default" and not "value"; pre-working version of
-# dispatcher.
-#
-# Revision 1.1  2002/02/14 02:58:25  smulloni
-# moved hooks into a pylib; added some logging to templating handler, and minor fix
-# to web service.
-#
-########################################################################
