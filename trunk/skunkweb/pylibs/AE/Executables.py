@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-#$Id: Executables.py,v 1.9 2002/07/31 18:49:57 drew_csillag Exp $
+#$Id: Executables.py,v 1.10 2002/08/01 16:50:53 drew_csillag Exp $
 import sys
 import cStringIO
 import copy
@@ -65,7 +65,8 @@ class PythonExecutable:
         namespace['ReturnValue'] = Exceptions.ReturnValue
         namespace.update(auxVars)
         namespace.update(argDict)
-        namespace['__name__'] = '__main__'
+        if self.compType != DT_DATA:
+            namespace['__name__'] = '__main__'
         self.namespace = namespace
         return namespace
     
