@@ -12,7 +12,6 @@ class DBIBase(object):
     """base class for db connection wrappers.
     """
     paramstyle='format'
-    autocommit=False
     # default to postgresql style for sequences,
     # out of sheer postgresql bigotry. 
     auto_increment=False
@@ -425,13 +424,18 @@ class ConnectionPool(object):
             # psycopg 2 doesn't seems to support autocommit, which
             # seems bogus to me...
             pass
+
         
 
     def onHandOut(self, realConn):
         """any test you want to perform on a cached (i.e., not newly
         connected) connection before giving it out.  If the connection
         isn't good, return False"""
-        return not realConn.closed
+        if hasattr(realConn, 'closed'):
+            return not realConn.closed
+        if hasattr(realConn, 'open'):
+            return realConn.open
+        return 1
         
 
 

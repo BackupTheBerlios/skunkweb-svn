@@ -9,7 +9,7 @@ from PyDO.exceptions import PyDOError
 import MySQLdb
 
 class MysqlDBI(DBIBase):
-
+    auto_increment=True
     def __init__(self, connectArgs, pool=None, verbose=False):
         if pool and not hasattr(pool, 'connect'):
             pool=ConnectionPool()
