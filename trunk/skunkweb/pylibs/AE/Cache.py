@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-#$Id: Cache.py,v 1.14 2003/04/03 15:12:50 drew_csillag Exp $
+#$Id: Cache.py,v 1.15 2003/04/19 14:19:35 smulloni Exp $
 
 #### REMINDER; defer time is the stampeding herd preventer that says
 #### Gimme a bit of time to render this thing before you go ahead and do it
@@ -47,7 +47,7 @@ COMPONENT_CACHEFILE_VERSION = 1
 Configuration=cfg.Configuration
 
 #config variables
-Configuration._mergeDefaultsKw(
+Configuration.mergeDefaults(
     documentRoot = '/usr/local/skunk/docroot',
     compileCacheRoot = '/usr/local/skunk/compileCache',
     componentCacheRoot = '/usr/local/skunk/compCache',
@@ -531,6 +531,9 @@ def clearCache( name, arguments, matchExact = None ):
 
 ########################################################################
 # $Log: Cache.py,v $
+# Revision 1.15  2003/04/19 14:19:35  smulloni
+# changes for scopeable
+#
 # Revision 1.14  2003/04/03 15:12:50  drew_csillag
 # dded runOutOfCache and dontCacheSource
 # 	options

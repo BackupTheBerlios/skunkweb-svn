@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: MsgCatalog.py,v 1.2 2002/07/15 15:07:11 smulloni Exp $
+# $Id: MsgCatalog.py,v 1.3 2003/04/19 14:19:35 smulloni Exp $
 # Time-stamp: <01/04/26 14:56:47 smulloni>
 ########################################################################
 
@@ -23,7 +23,7 @@ import re
 import cfg
 from SkunkExcept import SkunkStandardError
 
-cfg.Configuration._mergeDefaultsKw(
+cfg.Configuration.mergeDefaults(
     strictMessageCatalogs = 1,
     DefaultLanguage="eng"
     )
@@ -147,6 +147,9 @@ class MultiLingualCatalog(MessageCatalog):
 
 ########################################################################
 # $Log: MsgCatalog.py,v $
+# Revision 1.3  2003/04/19 14:19:35  smulloni
+# changes for scopeable
+#
 # Revision 1.2  2002/07/15 15:07:11  smulloni
 # various changes: configuration (DOCROOT); new sw.conf directive (File);
 # less spurious debug messages from rewrite; more forgiving interface to
