@@ -72,6 +72,8 @@ class PyDO(dict):
 
     def update(self, adict):
         """ Part of dictionary interface for field access"""
+        if not self.mutable:
+            raise ValueError, "instance isn't mutable!"        
         # call (normally empty) hook for modifying the update
         d=self.onUpdate(adict)
         # Check that the fields in the dictionary are kosher
@@ -92,10 +94,8 @@ class PyDO(dict):
     def _update_raw(self, adict):
         """update self in database with the values in adict"""
 
-        # precondition: fields in adict are already validated
-        
-        if not self.mutable:
-            raise ValueError, "instance isn't mutable!"
+        # precondition: fields in adict are already validated,
+        # and class/instance is mutable
 
         conn=self.getDBI()
         converter=conn.getConverter()
@@ -109,6 +109,31 @@ class PyDO(dict):
         result=conn.execute(sql, values)
         if result > 1:
             raise PyDOError, "updated %s rows instead of 1" % result        
+
+
+    def updateSome(cls, adict, *args, **fieldData):
+        """update possibly many records at once, and return the number updated"""
+        if not cls.mutable:
+            raise ValueError, "class isn't mutable!"
+        if not adict:
+            # vacuous update, just return
+            return
+        cls._validateFields(adict)
+        conn=cls.getDBI()
+        converter=conn.getConverter()
+        sqlbuff=["UPDATE ",
+                 cls.table,
+                 " SET ",
+                 ', '.join(["%s = %s" % (x, converter(y)) \
+                            for x, y in adict.iteritems()])]
+        values=converter.values
+        where, wvals=self._processWhere(conn, args, fieldData)
+        if where:
+            sqlbuff.extend([' WHERE ', where])
+            values+=wvals
+        return conn.execute(''.join(sqlbuff), values)
+    updateSome=classmethod(updateSome)
+
 
     def dict(self):
         return dict(self)
@@ -146,7 +171,6 @@ class PyDO(dict):
         conn=getConnection(cls.connectionAlias)
         return conn
     getDBI=classmethod(getDBI)
-
 
     def commit(cls):
         """ Commit changes to database"""
@@ -259,6 +283,34 @@ class PyDO(dict):
         return 'SELECT %s FROM %s' % (', '.join(cls.getColumns(qualified)),
                                       cls.table)
     _baseSelect=classmethod(_baseSelect)
+
+    def _processWhere(cls, conn, args, fieldData):
+        if args and isinstance(args[0], str):
+            if fieldData:
+                raise ValueError, "cannot pass keyword args when including sql string"
+            sql=args[0]
+            values=args[1:]
+
+            if len(values)==1 and isinstance(values[0], dict):
+                values=values[0]
+        else:
+            cls._validateFields(fieldData)
+            andValues=list(args)
+            converter=conn.getConverter()
+            for k, v in fieldData.items():
+                andValues.append(EQ(FIELD(k), v, converter=converter))
+            andlen=len(andValues)
+            # discard converter.values, we'll regenerate that next
+            converter.reset()            
+            if andlen > 1:
+                sql=repr(AND(converter=converter, *andValues))
+            elif andlen==1:
+                sql=repr(andValues[0])
+            else:
+                sql=''
+            values=converter.values
+        return sql, values
+    _processWhere=classmethod(_processWhere)
     
     def getSome(cls,
                 *args,
@@ -277,31 +329,7 @@ class PyDO(dict):
         offset=fieldData.pop('offset', None)
         
         conn=cls.getDBI()
-
-        if args and isinstance(args[0], str):
-            if fieldData:
-                raise ValueError, "cannot pass keyword args when including sql string"
-            sql=args[0]
-            values=args[1:]
-
-            if len(values)==1 and isinstance(values[0], dict):
-                values=values[0]
-        else:
-            cls._validateFields(fieldData)
-            andValues=list(args)
-            converter=conn.getConverter()
-            for k, v in fieldData.items():
-                    andValues.append(EQ(FIELD(k), v, converter=converter))
-            andlen=len(andValues)
-            converter.reset()            
-            if andlen > 1:
-                sql=repr(AND(converter=converter, *andValues))
-            elif andlen==1:
-                sql=repr(andValues[0])
-            else:
-                sql=''
-            values=converter.values
-            
+        sql, values=cls._processWhere(conn, args, fieldData)
         query=[cls._baseSelect()]
         if sql:
             query.extend(['WHERE', sql])
@@ -318,13 +346,15 @@ class PyDO(dict):
 
     def deleteSome(cls, *args, **fieldData):
         """delete possibly many records at once, and return the number deleted"""
-        raise NotImplementedError, "not done yet"
+        conn=cls.getDBI()
+        sql, values=cls._processWhere(conn, args, fieldData)
+        query=["DELETE FROM %s" % cls.table]
+        if sql:
+            query.extend(['WHERE', sql])
+        return conn.execute(query, values)
     deleteSome=classmethod(deleteSome)
 
-    def updateSome(cls, *args, **fieldData):
-        """update possibly many records at once, and return the number updated"""
-        raise NotImplementedError, "not done yet"
-    updateSome=classmethod(updateSome)
+
 
     def clear(self):
         raise AttributeError, "PyDO classes don't implement clear()"
