@@ -3,19 +3,21 @@
 class Field(object):
     """represents a column in a database table."""
 
-    __slots__=('name', 'dbtype', 'dbname', 'attrs')
+    __slots__=('attrname', 'dbtype', 'dbname', 'attrs')
     
-    def __init__(self, name, dbtype, dbname=None, attrs=None):
-        self.name=name
+    def __init__(self, dbname, dbtype, attrname=None, attrs=None):
+        self.dbname=dbname
         self.dbtype=dbtype
-        if dbname is None:
-            self.dbname=name
+        if attrname is None:
+            self.attrname=dbname
+        else:
+            self.attrname=attrname
         self.attrs=attrs
 
     def __repr__(self):
         return "<%s instance \"%s\" at %x>" % \
                (self.__class__.__name__,
-                self.name,
+                self.dbname,
                 id(self))
 
 

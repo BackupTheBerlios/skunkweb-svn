@@ -8,12 +8,12 @@ from pydo.field import Field
 class _fieldproperty(object):
     __slots__=('_fieldname', '_dbname')
 
-    def __init__(self, fieldname, dbname=None):
-        self._fieldname=fieldname
-        if dbname is None:
-            self._dbname=fieldname
+    def __init__(self, dbname, fieldname=None):
+        self._dbname=dbname
+        if fieldname is None:
+            self._fieldname=dbname
         else:
-            self._dbname=dbname
+            self._fieldname=fieldname
         
     def __get__(self, obj, type_):
         return obj[self._dbname]
@@ -38,12 +38,12 @@ class _fieldset(object):
             self.update(iterable)
 
     def register(self, field):
-        self.attrnames[field.name]=field
+        self.attrnames[field.attrname]=field
         self.dbnames[field.dbname]=field
         self.fields.append(field)
 
     def unregister(self.field):
-        del self.attrnames[field.name]
+        del self.attrnames[field.attrname]
         del self.dbnames[field.dbname]
         self.fields.remove(field)
 
@@ -81,18 +81,12 @@ class _metapydo(type):
         # add attribute access to fields
         if cls.use_attributes:
             for f in cls._fields.fields:
-                if not hasattr(cls, f.name):
-                    setattr(cls, f.name, _fieldproperty(f.name, f.dbname))
+                if not hasattr(cls, f.attrname):
+                    setattr(cls, f.attrname, _fieldproperty(f.dbname, f.attrname))
 
 
-class _pydobase(object):
-    """ Baseclass for PyDO.
-    
-    _pydobase implements most of the generic functionality to make
-    persistent PyDO-instances behave like normal Python
-    classes/object.
-    
-    Not meant to be uses directly. Inherit from PyDO instead.
+class PyDO(object):
+    """ Base class for PyDO data classes.
     """
     __metaclass__=_metapydo
 
@@ -131,7 +125,7 @@ class _pydobase(object):
     _translate_key=classmethod(_translate_key)
 
     def _reverse_translate_key(cls, key):
-        return cls._fields.dbnames[key].name
+        return cls._fields.dbnames[key].attrname
     _reverse_translate_key=classmethod(_reverse_translate_key)
 
     def __getitem__(self, key):
@@ -189,14 +183,6 @@ class _pydobase(object):
         """ Updates underlying database table
         
         Called whenever fields are updated.
-        
-        If you want to have some fields changed automatically on
-        update (e.g. a 'lastmodified' timestamp), you can do that by
-        overriding this method.
-        
-        Don't forget to call the parent's updateValues when you're
-        done, or nothing gets updated at all!
-        
         """
         raise NotImplementedError, "no way to update"
     
@@ -221,8 +207,8 @@ class _pydobase(object):
         return self._dict
 
 
-    def getColumns(cls, qualified):
-        """Returns a list of all columns in this table.
+    def getColumns(cls, qualified=False):
+        """Returns a list of all columns in this table, in no particular order.
 
         If qualifed is true, returns fully qualified column names
         (i.e., table.column)
@@ -230,14 +216,10 @@ class _pydobase(object):
         if not qualified:
             return cls._fields.dbnames.keys()
         else:
-            t=cls.getTable()
+            t=cls.table
             return ["%s.%s" % (t, x) for x in cls._fields.dbnames.iterkeys()]
     getColumns=classmethod(getColumns)
 
-    def getTable(cls):
-        """Returns the name of the underlying database table."""
-        return cls.table
-    getTable=classmethod(getTable)
 
     def _validateFields(cls, adict):
         """a simple field validator that verifies that the keys
@@ -245,20 +227,17 @@ class _pydobase(object):
         for k in adict:
             if k not in cls._fields.dbnames:
                 raise KeyError, "object has no field %s" % k
+    _validateFields=classmethod(_validateFields)
         
-
-class PyDO(_pydobase):
-    """
-    Public base class for user classes.
-
-    [put example here]
-
-
-    """
+    def _baseSelect(cls, qualified=None):
+        return 'SELECT %s FROM %s' % (', '.join(cls.getColumns(qualified)),
+                                      cls.getTable())
+    _baseSelect=classmethod(_baseSelect)
+    
 
     def new(cls, refetch = None, **kw):
         """create and return a new data class instance using the values in
-        kw.  This will also affect an INSERT into the database.  If refetch
+        kw.  This will also effect an INSERT into the database.  If refetch
         is true, effectively do a getUnique on cls.
         """
         kw = cls._convertKW(kw)
@@ -304,23 +283,6 @@ class PyDO(_pydobase):
 
     new=classmethod(new)
     
-    def getColumns(cls, qualified=None):
-        """ Return a list of all columns in this table.
-        
-        If qualified is True, return fully qualified columnnames
-        (i.e. table.column)
-        """
-        if not qualified:
-            return cls.dbColumns.keys()
-        return ['%s.%s' % (cls.table, x) for x in cls.dbColumns.iterkeys()]
-    
-    getColumns=classmethod(getColumns)
-    
-    def getTable(cls):
-        """ Return the name of the underlying database table
-        """
-        return cls.table
-    getTable=classmethod(getTable)
     
     def getUnique(cls, **kw):
         """ Retrieve one particular instance of this class.
@@ -792,20 +754,7 @@ class PyDO(_pydobase):
     ## interface.
     ##
     ##
-    @classmethod
-    def validateFields(cls, dict):
-        """a simple field validator, basically checks to see that
-        you don't try to set fields that don't exist."""
-        for k in dict.keys():
-            if not cls._field_dict.has_key(k):
-                raise KeyError, 'object has no field %s' % k
 
-    @classmethod
-    def _baseSelect(cls, qualified=None):
-        sql='SELECT %s FROM %s' % (', '.join(cls.getColumns(qualified)),
-        cls.table)
-        return sql
-    
     @classmethod
     def _matchUnique(cls, kw):
         """return a tuple of column names that will uniquely identify
