@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: protocol.py,v 1.7 2002/02/14 06:02:11 smulloni Exp $
+# $Id: protocol.py,v 1.8 2002/02/14 06:13:14 smulloni Exp $
 # Time-stamp: <01/05/04 15:57:35 smulloni>
 ########################################################################
 
@@ -131,7 +131,7 @@ class HTTPConnection:
                 else:
                     default=None
             val=self.args.get(k, default)
-            if converter != None:
+            if val != default and converter != None:
                 try:
                     d[k]=converter(val)
                 except:
@@ -371,6 +371,9 @@ def _cleanupConfig(requestData, sessionDict):
 
 ########################################################################
 # $Log: protocol.py,v $
+# Revision 1.8  2002/02/14 06:13:14  smulloni
+# slight tweak -- don't apply converters to default values in extract_args
+#
 # Revision 1.7  2002/02/14 06:02:11  smulloni
 # added extract_args method to CONNECTION object.
 #
