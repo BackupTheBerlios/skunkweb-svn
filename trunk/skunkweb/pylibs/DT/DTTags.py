@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: DTTags.py,v 1.4 2001/08/12 01:03:15 drew_csillag Exp $
+# $Id: DTTags.py,v 1.5 2001/09/21 20:16:31 drew_csillag Exp $
 # Time-stamp: <2001-04-24 17:11:43 drew>
 ########################################################################
 
@@ -216,7 +216,7 @@ class CallTag(DTTag):
             raise DTExcept.DTCompileError ( tag, 
                                   'syntax error in statement "%s"' % stmt )
 
-        codeout.write(indent, stmt)
+        codeout.writemultiline(indent, stmt)
                       
 class ContinueTag(DTTag):
     "just raises the continue exception on invocation"
@@ -679,6 +679,9 @@ class DocTag ( GenericCommentTag ):
 
 ########################################################################
 # $Log: DTTags.py,v $
+# Revision 1.5  2001/09/21 20:16:31  drew_csillag
+# added userdir service (and subsidiary changes to other services) and multi-line ability for <:call:> tag
+#
 # Revision 1.4  2001/08/12 01:03:15  drew_csillag
 # added the as parameter to the import tag
 #

@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: protocol.py,v 1.3 2001/09/04 19:12:57 smulloni Exp $
+# $Id: protocol.py,v 1.4 2001/09/21 20:16:31 drew_csillag Exp $
 # Time-stamp: <01/05/04 15:57:35 smulloni>
 ########################################################################
 
@@ -111,7 +111,7 @@ class HTTPConnection:
         self.responseCookie = Cookie.SimpleCookie()        
 
     def _initURI(self, env):
-        self.uri=env.get('SCRIPT_NAME', '') + env.get('PATH_INFO', '')
+        self.uri=self.realUri = env.get('SCRIPT_NAME', '') + env.get('PATH_INFO', '')
 
     def setContentType(self, type):
         self.responseHeaders['Content-Type'] = type
@@ -322,6 +322,9 @@ def _cleanupConfig(requestData, sessionDict):
 
 ########################################################################
 # $Log: protocol.py,v $
+# Revision 1.4  2001/09/21 20:16:31  drew_csillag
+# added userdir service (and subsidiary changes to other services) and multi-line ability for <:call:> tag
+#
 # Revision 1.3  2001/09/04 19:12:57  smulloni
 # integrated scopeable package into SkunkWeb.
 #
