@@ -5,7 +5,7 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: DTCompilerUtil.py,v 1.8 2003/07/16 18:12:37 smulloni Exp $
+# $Id: DTCompilerUtil.py,v 1.9 2003/07/18 18:21:49 smulloni Exp $
 # Time-stamp: <01/04/12 13:13:08 smulloni>
 ########################################################################
 import os
@@ -134,10 +134,6 @@ def genCodeNode(indent, codeout, tagreg, children, meta):
 
 def genCodeChild ( indent, codeout, tagreg, thing, meta ):
     if type(thing) == types.StringType:
-        # XXX experiment by Roman - do not write empty strings
-        #
-        # XXX commented back out, need to hack it later
-        #if string.strip ( thing ):
         codeout.write(indent, '')
         codeout.write(indent, '########################################')
         codeout.write(indent, '__h.OUTPUT.write(%s)' %
