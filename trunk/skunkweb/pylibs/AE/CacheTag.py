@@ -8,20 +8,23 @@
 """
 Tag cache - description???
 """
-# $Id: CacheTag.py,v 1.2 2003/05/01 20:45:58 drew_csillag Exp $
+# $Id: CacheTag.py,v 1.3 2003/12/30 03:30:57 smulloni Exp $
 
 from CommonStuff import *
 from DT import DTExcept
 
 # The required modules
-from Date import TimeUtil
+#from Date import TimeUtil
+from skunk.date import timeutil
 import time
 
-class CacheTag( DTTag ):
+class CacheTag(DTTag):
     """the <:cache:> tag"""
     def __init__(self):
-        DTTag.__init__ ( self, 'cache', isempty=1,
-                         modules = [ TimeUtil, time ] )
+        DTTag.__init__ (self,
+                        'cache',
+                        isempty=1,
+                        modules = [timeutil, time])
 
     def genCode(self, indent, codeout, tagreg, tag):
         DTCompilerUtil.tagDebug(indent, codeout, tag)
