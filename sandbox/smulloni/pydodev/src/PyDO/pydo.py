@@ -7,7 +7,6 @@ from PyDO.dbi import getConnection
 from PyDO.field import Field
 from PyDO.exceptions import PyDOError
 from PyDO.operators import *
-from PyDO.log import debug
 
 class _metapydo(type):
     """metaclass for _pydobase.
@@ -217,7 +216,6 @@ class PyDO(dict):
         where clause to select a unique row.
         """
         unique = cls._matchUnique(kw)
-        debug(unique)
         if not unique:
             raise ValueError, 'No way to get unique row! %s %s' % \
                   (str(kw), unique)
