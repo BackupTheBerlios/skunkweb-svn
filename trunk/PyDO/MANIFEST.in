@@ -1,2 +1,3 @@
 include README ChangeLog COPYING LICENSE
-recursive-include tests  *.py *.sql *.sh
+recursive-include tests  *.py *.sql *.sh 
+recursive-include doc *.rst *.html *.css *.py *.sql

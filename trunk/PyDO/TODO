@@ -1,54 +1,33 @@
-  * mysql needs type wrapper converters, connection pool, test improvements
-  * docs -- joins, complete example, type wrappers.
+Needed now:
+
+  * mysql needs type wrapper converters, test improvements
+  * docs -- discuss type wrappers, arrayfetch (when it is ready).
   * tests: many more.  creating PyDO classes within the test might
        be a good idea in many cases.
-  * first release - by the 20th.
 
-Other new features:
-  * introspection (especially, what are the columns of a table?) -- DEFER
-    and hence, generating CREATE TABLE statements (not a huge priority of
-    mine, but someone might use it). -- DEFER
+2nd priority:
+
   * joins could use additional parameters so you could add to the
-    where clause. (?)
-  * array fetch (preliminary version done).
+    where clause, and order, offset, limit.
+  * array fetch (preliminary version done, needs some way of
+    specifying joins other than literal sql, and dealing with all-null
+    objects).
 
-Target for first alpha:
-  * fix mysql; better support for autocommit.
-  * pool should work; if cache isn't declared, what happens?
-  * tests should have better coverage!!!
-  * docs should be almost complete!!!
-
-Other databases to support:
+Other databases to support (eventually):
   * firebird
-  * sqlrelay (I'm particularly interested in this!)
+  * sqlrelay 
   * gadfly (does anyone use this?)
   * maxdb
   * odbc bindings (mxODBC; Drew's pure python version?) 
   * oracle (which adapter?)
   * sybase
 
+Deferred goals:
+  * introspection (especially, what are the columns of a table?) 
+    and hence, generating CREATE TABLE statements (not a huge priority of
+    mine, but someone might use it).
 
-NOTES
------
 
-In the case of postgresql, it should usually be possible to determine
-what sequence is being used by guessing, or by introspection.  Is this
-worth doing?
-
---
-
-I've refactored and documented the inheritance semantics; tests still
-needed.
-
--- 
-
-I'm using Python 2.4 constructs now -- decorators and generator
-expressions.
-
---
-
-I've added "arrayfetch", but have no special syntax yet for expressing
-joins or dealing with NULLs.
 
 
 ..
