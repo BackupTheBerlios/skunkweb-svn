@@ -15,12 +15,12 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: ConfigLoader.py,v 1.5 2002/06/06 00:15:29 smulloni Exp $
+# $Id: ConfigLoader.py,v 1.6 2003/04/18 04:08:22 smulloni Exp $
 # Time-stamp: <01/05/02 15:31:50 smulloni>
 ########################################################################
 
 import os, sys, types
-import scopeable as scope
+import scope #able as scope
 
 class ScopeableConfig(scope.Scopeable):
     # for backwards compatability. This layer
@@ -67,6 +67,9 @@ def loadConfig(codeObj, cfgModuleName):
 
 ########################################################################
 # $Log: ConfigLoader.py,v $
+# Revision 1.6  2003/04/18 04:08:22  smulloni
+# switching to faster Python version of scope
+#
 # Revision 1.5  2002/06/06 00:15:29  smulloni
 # slimmed down Configuration object by keeping globals out of it.
 #
