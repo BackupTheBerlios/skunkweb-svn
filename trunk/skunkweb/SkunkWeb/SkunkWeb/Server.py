@@ -15,10 +15,16 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: Server.py,v 1.2 2001/08/17 16:47:21 drew_csillag Exp $
+# $Id: Server.py,v 1.3 2002/06/05 20:29:20 drew_csillag Exp $
 # Time-stamp: <01/04/16 14:10:32 smulloni>
 ########################################################################
 
+########################################################################
+###IMPORTANT!!!!
+###if you add imports to this module, make sure to update
+###bootloader._stupidfunc (contained in bootloader.init) so that reload
+###will continue to work
+########################################################################
 from SocketMan.SocketMan import SocketMan
 import Configuration
 import LogObj
@@ -146,6 +152,18 @@ svr.moduleSnapshot()
 
 ########################################################################
 # $Log: Server.py,v $
+# Revision 1.3  2002/06/05 20:29:20  drew_csillag
+# 	* SkunkWeb/SkunkWeb/Server.py: added comment at the top to remind
+# 	us that in the event that we add an import, that we add that import
+# 	to _stupidfunc in the bootloader
+#
+# 	* SkunkWeb/SkunkWeb/bootloader.py.in(init): now has some logic
+# 	to produce a true module snapshot that should always do the right
+# 	thing so reload will work
+#
+# 	* SkunkWeb/skunkweb.py.in: adjusted for bootloader change so reload
+# 	should now work properly -- again
+#
 # Revision 1.2  2001/08/17 16:47:21  drew_csillag
 # fixed syntax warning
 #
