@@ -340,6 +340,7 @@ class BindingConverter(object):
             return 'NULL'
         if isinstance(val, (CONSTANT, SET, SQLOperator)):
             return repr(val)
+        val=self.convert(val)        
         if self.paramstyle=='format':
             self._values.append(val)
             return '%s'

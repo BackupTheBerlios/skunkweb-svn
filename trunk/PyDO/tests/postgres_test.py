@@ -1,25 +1,14 @@
-import os
-import random
+from test_base import *
 import subprocess
-import unittest
-import logging
-import sys
-sys.path.append('../src')
-from PyDO import *
 
 POSTGRES_DB="pydotest"
 
-class base(PyDO):
-    connectionAlias="postgrestest"
+base.connectionAlias='postgrestest'
 
-commit=base.commit
-rollback=base.rollback
 
-class PyDOGroup(base):
-    table="pydogroup"
-    fields=(Sequence('id', 'pydogroup_id_seq'),
-            'groupname')
-
+class PyDOGroup(PyDOGroup):
+    fields=(Sequence('id', 'pydogroup_id_seq'),)
+    
     def getUsers(self):
         return self.joinTable('id',
                               'pydouser_pydogroup',
@@ -28,18 +17,8 @@ class PyDOGroup(base):
                               PyDOUser,
                               'id')
 
-class user_group(base):
-    table="pydouser_pydogroup"
-    unique=[('user_id', 'group_id')]
-    fields=('user_id',
-            'group_id')
-
-class PyDOUser(base):
-
-    table='pydouser'
-    fields=(Sequence('id', 'pydouser_id_seq'),
-            'firstname',
-            'lastname')
+class PyDOUser(PyDOUser):
+    fields=(Sequence('id', 'pydouser_id_seq'),)
 
     def getGroups(self):
         return self.joinTable('id',
@@ -52,130 +31,25 @@ class PyDOUser(base):
     def getArticles(self):
         return Article.getSome(creator=self.id, order='created DESC')
 
+class Tests(Tests):
+    def setUp(self):
+        self.Article=Article
+        self.PyDOUser=PyDOUser
+        self.user_group=user_group
+        self.PyDOGroup=PyDOGroup    
 
-class Article(base):
-    table="article"
-    fields=(Sequence('id', 'article_id_seq'),
-            'title',
-            'body',
-            'creator',
-            'created')
-
-
-logging.basicConfig()
-setLogLevel(logging.DEBUG)
+class Article(Article):
+    fields=(Sequence('id', 'article_id_seq'),)
 
 def _initDB():
     script=os.path.join(os.path.dirname(__file__), 'postgres_init.sh')
     p=subprocess.Popen(['/bin/bash', script], stdout=subprocess.PIPE)
     p.communicate()
 
-
-WORDS=('ingot',
-       'plum',
-       'justice',
-       'horticulture',
-       'frog',
-       'appendage',
-       'cultivation',
-       'oyster',
-       'Mr.',
-       'Mrs.',
-       'Ms.',
-       'tense',
-       'laudatory',
-       'infest',
-       'row',
-       'ascend',
-       'cockroach',
-       'ham',
-       'turtle',
-       'overloading',
-       'screeching',
-       'handed',
-       'lost',
-       'purchase',
-       'egg')
-
-def _inventTitle(min_=5, max_=12):
-    val=min(len(WORDS), random.randint(min_, max_))
-    return " ".join(random.sample(WORDS, val)).capitalize()
-
-def _concoctBody():
-    return ". ".join([_inventTitle(5, 50) for x in xrange(random.randint(10, 100))])
-
-
-def _init_data():
-    users=[PyDOUser.new(refetch=1,
-                        firstname='Colin',
-                        lastname='Powell'),
-           PyDOUser.new(refetch=1,
-                        firstname='Richard',
-                        lastname='Clarke'),
-           PyDOUser.new(refetch=1,
-                        firstname='Jacques',
-                        lastname='Chirac'),
-           PyDOUser.new(refetch=1,
-                        firstname='Goldie',
-                        lastname='Hawn')]
-    groups=[PyDOGroup.new(refetch=1,
-                          groupname='ForkLovers'),
-            PyDOGroup.new(refetch=1,
-                          groupname='SpoonLovers'),
-            PyDOGroup.new(refetch=1,
-                          groupname='KnifeLovers'),
-            PyDOGroup.new(refetch=1,
-                          groupname='ChopstickLovers'),
-            PyDOGroup.new(refetch=1,
-                          groupname='HandLovers')]
-
-    # each user joins two groups at random
-    for u in users:
-        for x in random.sample(groups, 2):
-            user_group.new(user_id=u.id, group_id=x['id'])
-
-    articles=[]
-    for u in users:
-        for i in range(random.randint(2, 10)):
-            articles.append(Article.new(refetch=1,
-                                        creator=u.id,
-                                        title=_inventTitle(),
-                                        body=_concoctBody()))
-    commit()
-
-
-class PostgresTest(unittest.TestCase):
-
-    def test_getSome(self):
-        a=Article.getSome(order=['creator', 'id'])
-        self.assert_(len(a))
-        u=PyDOUser.getSome()
-        self.assert_(len(u))
-        a2=[x.getArticles() for x in u]
-        self.assertEqual(sum([len(x) for x in a2]), len(a))
-        
-    def test_delete(self):
-        for article in Article.getSome():
-            article.delete()
-        self.assertEqual(len(Article.getSome()), 0)
-        rollback()
-
-    def test_update(self):
-        for a in Article.getSome(creator=1):
-            a.title="Blah Blah"
-        self.assertEqual(len(Article.getSome(title='Blah Blah')),
-                         len(Article.getSome(creator=1)))
-        rollback()
-
-    def test_join(self):
-        groups=PyDOGroup.getSome()
-        for u in PyDOUser.getSome():
-            u.getGroups()
-
 initAlias('postgrestest', 'psycopg', "dbname=pydotest user=pydotest", verbose=True)        
 
 if __name__=='__main__':
     _initDB()
-    _init_data()
+    init_data(PyDOUser, PyDOGroup, user_group, Article)
     unittest.main()
                         

@@ -4,6 +4,7 @@ import random
 import unittest
 import logging
 import sys
+import time
 sys.path.append('../src')
 from PyDO import *
 
@@ -98,7 +99,10 @@ def _concoctBody():
     return ". ".join([_inventTitle(5, 50) for x in xrange(random.randint(10, 100))])
 
 
-def init_data():
+def init_data(PyDOUser=PyDOUser,
+              PyDOGroup=PyDOGroup,
+              user_group=user_group,
+              Article=Article):
     users=[PyDOUser.new(refetch=1,
                         firstname='Colin',
                         lastname='Powell'),
@@ -138,52 +142,58 @@ def init_data():
     commit()
 
 
-class BaseTest(unittest.TestCase):
-
+class Tests(unittest.TestCase):
+    def setUp(self):
+        self.Article=Article
+        self.PyDOUser=PyDOUser
+        self.user_group=user_group
+        self.PyDOGroup=PyDOGroup
+                 
     def test_getSome(self):
-        a=Article.getSome(order=['creator', 'id'])
+        a=self.Article.getSome(order=['creator', 'id'])
         self.assert_(len(a))
-        u=PyDOUser.getSome()
+        u=self.PyDOUser.getSome()
         self.assert_(len(u))
         a2=[x.getArticles() for x in u]
         self.assertEqual(sum([len(x) for x in a2]), len(a))
         
     def test_delete(self):
-        for article in Article.getSome():
+        for article in self.Article.getSome():
             article.delete()
-        self.assertEqual(len(Article.getSome()), 0)
+        self.assertEqual(len(self.Article.getSome()), 0)
         rollback()
 
     def test_update(self):
-        for a in Article.getSome(creator=1):
+        for a in self.Article.getSome(creator=1):
             a.title="Blah Blah"
-        self.assertEqual(len(Article.getSome(title='Blah Blah')),
-                         len(Article.getSome(creator=1)))
+        self.assertEqual(len(self.Article.getSome(title='Blah Blah')),
+                         len(self.Article.getSome(creator=1)))
         rollback()
 
     def test_join(self):
-        groups=PyDOGroup.getSome()
-        for u in PyDOUser.getSome():
+        groups=self.PyDOGroup.getSome()
+        for u in self.PyDOUser.getSome():
             u.getGroups()
 
     def test_project(self):
-        projection=Article.project(('id', 'title'))
+        projection=self.Article.project(('id', 'title'))
         a=projection.getSome()
         self.assertEqual(len(a),
-                         len(Article.getSome()))
+                         len(self.Article.getSome()))
         self.assertEqual(2, len(projection.getColumns()))
 
 
     def test_time1(self):
-        projection=Article.project(('id', 'created', 'creator'))
+        projection=self.Article.project(('id', 'created', 'creator'))
         a=projection.getSome(LT_EQ(FIELD('created'), mx.DateTime.now()))
 
     def test_time2(self):
-        res=Article.getSome(created=mx.DateTime.now())
+        time.sleep(1)
+        res=self.Article.getSome(created=mx.DateTime.now())
         self.assertEqual(0, len(res))
 
     def test_time3(self):
-        res=Article.getSome(LT(FIELD('created'), mx.DateTime.now()+1))
+        res=self.Article.getSome(LT(FIELD('created'), mx.DateTime.now()+1))
         logging.debug('results: %s', (res,))
         self.assert_(len(res))
         

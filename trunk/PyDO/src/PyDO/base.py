@@ -97,7 +97,7 @@ class _metapydo(type):
         # fields may declare sequences
         for f in cls._fields.itervalues():
             if f.sequence:
-                cls._sequenced.setdefault(f.name, f.sequence)
+                cls._sequenced[f.name]=f.sequence
             if f.unique:
                 cls._unique.add(f.name)
 
