@@ -3,26 +3,10 @@ from PyDO.field import Field
 from PyDO.exceptions import PyDOError
 from PyDO.operators import AND, EQ, FIELD
 from PyDO.dbtypes import unwrap
+from PyDO.utils import _tupleize, _setize
 
 from itertools import izip
 
-def _tupleize(item):
-    """ turns an atom into a tuple with one element,
-    and a non-atom into a tuple"""
-    if isinstance(item, tuple):
-        return item
-    if isinstance(item, (set, frozenset, list)):
-        return tuple(item)
-    return (item,)
-
-def _setize(item):
-    """ turns an atom into a frozenset with one element,
-    and a non-atom into a frozenset"""
-    if isinstance(item, frozenset):
-        return item
-    if isinstance(item, (tuple, set, list)):
-        return frozenset(item)
-    return frozenset((item,))
 
 def _restrict(flds, coll):
     """private method for cleaning a set or dict of any items that aren't

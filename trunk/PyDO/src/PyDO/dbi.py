@@ -6,6 +6,7 @@ import time
 from PyDO.log import *
 from PyDO.operators import BindingConverter
 from PyDO.exceptions import PyDOError
+from PyDO.utils import _strip_tablename, _import_a_class
 
 
 class DBIBase(object):
@@ -175,11 +176,7 @@ class DBIBase(object):
         and sequences/auto_increment for the table in question"""
         raise NotImplementedError
 
-def _strip_tablename(colname):
-    i=colname.rfind('.')
-    if i==-1:
-        return colname
-    return colname[i+1:]
+
 
 _driverConfig = {
     'mysql':       'PyDO.drivers.mysqlconn.MysqlDBI',
@@ -204,20 +201,7 @@ def _connect(driver, connectArgs, pool=None, verbose=False):
         driver=_get_driver_class(driver)
     return driver(connectArgs, pool, verbose)
 
-def _import_a_class(fqcn):
-    lastDot=fqcn.rfind('.')   
-    if lastDot==0:
-        raise ValueError, "unable to import %s" %fqcn
-    if lastDot>0:
-        modName=fqcn[:lastDot]
-        className=fqcn[lastDot+1:]
-        try:
-            module=__import__(modName, globals(), locals(), [className])
-            return getattr(module, className)
-        except (ImportError, AttributeError):
-            raise ValueError, "impossible to import: %s" % fqcn
-    else:
-        raise ValueError, "impossible to import: %s" % fqcn
+
 
 def _get_driver_class(name):
     if not _loadedDrivers.has_key(name):
