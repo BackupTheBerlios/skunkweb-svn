@@ -47,10 +47,10 @@ class DBIBase(object):
             # I don't want to assume that all drivers will like None,
             # or (), or {}, equally when there are no bind variables
             c.execute(sql)
-        resultset=cur.fetchall()
+        resultset=c.fetchall()
         if not resultset:
-            return cur.rowcount
-        res=self._convertResultSet(cur.description, resultset)
+            return c.rowcount
+        res=self._convertResultSet(c.description, resultset)
         c.close()
         return res
 
@@ -71,11 +71,11 @@ class DBIBase(object):
             order= ', '.join(map(do_order, order))
         if order:
             order="ORDER BY %s" % order
-        if limit is not in ("", None):
+        if limit not in ("", None):
             limit="LIMIT %s" % limit
         else:
             limit=""
-        if offset is not in ("", None):
+        if offset not in ("", None):
             offset="OFFSET %s" % offset
         else:
             offset=""
@@ -101,7 +101,7 @@ _aliases= {}
 
 def _connect(driver, connectArgs, cache, verbose):
     if isinstance(driver, str):
-        driver=_get_driver(driver)
+        driver=_get_driver_class(driver)
     return driver(connectArgs, cache, verbose)
 
 def _import_a_class(fqcn):
@@ -153,3 +153,6 @@ def GetConnection(alias):
         conndata['connection']=res
         return res
     return conndata['connection']
+
+
+__all__=['InitAlias', 'GetConnection']

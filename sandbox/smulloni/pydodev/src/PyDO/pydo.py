@@ -45,7 +45,7 @@ class _metapydo(type):
             for name in cls._fields:
                 if not hasattr(cls, name):
                     # a field is also a descriptor
-                    setattr(cls, name, self._fields[name])
+                    setattr(cls, name, cls._fields[name])
 
 
 class PyDO(dict):
@@ -113,7 +113,6 @@ class PyDO(dict):
     def getDBI(cls):
         """return the database interface"""
         conn=GetConnection(cls.connectionAlias)
-        conn.resetQuery()
         return conn
     getDBI=classmethod(getDBI)
 
@@ -201,9 +200,9 @@ class PyDO(dict):
                                       cls.table)
     _baseSelect=classmethod(_baseSelect)
     
-    def class_getSome(cls,
-                      *args,
-                      **fieldData):
+    def getSome(cls,
+                *args,
+                **fieldData):
         """ Retrieve some objects of this particular class.
 
         [todo: examples of use of operators, column-name keyword args,
@@ -216,7 +215,7 @@ class PyDO(dict):
         
         conn=cls.getDBI()
 
-        if isinstance(args[0], str):
+        if args and isinstance(args[0], str):
             if fieldData:
                 raise ValueError, "cannot pass keyword args when including sql string"
             sql=args[0]
@@ -254,6 +253,7 @@ class PyDO(dict):
             return map(cls, results)
         else:
             return []
+    getSome=classmethod(getSome)
 
 ## BELOW ISN'T WORKED ON YET....
 

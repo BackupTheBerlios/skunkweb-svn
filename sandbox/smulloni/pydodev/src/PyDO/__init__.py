@@ -23,3 +23,4 @@ from PyDO.exceptions import *
 from PyDO.field import *
 from PyDO.pydo import *
 from PyDO.operators import *
+from PyDO.dbi import *
