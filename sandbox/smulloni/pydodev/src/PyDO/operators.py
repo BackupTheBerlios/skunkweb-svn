@@ -83,6 +83,7 @@ class SET(object):
 
 
 class SQLOperator(tuple):
+    """A special kind of tuple that knows how to represent itself as a SQL string."""
     def __new__(cls, t, converter=None):
         L=len(t)
         if not (2 <= L):
