@@ -31,27 +31,42 @@ class DBIBase(object):
 
     def conn():
         def fget(self):
-            if hasattr(self._local, 'conn'):
-                return self._local.conn
-            else:
-                c=self._local.conn=self._connect()
+            try:
+                return self._local.connection
+            except AttributeError:
+                # vivify connection
+                c=self._connect()
+                self._local.connection=c
                 return c
-        return fget, None, None, "the underlying db connection"
+
+        def fset(self, c):
+            self._local.connection=c
+
+        def fdel(self):
+            del self._local.connection
+            
+        return fget, fset, fdel, "the underlying db connection"
     conn=property(*conn())
+
+    def swapConnection(self, connection):
+        """switch the connection in use for a given thread with another one"""
+        c=self._local.__dict__.get('connection')
+        self._local.connection=connection
+        return c
         
     def commit(self):
         """commits a transaction"""
         self.conn.commit()
         if self.cache:
             # return connection to cache
-            del self._local.conn
+            del self.conn
 
     def rollback(self):
         """rolls back a transaction"""
         self.conn.rollback()
         if self.cache:
             # return connection to cache
-            del self._local.conn
+            del self.conn
 
     def cursor(self):
         return self.conn.cursor()
@@ -83,6 +98,9 @@ class DBIBase(object):
             return c.rowcount
         res=self._convertResultSet(c.description, resultset, qualified)
         c.close()
+        if self.cache and self.autocommit:
+            # return connection to pool
+            del self.conn
         return res
 
     def _convertResultSet(description, resultset, qualified=False):
@@ -238,7 +256,7 @@ class ConnectionWrapper(object):
 
     def close(self):
         # tell the cache that we are done and can be reused
-        self._cache.release(self, self._args)
+        self._cache.release(self._conn, self._args)
 
     def __del__(self):
         self.close()
@@ -287,6 +305,7 @@ class ConnectionCache(object):
             busy=self._busy[args]
             if free:
                 c=free.popleft()
+                busy.append(c)
             else:
                 lenbusy=len(busy)
                 if max_poolsize>0:

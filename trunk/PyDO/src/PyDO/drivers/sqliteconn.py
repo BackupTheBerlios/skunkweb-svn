@@ -79,7 +79,7 @@ class SqliteConverter(BindingConverter):
     converters=_converters
 
 class SqliteCache(ConnectionCache):
-   def realConnect(self, connectArgs):
+   def real_connect(self, connectArgs):
       return sqlite.connect(**connectArgs)
 
 class SqliteDBI(DBIBase):
@@ -96,7 +96,7 @@ class SqliteDBI(DBIBase):
 
    def _connect(self):
       if self.cache:
-         return cache.connect(self.connectArgs)
+         return self.cache.connect(self.connectArgs)
       return sqlite.connect(**self.connectArgs)
    
    def getAutoIncrement(self, name):
