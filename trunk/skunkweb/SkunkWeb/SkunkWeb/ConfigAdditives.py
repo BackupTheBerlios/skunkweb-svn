@@ -1,5 +1,5 @@
-# $Id: ConfigAdditives.py,v 1.4 2002/03/30 20:05:27 smulloni Exp $
-# Time-stamp: <02/03/30 14:22:41 smulloni>
+# $Id: ConfigAdditives.py,v 1.5 2002/07/15 15:07:10 smulloni Exp $
+# Time-stamp: <02/07/15 11:00:26 smulloni>
 #  
 #  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>,
 #                     Jacob Smullyan <smulloni@smullyan.org>
@@ -22,6 +22,7 @@
 ########################################################################
 
 __all__=['Location',
+         'File',
          'Host',
          'Port',
          'IP',
@@ -42,6 +43,13 @@ def _createMatcher(matcherClass, paramName, paramVal, kids, kw):
 
 def Location(path, **kw):
     return _createMatcher(scope.SimpleStringMatcher,
+                          'location',
+                          path,
+                          None,
+                          kw)
+
+def File(path, **kw):
+    return _createMatcher(scope.RegexMatcher,
                           'location',
                           path,
                           None,
@@ -94,6 +102,11 @@ ServerStart.append(importConfiguration)
 
 ########################################################################
 # $Log: ConfigAdditives.py,v $
+# Revision 1.5  2002/07/15 15:07:10  smulloni
+# various changes: configuration (DOCROOT); new sw.conf directive (File);
+# less spurious debug messages from rewrite; more forgiving interface to
+# MsgCatalog.
+#
 # Revision 1.4  2002/03/30 20:05:27  smulloni
 # added Include directive for sw.conf; fixed IP bug (was being clobbered in sw.conf)
 #

@@ -1,5 +1,5 @@
-# Time-stamp: <02/06/21 16:46:14 smulloni>
-# $Id: rewrite.py,v 1.6 2002/06/21 20:48:38 smulloni Exp $
+# Time-stamp: <02/07/15 09:54:01 smulloni>
+# $Id: rewrite.py,v 1.7 2002/07/15 15:07:10 smulloni Exp $
 
 ########################################################################
 #  
@@ -169,7 +169,8 @@ def _rewritePre(connection, sessionDict):
                 DEBUG(REWRITE, 'survived PostRewrite hook')
             except:
                 logException()
-            del sessionDict['rewriteCurrentRule']
+            if sessionDict.has_key('rewriteCurrentRule'):
+                del sessionDict['rewriteCurrentRule']
             if not Configuration.rewriteApplyAll: break
 
 def _rewritePost(requestData, sessionDict):
@@ -180,7 +181,8 @@ def _rewritePost(requestData, sessionDict):
         DEBUG(REWRITE, 'executing PreRewriteCleanup hook')
         PreRewriteCleanup(requestData, sessionDict)
         DEBUG(REWRITE, 'survived PreRewriteCleanup hook')
-        del sessionDict['rewriteRules']
+        if sessionDict.has_key('rewriteRules'):
+            del sessionDict['rewriteRules']
     except:
         logException()
 
@@ -197,6 +199,11 @@ __initHooks()
 
 ########################################################################
 # $Log: rewrite.py,v $
+# Revision 1.7  2002/07/15 15:07:10  smulloni
+# various changes: configuration (DOCROOT); new sw.conf directive (File);
+# less spurious debug messages from rewrite; more forgiving interface to
+# MsgCatalog.
+#
 # Revision 1.6  2002/06/21 20:48:38  smulloni
 # error-handling tweak.
 #
