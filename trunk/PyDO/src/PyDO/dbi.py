@@ -1,14 +1,19 @@
 from itertools import izip
 from threading import Lock
+from marshal import dumps as marshal_dumps
+from collections import deque
+
 try:
     from threading import local
-except:
-    # not threadsafe in Python 2.3.  Sorry!
+except ImportError:
+    # threading goes out the window
     class local:
         pass
-
+    
 from PyDO.log import *
 from PyDO.operators import BindingConverter
+from PyDO.exceptions import PyDOError
+
 
 class DBIBase(object):
     """base class for db connection wrappers"""
@@ -22,15 +27,31 @@ class DBIBase(object):
         self.cache=cache
         self.verbose=verbose
         self.connectArgs=connectArgs
-        self.conn=self._connect()
+        self._local=local()
+
+    def conn():
+        def fget(self):
+            if hasattr(self._local, 'conn'):
+                return self._local.conn
+            else:
+                c=self._local.conn=self._connect()
+                return c
+        return fget, None, None, "the underlying db connection"
+    conn=property(*conn())
         
     def commit(self):
         """commits a transaction"""
         self.conn.commit()
+        if self.cache:
+            # return connection to cache
+            del self._local.conn
 
     def rollback(self):
         """rolls back a transaction"""
         self.conn.rollback()
+        if self.cache:
+            # return connection to cache
+            del self._local.conn
 
     def cursor(self):
         return self.conn.cursor()
@@ -217,7 +238,7 @@ class ConnectionWrapper(object):
 
     def close(self):
         # tell the cache that we are done and can be reused
-        self._cache.returnToPool(self)
+        self._cache.release(self, self._args)
 
     def __del__(self):
         self.close()
@@ -225,53 +246,100 @@ class ConnectionWrapper(object):
 
 class ConnectionCache(object):
     
-    """ a connection cache that stores one connection per active
-    thread in a thread-local object, and lets connections from dead
-    threads be garbage-collected.  Although thread-safe, this is
-    pretty lame, because it doesn't allow connections to be returned
-    to a pool and reused by different threads. However, that can be
-    added later without too much trouble.... """
-    
-    def __init__(self):
-        self._cache=local().__dict__
+    """ a connection cache/pool """
+    def __init__(self, max_poolsize=0, keep_poolsize=1, delay=0.2, retries=10):
+        # deques of unused connections, keyed by serialized connection args
+        self._free={}
+        # lists of in-use connections, keyed by serialized connection args.
+        # we need real references to these, not just a count.
+        self._busy={}
+        # maximum number of connections to create per connection args;
+        # 0 or a negative value means no maximum
+        self._max_poolsize=max_poolsize
+        # maximum number of connections to keep alive per connection args
+        self._keep_poolsize=keep_poolsize
+        # time to sleep in seconds if max_poolsize connections are in
+        # use before retrying
+        self._delay=delay
+        # number of times to retry in that case
+        self._retries=10
         self._lock=Lock()
 
     def real_connect(self, connectArgs):
         raise NotImplementedError, "subclasses should implement this!"
 
-    def _serialize_args(connectArgs):
-        d=connectArgs.items()
-        d.sort()
-        return d
-    _serialize_args=staticmethod(_serialize_args)
-
     def connect(self, connectArgs):
-        args=self._serialize_args(connectArgs)
+        args=marshal_dumps(connectArgs)
+        self._free.setdefault(args, deque())
+        self._busy.setdefault(args, [])
+        return self._connect(connectArgs,
+                             args,
+                             self._retries)
+
+    def _connect(self, connectArgs, args, retries):
+        """internal method; don't call it"""
+        max_poolsize=self._max_poolsize
+            
+        self._lock.acquire()            
         try:
-            self._lock.acquire()
-            try:
-                c=self._cache[args]
-                if not self.onGive(c):
-                    c=self._cache.connection=self.real_connect(connectArgs)
-            except KeyError:
-                c=self._cache.connection=self.real_connect(connectArgs)
+            # is there a connection available?
+            free=self._free[args]
+            busy=self._busy[args]
+            if free:
+                c=free.popleft()
+            else:
+                lenbusy=len(busy)
+                if max_poolsize>0:
+                    # there is a cap on the number of connections
+                    # we are allowed to create
+                    assert lenbusy <= max_poolsize
+                    if lenbusy==max_poolsize:
+                        # can't create more, must retry or barf
+                        if not retries:
+                            # barf
+                            raise PyDOError, \
+                                  "all connections in use, number of retries: %d" % self._retries
+                        else:
+                            # retry, but get out of the mutex first
+                            c=None
+                    else:
+                        # All are in use and we are allowed to create more.
+                        # Do so.
+                        c=self.real_connect(connectArgs)
+                        busy.append(c)
+                else:
+                    # unlimited headroom, create new connection
+                    c=self.real_connect(connectArgs)
+                    busy.append(c)
+        finally:
+            self._lock.release()
+        if c and self.onHandOut(c):
             return ConnectionWrapper(c, args, self)
-        finally:
-            self._lock.release()
+        else:
+            time.sleep(self._delay)             
+            return self._connect(connectArgs, args, self._delay, retries-1)
 
-    def returnToPool(self, conn):
+    def release(self, conn, args):
+        keep_poolsize=self._keep_poolsize
+        self._lock.acquire()
         try:
-            self._lock.acquire()
-            self.onReturn(conn._conn)
-            del self._cache[args]
+            # do we keep this connection?
+            free=self._free[args]
+            busy=self._busy[args]
+            numconns=len(free)+len(busy)
+            keep=keep_poolsize<numconns
+            busy.remove(conn)
+            if keep:
+                free.append(conn)
+            self.onRelease(conn)
         finally:
             self._lock.release()
 
-    def onReturn(self, realConn):
+    def onRelease(self, realConn):
         """anything you want to do to a connection when it is returned"""
         pass
 
-    def onGive(self, realConn):
+    def onHandOut(self, realConn):
         """any test you want to perform on a cached (i.e., not newly
         connected) connection before giving it out.  If the connection
         isn't good, return False"""

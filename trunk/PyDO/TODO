@@ -28,5 +28,45 @@ an instance now checks _unique.
 
 ---
 
-Make the cache a bit less stupid.
+I'm checking in a completely untested db connection pool.  I'm not
+sure how well it fits with the existing dbi code.  Currently dbi
+instances are cached, not recreated every time getDBI() is called, and
+indeed the dbi is what keeps the cache alive.  To indicate that a
+connection is available for the dbi -- handed out by the cache -- I'm
+putting it in a thread local object -- one per thread.  So if you
+enter a thread, you won't have the same connection you had before, if
+you were in a transaction.  That doesn't seem very nice.  I currently
+have code that returns the connection to the pool every time you
+commit or rollback, so that the lifetime of a connection being handed
+out from the pool corresponds to transactional boundaries.
+
+I may very well gut the whole thing, but these are early days, and
+checking it in is better than losing it.
+
+The main problems may be:
+  1. the mutex being too costly, although I tried to be economical.
+  2. the problem that if you take a PyDO object into a thread, you
+     leave the transaction.
+  3. the problem that you can't manage multiple simultaneous transactions
+     in one process without putting each in a separate thread.
+
+I must think about better and more explicit transaction management.
+If you could perform operations within a transaction, one current
+transaction per thread, but the ability to shuffle between them, that
+would be OK, I think.  This could be done by manipulating the
+thread-local dictionary.  Or perhaps, because of problem no. 2,
+discard the thread-local business entirely.
+
+If there is explicit transaction management, what would it look like
+to use it?  Would you install a transaction for a connection alias per
+thread?  
+
+  
+    t=Transaction('myalias')
+    # later ...
+    SetTransaction('myalias', t)
+  
+
+  
+
 
