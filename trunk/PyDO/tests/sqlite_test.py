@@ -14,7 +14,7 @@ def _initDB():
 
 base.connectionAlias='sqlitetest'    
 
-initAlias('sqlitetest', 'sqlite', dict(database=SQLITE_DB), verbose=True)        
+initAlias('sqlitetest', 'sqlite', dict(database=SQLITE_DB), cache=True, verbose=True)        
 
 if __name__=='__main__':
     _initDB()
