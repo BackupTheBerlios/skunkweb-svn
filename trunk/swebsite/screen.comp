@@ -1,7 +1,7 @@
 <HTML>
 <HEAD>
 <:default subj "":>
-<link rel="SHORTCUT ICON" href="/favicon.ico">
+<link rel="SHORTCUT ICON" href="favicon.ico">
 <:if `subj`:>
 <TITLE>SkunkWEB | <:val `subj`:></TITLE>
 <:else:>
