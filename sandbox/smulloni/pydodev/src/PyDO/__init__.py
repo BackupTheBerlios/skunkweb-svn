@@ -11,7 +11,7 @@ Others that may be supported:
 
    * gadfly
    * firebird 
-   * maxdb
+   * maxdb (==sapdb)
    * oracle
 
 Possibly down the line:   
@@ -23,3 +23,4 @@ Possibly down the line:
 from PyDO.connection import *
 from PyDO.field import *
 from PyDO.pydo import *
+from PyDO.operators import *
