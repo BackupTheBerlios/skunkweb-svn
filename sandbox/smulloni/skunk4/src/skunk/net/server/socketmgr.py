@@ -38,6 +38,9 @@ class SocketManager(ProcessManager):
                                             config=config,
                                             **kw)
         self.socketMap = {}
+        self _initConnections()
+
+    def _initConnections(self):
         for addr, func in self.connections.iteritems():
             self._add_connection(addr, func)
             
@@ -117,7 +120,7 @@ class SocketManager(ProcessManager):
                     self.preHandle()
                 except:
                     exception('preHandle died: ')
-
+                # call the handler
                 r = self.socketMap[s][0](sock, addr)
                 try:
                     self.postHandle()
@@ -158,8 +161,6 @@ class SocketManager(ProcessManager):
                 break
 
     def _add_connection(self, addrspec, handler_func):
-        if addrspec not in self.connections:
-            self.connections[addrspec]=handler_func
         euid=None
         if hasattr(os, 'geteuid') and os.getuid() != os.geteuid():
             # uid to switch back to
@@ -233,9 +234,9 @@ class SocketManager(ProcessManager):
                                 'failed, continuing and hoping'
                                 ' for the best') % a[1])
 
-        self.socketMap = {}
-        for addr, func in self.connections.iteritems():
-            self._add_connection(addr, func)
+        self.socketMap.clear()
+        self._initConnections()
+
 
 
 

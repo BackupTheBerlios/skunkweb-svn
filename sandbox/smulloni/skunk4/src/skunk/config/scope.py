@@ -38,8 +38,10 @@ class ScopeManager(object):
             self.defaults.setdefault(k, kw[k])
 
     @with_lock(_getlock)
-    def getConfig(self, context):
+    def getConfig(self, context=None):
         """ returns a dictionary with the current configuration. """
+        if context is None:
+            context={}
         config=self.defaults.copy()
         for m in self.matchers:
             self._processMatcher(m, context, config)
@@ -53,11 +55,20 @@ class ScopeManager(object):
         for kid in matcher.children:
             self._processMatcher(kid, context, overlay)
 
-    def load(filename):
+    def load(self, filename, globals=None):
         """loads configuration from a file."""
         filename=os.path.abspath(filename)
-        co=compile(s, filename, 'exec')
-        exec codeObj in {}, self.defaults
+        codeObj=compile(s, filename, 'exec')
+        if globals is None:
+            globals={}
+        exec codeObj in globals, self.defaults
+
+    def loads(self, s, globals=None):
+        """loads configuration from a string"""
+        codeObj=compile(s, '<config>', 'exec')
+        if globals is None:
+            globals={}
+        exec codeObj in globals, self.defaults
 
     def scope(self, *matchers):
         """adds scope matchers"""
