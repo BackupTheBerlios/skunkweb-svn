@@ -93,6 +93,16 @@ class DBIBase(object):
         """If db uses auto increment, should obtain the value of the auto-incremented field named 'name'"""
         pass
 
+    def listTables(self, schema=None):
+        """list the tables in the database schema"""
+        raise NotImplementedError
+
+    def describeTable(self, table):
+        """returns a table description for the given table.
+        The description is a 3-tuple of fields, unique constraints,
+        and sequences/auto_increment for the table in question"""
+        raise NotImplementedError
+
 def _strip_tablename(colname):
     i=colname.rfind('.')
     if i==-1:

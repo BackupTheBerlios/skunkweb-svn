@@ -1,0 +1,19 @@
+PyDO is a ORM (Object-Relational Mapper) database access tool for
+Python that facilitates writing a Python database access layer.  PyDO
+attempts to be simple, flexible, extensible, and unconstraining.
+
+PyDO was originally written by Drew Csillag in 2000, with
+contributions and maintainance by Jacob Smullyan and others (see
+ACKNOWLEDGEMENTS), and was released as part of the SkunkWeb web
+application server.  The 2.0 series is a fairly far-reaching overhaul
+of the codebase undertaken by JS.  (The old PyDO version is still
+available in SkunkWeb 3.4.0.)
+
+The previous version of PyDO supported PostgreSQL with three different
+database adapters, Mysql, SapDB, Firebird, Sqlite, and Oracle.  The
+2.0 series currently supports only PostgreSQL (with the psycopg
+driver), Mysql, and Sqlite, but support for other database systems is
+planned.  
+
+
+ 

@@ -88,7 +88,7 @@ class _metapydo(type):
         cls._unique.update(cls.unique)
         cls._sequenced.update(cls.sequenced)
         cls._auto_increment.update(cls.auto_increment)
-        
+
         # add attribute access to fields
         if cls.use_attributes:
             for name in cls._fields:
@@ -104,8 +104,8 @@ class PyDO(dict):
     _is_projection=False
 
     table=None
-    mutable=1
-    use_attributes=1
+    mutable=True
+    use_attributes=True
     connectionAlias=None
     
     fields=()
@@ -142,7 +142,9 @@ class PyDO(dict):
     def update(self, adict):
         """ Part of dictionary interface for field access"""
         if not self.mutable:
-            raise ValueError, "instance isn't mutable!"        
+            raise ValueError, "instance isn't mutable!"
+        if not self._unique:
+            raise ValueError, "cannot update without unique index!"
         # call (normally empty) hook for modifying the update
         d=self.onUpdate(adict)
         # Check that the fields in the dictionary are kosher
@@ -184,6 +186,7 @@ class PyDO(dict):
         """update possibly many records at once, and return the number updated"""
         if not cls.mutable:
             raise ValueError, "class isn't mutable!"
+        # N.B. it *is* possible to use this method without a unique index
         if not adict:
             # vacuous update, just return
             return
@@ -202,7 +205,6 @@ class PyDO(dict):
             values+=wvals
         return conn.execute(''.join(sqlbuff), values)
     updateSome=classmethod(updateSome)
-
 
     def dict(self):
         return dict(self)
@@ -246,12 +248,10 @@ class PyDO(dict):
         cls.getDBI().commit()
     commit=classmethod(commit)
 
-
     def rollback(cls):
         """ Rollback current transaction"""
         cls.getDBI().rollback()
     rollback=classmethod(rollback)
-
 
     def new(cls, refetch=None,  **fieldData):
         """create and return a new data class instance using the values in
@@ -260,7 +260,8 @@ class PyDO(dict):
         """
         if not cls.mutable:
             raise ValueError, 'cannot make a new immutable object!'
-
+        if refetch and not cls._unique:
+            raise ValueError, "cannot refetch without a unique index!"
         # sanity check the field data
         cls._validateFields(fieldData)
         
@@ -363,7 +364,9 @@ class PyDO(dict):
             if len(values)==1 and isinstance(values[0], dict):
                 values=values[0]
         else:
-            cls._validateFields(fieldData)
+            # no longer require fields expressed as keyword arguments to be
+            # declared in the class/projection.
+            #cls._validateFields(fieldData)
             andValues=list(args)
             converter=conn.getConverter()
             for k, v in fieldData.items():
@@ -415,6 +418,8 @@ class PyDO(dict):
 
     def deleteSome(cls, *args, **fieldData):
         """delete possibly many records at once, and return the number deleted"""
+        if not cls.mutable:
+            raise ValueError, "cannot deleteSome through an immutable class"
         conn=cls.getDBI()
         sql, values=cls._processWhere(conn, args, fieldData)
         query=["DELETE FROM %s" % cls.table]
@@ -431,11 +436,9 @@ class PyDO(dict):
     def delete(self):
         """remove the row that represents me in the database"""
         if not self.mutable:
-            # this used to be a value error, but there are no parameters,
-            # so I'm using PyDOError
-            raise PyDOError, "instance isn't mutable!"
+            raise ValueError, "instance isn't mutable!"
         if not self._unique:
-            raise PyDOError, "cannot delete, no unique index!"
+            raise ValueError, "cannot delete, no unique index!"
         conn = self.getDBI()
         unique, values = self._uniqueWhere(conn, self)
         # if the class has unique constraints, and all data
@@ -448,9 +451,10 @@ class PyDO(dict):
         # shadow the class attribute with an instance attribute
         self.mutable = False
 
-    
     def refresh(self):
         """refetch myself from the database"""
+        if not self._unique:
+            raise ValueError, "cannot refresh without a unique index"
         obj = self.getUnique(**self)
         if not obj:
             raise ValueError, "current object doesn't exist in database!"
@@ -532,5 +536,5 @@ class PyDO(dict):
                                            thatSideColumns)])
         sql.append(' AND '.join(joins))
         return ''.join(sql), vals
-   
+
 __all__=['PyDO']

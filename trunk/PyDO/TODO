@@ -37,11 +37,15 @@ New features:
   * joins could use additional parameters so you could add to the
     where clause. (?)
 
+
+NOTES
+-----
+
+
 Looking at scatterFetch, which I've never used, I'm thinking that
 perhaps I should first implement projections, and then think about a
 general means for getting multiple objects/projections at once in one
 result set.  -- now projections are implemented, so bite the bullet!
-
 
 Perhaps, in addition to the *table* class attribute which is helpful
 when the PyDO object is modelling a single table, a _tables attribute
@@ -51,5 +55,19 @@ just a vacuous join.  Another would be to make joins a separate
 although similar object, with a separate implementation of an
 overlapping api (getSome(), especially).
 
-  
-  
+Would any class ever need to use both auto_increment and sequenced?
+Not that I know of.  Can I then coalesce them into one attribute, and
+let drivers decide what to do with them?
+
+In the case of postgresql, it should always be possible to determine
+what sequence is being used by introspection.  In the case of
+auto-increment, neither mysql nor sqlite needs a value associated with
+the column id.  So we might be able to accept a list/tuple rather than
+a dict for the combined auto_increment/sequenced attribute.  Drivers
+would tell the PyDO class whether or not to interpret the sequence as
+an auto_increment (get value after insert) or sequence (get value
+before insert) kind of deal. 
+
+-- 
+
+Any table without a unique constraint is immutable.
