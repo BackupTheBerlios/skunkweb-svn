@@ -1,6 +1,6 @@
 import logging
 
-logger=logging.getLogger('pydo')
+logger=logging.getLogger('PyDO')
 debug=logger.debug
 error=logger.error
 warn=logger.warn

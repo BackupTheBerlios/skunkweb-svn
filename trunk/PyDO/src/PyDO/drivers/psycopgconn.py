@@ -1,7 +1,7 @@
-from pydo.dbi import DBIBase
-from pydo.exceptions import PyDOError
-from pydo.log import debug
-from pydo.operators import BindingConverter
+from PyDO.dbi import DBIBase
+from PyDO.exceptions import PyDOError
+from PyDO.log import debug
+from PyDO.operators import BindingConverter
 from psycopg import connect
 
 import time

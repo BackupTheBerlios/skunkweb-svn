@@ -1,8 +1,8 @@
 import re
 
-from pydo.dbi import DBIBase
-from pydo.field import Field
-from pydo.exceptions import PyDOError
+from PyDO.dbi import DBIBase
+from PyDO.field import Field
+from PyDO.exceptions import PyDOError
 
 import sqlite
 

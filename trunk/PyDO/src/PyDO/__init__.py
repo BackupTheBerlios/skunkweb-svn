@@ -19,11 +19,11 @@ Possibly down the line:
    * SQL Server
 """
 
-from pydo.exceptions import *
-from pydo.field import *
-from pydo.base import *
-from pydo.operators import *
-from pydo.dbi import *
-from pydo.log import *
+from PyDO.exceptions import *
+from PyDO.field import *
+from PyDO.base import *
+from PyDO.operators import *
+from PyDO.dbi import *
+from PyDO.log import *
 
 __version__='2.0a0'

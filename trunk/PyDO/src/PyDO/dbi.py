@@ -1,7 +1,7 @@
 from itertools import izip
 
-from pydo.log import *
-from pydo.operators import BindingConverter
+from PyDO.log import *
+from PyDO.operators import BindingConverter
 
 class DBIBase(object):
     """base class for db connection wrappers"""
