@@ -1,3 +1,17 @@
+2001-09-19  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* pylibs/vfs.py: added vfs interface and LocalFS implementation.
+
+	* SkunkWeb/Services/templating/Handler.py (requestHandler): modified templating 
+	to use the new vfs layer.
+
+	* pylibs/AE/Cache.py (_readDocRoot, _statDocRoot, 
+	_getDocRootModTime, _getPathFSAndMinistat): now access the document root 
+	via a vfs interface.
+	(Configuration): added Configuration variable "documentRootFS", a list of
+	filesystems (vfs.FS implementations) that the Cache will look in, in order, 
+	to find a given resource.
+
 2001-09-18  Drew Csillag  <drew@starmedia.net>
 
 	* pylibs/scopable/_scope.c (Scopeable_saveMash): fixed refcounting
