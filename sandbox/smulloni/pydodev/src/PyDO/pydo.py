@@ -55,12 +55,13 @@ class _metapydo(type):
     """metaclass for _pydobase"""
     def __init__(cls, cl_name, bases, namespace):
         # handle inheritance of (private) class attributes
+        revbases=[x for x in bases[::-1] if x is not object]
         for a, t in (('_fields', fieldset),
                      ('_unique', set),
                      ('_sequenced', dict),
                      ('_auto_increment', dict)):
             setattr(cls, a, t())
-            for b in bases:
+            for b in revbases:
                 o=getattr(b, a, None)
                 if o:
                     # sets and dicts both have update(), as does fieldset
