@@ -1,5 +1,5 @@
 # Time-stamp: <03/03/06 13:47:12 smulloni>
-# $Id: jsutils.py,v 1.1 2003/05/06 22:41:00 smulloni Exp $
+# $Id$
 
 ########################################################################
 #  
@@ -54,7 +54,7 @@ _marshalRegistry[list]=_seq_to_js
 _marshalRegistry[tuple]=_seq_to_js
 
 def _dict_to_js(d):
-    s=', '.join(["%s: %s" % (get_identifier(k), to_js(v)) \
+    s=', '.join(["%s: %s" % (to_js(k), to_js(v)) \
                  for k, v in d.items()])
     return "{%s}" % s
 
