@@ -556,7 +556,9 @@ most notably:
     ``getSome()``. In PyDO1, there are three additional methods that
     accept different query syntaxes: ``getSomeWhere()``,
     ``getTupleWhere()``, and ``getSQLWhere()``. These have been 
-    dropped.
+    dropped.  ``joinTable()`` now accepts this query syntax as well, 
+    so it is no longer necessary to override a protected method to 
+    add additional criteria to a join query.
 5.  PyDO1 is not thread-safe, and has no connection pool facilities
     for multi-threaded use.  What connection management facilities it
     does have are tied in with SkunkWeb.  PyDO2 is entirely separate
@@ -574,7 +576,8 @@ most notably:
     writing.
 10. PyDO2 does not yet implement PyDO1's "scatterFetch" method, which
     returns multiple ``PyDO`` objects of different types in a single
-    query. 
+    query. (A similar method, ``arrayfetch()``, has been implemented,
+    but it is subject to change during the alpha release cycle.)
 11. PyDO1 has a variable ``SYSDATE`` that means the current
     datetime, regardless of the underlying db.  PYDO2 does not
     abstract this, as it seems unnecessary now; you can use
