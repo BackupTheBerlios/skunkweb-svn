@@ -1,0 +1,20 @@
+<:spool contents:> 
+<h3>Anonymous CVS Access</h3>
+The SkunkWeb project's SourceForge CVS repository can be
+checked out through anonymous (pserver) CVS with the following
+instruction set. The module you wish to check out must be specified as
+the modulename. When prompted for a password for anonymous, simply
+press the Enter key.
+<pre>
+cvs -d:pserver:anonymous@cvs.skunkweb.sourceforge.net:/cvsroot/skunkweb login
+
+cvs -z3 -d:pserver:anonymous@cvs.skunkweb.sourceforge.net:/cvsroot/skunkweb co skunkweb
+</pre>
+
+Updates from within the module's directory do not need the -d parameter.
+
+<h3>Viewing CVS Online</h3>
+The CVS repository can be viewed online <A 
+HREF="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/skunkweb">here</A>.
+<:/spool:>
+<:component screen.comp mainframe=`contents`:>

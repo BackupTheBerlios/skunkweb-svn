@@ -1,0 +1,52 @@
+import pprint
+from formlib import *
+from formlib.form import CompositeField
+from formlib.views import TextField, SubmitField, ViewableForm, ViewableCompositeField, ViewableFieldProxy 
+from formlib.validates import InternationalAddressField
+
+addFld = InternationalAddressField('intadd', 'An International Address', defaultState='NY', defaultCountry='US') 
+subFld = SubmitField('submit')
+flds = [ addFld, subFld ]
+
+def validate(form):
+    pass
+
+form = ViewableForm(name="testAllViews", method="POST", fields=flds, validators=[validate])
+
+print 'COMPOSITE FORM INTERNALS<br/>'
+cmpFld = form.fields['intadd']
+print 'keys:', form.fields.keys(), '<br />'
+print 'COMPOSITE FIELD IS A COMPOSITE FIELD:', isinstance(cmpFld, CompositeField)
+print '<br />COMPOSITE IS SETABLE:', cmpFld.setable, '<br />'
+print 'COMPOSITE FIELDS:', [fld.name for fld in cmpFld.fields], '<br />'
+for fld in cmpFld.fields:
+    print fld.name, '[default:', fld.default, '][value:', fld.value, '][IS FieldProxy:', isinstance(fld, FieldProxy), \
+          '][IS viewable:', hasattr(fld, "getView"), '][IS setable:', fld.setable, ']'
+    print '<br />'
+
+print '<hr/>'
+
+import ecs
+if CONNECTION.method == "POST":
+    print "<hr />CONNECTION ARGS:%s<hr />" % (str(CONNECTION.args))
+
+    form.submit(CONNECTION.args)
+    print ecs.H4('composite form data')
+    print ecs.Pre(pprint.pformat(form.getData()))
+    print
+
+    if form.errors:
+        print ecs.H4('form errors')
+        print ecs.Pre(pprint.pformat([(x.field.name, x.errormsg) for x in form.errors]))
+        print
+        
+        print ecs.H3("ERROR")
+    else:
+        print ecs.H3("Successful form submission.  Values were:")
+        for fld in form.fields:
+            print "%s -> %s:%s" % (fld.description, fld.name, fld.value)
+            print ecs.Br()
+        print ecs.Hr()
+
+print ecs.Hr()
+print form.getView()    
