@@ -55,7 +55,7 @@ def _restrict(flds, coll):
         return s
     # It isn't necessary to test for multi-column keys in dicts
     elif isinstance(coll, dict):
-        return dict([(x, y) for x, y in coll.iteritems() if x in flds])
+        return dict((x, y) for x, y in coll.iteritems() if x in flds)
 
 class _metapydo(type):
     """metaclass for _pydobase.
@@ -103,7 +103,7 @@ class _metapydo(type):
                 # transform into a set of sets.  This way,
                 # multi-column unique constraints are
                 # unordered.
-                uniq=set((_setize(x) for x in uniq))
+                uniq=set(_setize(x) for x in uniq)
                 if cls._is_projection:
                     uniq=_restrict(fielddict, uniq)
                 uniqueset.update(uniq)
@@ -112,10 +112,10 @@ class _metapydo(type):
         # subclass as a simple field (just a fieldname), then the
         # previous field definition is inherited; otherwise, the
         # subclass's definition wins.  This is useful for projections.
-        updatefields=dict([(x, y) for x, y in fielddict.iteritems() \
-                           if not (x in cls._fields and x in simplefields)])
+        updatefields=dict((x, y) for x, y in fielddict.iteritems() \
+                          if not (x in cls._fields and x in simplefields))
         cls._fields.update(updatefields)
-        uniqueset.update((_setize(x) for x in namespace.get('unique', ())))
+        uniqueset.update(_setize(x) for x in namespace.get('unique', ()))
 
         # We now have all the inherited declarations, and figure out
         # sequences and additional unique constraints.
@@ -188,7 +188,7 @@ class PyDO(dict):
         self._update_raw(d)
         # if successful, modify the object's field data,
         # taking any wrapped values out of their wrappers
-        unwrapped=dict([(k, unwrap(v)) for k,v in d.iteritems()])
+        unwrapped=dict((k, unwrap(v)) for k,v in d.iteritems())
         super(PyDO, self).update(unwrapped)
 
     def onUpdate(self, adict):
@@ -348,7 +348,7 @@ class PyDO(dict):
                 if not fieldData.has_key(k):
                     fieldData[k] = conn.getAutoIncrement(v)
         # unwrap any wrapped values in fieldData
-        fieldData=dict([(k, unwrap(v)) for k,v in fieldData.iteritems()])
+        fieldData=dict((k, unwrap(v)) for k,v in fieldData.iteritems())
         if not refetch:
             return cls(fieldData)
         return cls.getUnique(**fieldData)
@@ -490,9 +490,6 @@ class PyDO(dict):
         if sql:
             query.extend(['WHERE', sql])
         return conn.execute(query, values)
-
-
-
 
     def delete(self):
         """remove the row that represents me in the database"""

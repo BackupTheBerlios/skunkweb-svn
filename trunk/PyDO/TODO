@@ -38,31 +38,15 @@ what sequence is being used by guessing, or by introspection.
 
 --
 
-Projections currently replace their superclasses' field declarations,
-but keep unique/sequence information for those fields.  That seems a
-bit inconsistent.  I do think that if a projection is stated with just
-a string, it should inherit more verbose descriptions, including
-unique/sequence, but not otherwise.  (This is a buglet which would
-only become apparent if you were using custom field classes.)  -- this
-is now implemented, in part.  Unique/sequenced is still inherited
-separately, so that information is inherited regardless of how you
-redeclare the field in a subclass; this is wrong and needs to be
-redone.  Tests should be added for this.  
+I've refactored the inheritance semantics; this needs to be documented
+and tests added.
 
 -- 
 
-I put in accessor methods for _fields and _unique (getFields() and
-getUniqueConstraints()).
+I'm using Python 2.4 constructs now -- decorators and generator
+expressions.
 
--- 
 
-Since the cache requires Python 2.4, and that is what I am testing on,
-I am dropping 2.3 compatibility for the time being.  I've put in
-decorators, which typographically I see as superior to putting the
-classmethod stuff at the end of the function.  Generator
-comprehensions would also be logical to add; wherever I'm using a list
-comprehension nested in something that would take an iterator I'll
-switch to using them.
 
 
 

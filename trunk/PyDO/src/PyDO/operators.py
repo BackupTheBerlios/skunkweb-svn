@@ -130,7 +130,7 @@ class SET(object):
     def __repr__(self):
         l=len(self.values)
         if l>1:
-            return "(%s)" % ', '.join([self._convert(x) for x in self.values])
+            return "(%s)" % ', '.join(self._convert(x) for x in self.values)
         else:
             return "(%s)" % self._convert(self.values[0])
 
@@ -173,7 +173,7 @@ class SQLOperator(tuple):
         op=" %s " % self[0]
         if len(self)==2:
             return "(%s %s)" % (op, self._convert(self[1]))
-        args=[self._convert(a) for a in self[1:]]
+        args=(self._convert(a) for a in self[1:])
         return "(%s)" % op.join(args)
 
 

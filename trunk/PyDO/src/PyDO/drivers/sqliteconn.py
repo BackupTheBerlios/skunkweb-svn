@@ -113,7 +113,7 @@ class SqliteDBI(DBIBase):
       c.execute(sql)
       res=c.fetchall()
       if res:
-         return tuple([x[0] for x in res])
+         return tuple(x[0] for x in res)
       return ()
 
 
