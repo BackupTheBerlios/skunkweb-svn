@@ -408,7 +408,39 @@ is the number of affected rows.
 Joins
 -----
 
-[TBD]
+To represent a one-to-one join between classes ``A`` and ``B``, add an
+instance method to class ``A`` that calls ``B.getUnique()``::
+
+    def getB(self):
+        return B.getUnique(id=self.b_id)
+
+To represent a one-to-many join, do the same, but with
+``B.getSome()``::
+
+    def getBs(self):
+        return B.getSome(a_id=self.id)
+
+To represent a many-to-many join between ``A`` and ``B`` through
+junction table ``J``, add an instance method that calls
+``joinTable()``::
+
+    def getBs(self):
+        return self.joinTable('id', 'J', 'a_id', 'b_id', B, 'id')
+
+``joinTable()`` takes the following arguments:
+
+``thisAttrNames``
+    attribute(s) in current object to join from 
+``pivotTable``
+    pivot table name 
+``thisSideColumns``
+    column(s) that correspond to the foreign key column to ``thisAttrNames``. 
+``thatSideColumns``
+    column(s) that correspond to the foreign key column to ``thatAttrNames``. 
+``thatObject``
+    the destination object
+``thatAttrNames``
+    attribute(s) in destination object to join to
 
 
 Managing Database Connections
@@ -484,7 +516,17 @@ is the number of times to retry before giving up and raising a
 A Complete Example
 ------------------
 
-[TBD]
+Consider the following toy sqlite database:
+
+.. include:: examples/pim.sql
+   :literal:
+
+The following Python module wraps its tables in an api:
+
+.. include:: examples/pim.py
+   :literal: 
+
+
 
 Differences From PyDO 1
 -----------------------

@@ -249,9 +249,14 @@ def initAlias(alias, driver, connectArgs, pool=None, verbose=False):
     _connlock.acquire()
     try:
         old=_aliases.get(alias)
-        if old and data!=old:
-            raise ValueError, "already initialized: %s" % alias
-        _aliases[alias]=data
+        if old:
+            old=old.copy()
+            # get rid of connection for the sake of comparison
+            old.pop('connection', None)
+            if data!=old:
+                raise ValueError, "already initialized: %s" % alias
+        else:
+            _aliases[alias]=data
     finally:
         _connlock.release()
 
