@@ -1,0 +1,7 @@
+*.pyc
+*.dvi
+*.ps
+*.pdf
+*.pyo
+*.aux
+
