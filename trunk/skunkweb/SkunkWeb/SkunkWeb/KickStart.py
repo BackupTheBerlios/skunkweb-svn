@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: KickStart.py,v 1.2 2001/10/02 02:35:34 smulloni Exp $
+# $Id: KickStart.py,v 1.3 2002/03/30 20:05:27 smulloni Exp $
 # Time-stamp: <01/05/03 18:32:41 smulloni>
 ########################################################################
 
@@ -24,8 +24,8 @@ import ConfigLoader
 CONFIG_MODULE='SkunkWeb.Configuration'
 
 CONFIG_STRING="""
-from SkunkWeb.ConfigAdditives import Location, Host, Port, Scope, IP, UNIXPath
 from SkunkWeb.constants import *
+from SkunkWeb.ConfigAdditives import *
 """
 
 #preload the config namespace stuff
@@ -36,6 +36,9 @@ ConfigLoader.loadConfigString(CONFIG_STRING,
 
 ########################################################################
 # $Log: KickStart.py,v $
+# Revision 1.3  2002/03/30 20:05:27  smulloni
+# added Include directive for sw.conf; fixed IP bug (was being clobbered in sw.conf)
+#
 # Revision 1.2  2001/10/02 02:35:34  smulloni
 # support for scoping on unix socket path; very serious scope bug fixed.
 #
