@@ -1,0 +1,55 @@
+Summary:
+
+  * introspection (especially, what are the columns of a table?)
+  * connection caching and pooling
+  * scatter fetch
+  * docs
+  * tests
+  * first release
+
+--
+
+To catch up with the old PyDO:
+  * scatterFetch (but am defering, see below)
+  * more drivers
+  * docs
+  * connection caching
+
+New features:
+  * support for AS in field names (?).  Maybe more trouble
+    than it is worth. -- NAW
+  * dbtype is currently unused (and isn't necessary for what
+    PyDO does, so is now optional).  But it would be useful for:
+    - on update, coercing the value given to the same type
+      the underlying driver would return.  So if you update
+      an int column with '3', the dict would contain the integer
+      3 for that column (right now, it would contain whatever
+      the user put in and not reflect the database/driver's type
+      coercions, for both old and new PyDO). -- NAW
+    - generating CREATE TABLE statements (not a huge priority of
+      mine, but someone might use it). -- DEFER
+  * updateSome, deleteSome(). -- DONE
+  * projection() -- dynamically create a derived PyDO class with a 
+    subset of the table's fields. -- DONE
+  * make it possible to derive the field list, unique, sequence, 
+    auto_increment etc. of a class by  introspection (like SQLObject,
+    Ruby's ActiveRecord). -- YES, DO IT
+  * joins could use additional parameters so you could add to the
+    where clause. (?)
+
+Looking at scatterFetch, which I've never used, I'm thinking that
+perhaps I should first implement projections, and then think about a
+general means for getting multiple objects/projections at once in one
+result set.  -- now projections are implemented, so bite the bullet!
+
+
+Perhaps, in addition to the *table* class attribute which is helpful
+when the PyDO object is modelling a single table, a _tables attribute
+would be useful, with fields for each table, and a joins
+attribute. One option would be to make the ordinary single-table case
+just a vacuous join.  Another would be to make joins a separate
+although similar object, with a separate implementation of an
+overlapping api (getSome(), especially).
+
+  
+  
