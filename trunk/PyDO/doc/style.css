@@ -7,8 +7,8 @@ body {
   padding: 0;
   border: 0;
   color: #530;
-//  background-color: #dfdedf;
-  font: 11pt verdana, "Bitstream Vera Sans", geneva, arial, helvetica, helve, sans-serif; 
+
+  font: 10pt verdana, "Bitstream Vera Sans", geneva, arial, helvetica, helve, sans-serif; 
 }
 
 /* em {
@@ -19,15 +19,6 @@ body {
   margin-top: 0px;
  }
 
-blockquote { 
- 
-border: 1px dashed #000;
-//background-color: #FFE;
-padding: 5px 10px 5px 10px;
-font-size: smaller;
-
-
- }
 
 a.target {
   color: blue }
@@ -58,12 +49,15 @@ div.abstract p.topic-title {
 
 div.attention, div.caution, div.danger, div.error, div.hint,
 div.important, div.note, div.tip, div.warning {
-  // margin: 2em ;
-  background-color: #cccccc;
-  align: center;
-  //width: 60%;
-  // border: medium outset ;
-  padding: 3px;
+  margin-left: 4em ;
+  padding: 8px;
+  text-align: justify;
+  font-size: smaller;
+  width: 80%;
+  border-top: 1px dashed #d33;
+  border-bottom: 1px dashed #d33;
+
+
  }
 
 div.attention p.admonition-title, div.caution p.admonition-title,
