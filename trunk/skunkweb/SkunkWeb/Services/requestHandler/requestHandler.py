@@ -5,7 +5,7 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: requestHandler.py,v 1.8 2003/05/01 20:45:54 drew_csillag Exp $
+# $Id: requestHandler.py,v 1.9 2003/05/02 13:27:12 drew_csillag Exp $
 # Time-stamp: <01/05/09 17:48:12 smulloni>
 ########################################################################
 
@@ -111,8 +111,12 @@ def _canRead(sock, timeout):
                                      timeout)
     DEBUG(REQUESTHANDLER, "input for _canRead select: %s" % input)
     # sanity check
-    if input and not input[0].recv(1, socket.MSG_PEEK):
+    try:
+        if input and not input[0].recv(1, socket.MSG_PEEK):
+            return 0
+    except socket.error:
         return 0
+
     return len(input)
 
 class DocumentTimeout(exceptions.Exception): pass                
@@ -237,6 +241,9 @@ def addRequestHandler(protocol, ports):
 
 ########################################################################
 # $Log: requestHandler.py,v $
+# Revision 1.9  2003/05/02 13:27:12  drew_csillag
+# silenced an error that should be
+#
 # Revision 1.8  2003/05/01 20:45:54  drew_csillag
 # Changed license text
 #
