@@ -13,12 +13,14 @@ def _getlock(self, *args, **kwargs):
  
 class ScopeManager(object):
     """
-    The ScopeManager object manages configuration that changes depending on a context dictionary.
+    The ScopeManager object manages configuration that changes
+    depending on a context dictionary.
     
     The effective value of the configuration depends on:
     
     * the default configuration dictionary
-    * scope matchers, which cause configuration to vary according to the environment
+    * scope matchers, which cause configuration to vary according
+      to the environment
     * the context, which you pass to the getConfig() function.
     
     To get the current configuration values, call getConfig(context).
@@ -63,7 +65,8 @@ class ScopeManager(object):
 
 class ScopeMatcher(object):
     """
-    A ScopeMatcher object can be added to a ScopeManager through its scope() method.
+    A ScopeMatcher object can be added to a ScopeManager through its
+    scope() method.
     """
     def __init__(self, param, matchObj, overlay, children=None):
         self.param=param
@@ -95,7 +98,6 @@ class ScopeMatcher(object):
         be performed then, automagical-like.
         """
         return self._children[:]
-    children=property(children)
 
     def addChildren(self, *kids):
         """
