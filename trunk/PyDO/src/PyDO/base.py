@@ -4,6 +4,7 @@ from PyDO.exceptions import PyDOError
 from PyDO.operators import AND, EQ, FIELD
 from PyDO.dbtypes import unwrap
 
+from itertools import izip
 
 def _tupleize(item):
     """ turns an atom into a tuple with one element,
@@ -532,10 +533,20 @@ class PyDO(dict):
                   thatSideColumns,
                   thatObject,
                   thatAttrNames):
-        """see joinTableSQL for arguments
+        """Handles many to many relations.  In short, do:
         
-        This method executes the statement returned by joinTableSQL
-        with the arguments and produces object from them.
+        SELECT thatObject.getColumns(1)
+        FROM thatObject.table, pivotTable
+        WHERE pivotTable.thisSideColumn = self.myAttrName
+        AND pivotTable.thatSideColumn = thatObject.table.thatAttrName
+        
+        and return a list of thatObjects representing the resulting
+        rows.  The parameters which accept column names
+        (thisAttrNames, thisSideColumns, thatSideColumns,
+        thatAttrNames) can be strings (silently turned to tuples of
+        length 1) or tuples of strings.  For each pair P of the two
+        pairs (thisSideColumns, thisAttrNames) and (thatSideColumns,
+        thatAttrNames) len(P[0]) must equal len(P[1]).
         """
         
         sql, vals = self._joinTableSQL(thisAttrNames,
@@ -555,15 +566,7 @@ class PyDO(dict):
                      thatObject,
                      thatAttrNames,
                      extraTables = None):
-        """Handle many to many relations.  In short, do a
-        
-        SELECT thatObject.getColumns(1)
-        FROM thatObject.table, pivotTable
-        WHERE pivotTable.thisSideColumn = self.myAttrName
-        AND pivotTable.thatSideColumn = thatObject.table.thatAttrName
-        
-        and return a list of thatObjects representing the resulting rows.
-        """
+        """SQL generating function for joinTable"""
         if extraTables is None:
             extraTables=[]
 
@@ -598,5 +601,51 @@ class PyDO(dict):
                                            thatSideColumns)])
         sql.append(' AND '.join(joins))
         return ''.join(sql), vals
+
+
+def arrayfetch(objs, *args):
+    """
+    An experimental method that returns several an array of PyDO objects.
+    API subject to change.
+    """
+    if args:
+        sql=args[0]
+        values=args[1:]
+    else:
+        sql=""
+        values=()
+    # connectionAlias must be the same for all objects
+    aliases=tuple(frozenset(o.connectionAlias for o in objs))
+    if len(aliases)!=1:
+        raise ValueError, \
+              "objects passed to join must have same connection alias"
+    allcols=[o.getColumns(True) for o in objs]
+    cols=', '.join(', '.join(a) for a in allcols)
+    tables=', '.join(o.table for o in objs)
+    select=["SELECT %s FROM %s" % (cols, tables)]
+    if sql:
+        select.append(" WHERE ")
+        select.append(sql)
+    dbi=objs[0].getDBI()
+    result=dbi.execute(''.join(select), values, True)
+    if not result:
+        return ()
+    ret=[]
+    for row in result:
+        retrow=[]
+        for o, cols in izip(objs, allcols):
+            retrow.append(o(**dict((c, row[c]) for c in cols)))
+        ret.append(tuple(retrow))
+    return tuple(ret)
+            
+                
+    
+    
+    
+
+    
+
+
+    
 
 __all__=['PyDO']
