@@ -25,3 +25,5 @@ from PyDO.pydo import *
 from PyDO.operators import *
 from PyDO.dbi import *
 from PyDO.log import *
+
+__version__='2.0a0'
