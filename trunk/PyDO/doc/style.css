@@ -7,7 +7,7 @@ body {
   padding: 0;
   border: 0;
   color: #530;
-  background-color: #dfdedf;
+//  background-color: #dfdedf;
   font: 11pt verdana, "Bitstream Vera Sans", geneva, arial, helvetica, helve, sans-serif; 
 }
 
@@ -22,7 +22,7 @@ body {
 blockquote { 
  
 border: 1px dashed #000;
-background-color: #FFE;
+//background-color: #FFE;
 padding: 5px 10px 5px 10px;
 font-size: smaller;
 

@@ -61,23 +61,6 @@ Instances are obtained, not by directly invoking the PyDO class's
 constructor, but by calling one of various class methods, discussed
 below, that return single instances or lists thereof.
 
-If the class is declared mutable and has a uniqueness constraint, it is
-possible to mutate it by calling::
-
-    MyInstance['fieldname']=newValue
-
-or, equivalently, if ``use_attributes`` is true for the class::
-
-    MyInstance.fieldname=newValue
-
-Multiple updates can be done together via ``update()``::
-
-    MyInstance.update(dict(fieldname=newValue,
-                           otherFieldname=otherValue))
-
-Each mutation will cause an UPDATE statement to be executed on the
-underlying database. If you attempt to mutate an immutable ``PyDO``
-instance, a ``PyDOError`` will be raised.
 
 
 Defining Table Classes
@@ -369,9 +352,23 @@ true value::
 This is equivalent to calling ``refresh()`` after ``new()``, and also
 requires that a uniqueness constraint be been declared for the class.
 
-Updating an instance has already been described::
- 
-   >>> poem.title='Sayings of the Robo-Rabbi'
+If a class is declared mutable and has a uniqueness constraint, it is
+possible to mutate an undeleted instance of it by calling::
+
+    >>> poem['title']='Sayings of the Robo-Rabbi'
+
+or, equivalently, if ``use_attributes`` is true for the class::
+
+    >>> poem.title='Sayings of the Robo-Rabbi'
+
+Multiple updates can be done together via ``update()``::
+
+    MyInstance.update(dict(fieldname=newValue,
+                           otherFieldname=otherValue))
+
+Each mutation will cause an UPDATE statement to be executed on the
+underlying database. If you attempt to mutate an immutable ``PyDO``
+instance, a ``PyDOError`` will be raised.
 
 It is also possible to update potentially many rows at once with the
 class method ``updateSome()``::
@@ -412,15 +409,75 @@ Joins
 [TBD]
 
 
-Connection Parameters
----------------------
+Managing Database Connections
+-----------------------------
 
-[TBD]
+All that a ``PyDO`` class knows about its database connection is its
+``connectionAlias`` attribute.  Before you use the class, you must
+call ``initAlias()`` to associate that alias with the data needed to
+make an actual database connection::
 
-Connection Caching
-++++++++++++++++++
+  initAlias(alias, driver, connectArgs, pool=False, verbose=False)
 
-[TBD]
+``driver`` must be the name of a driver registered with PyDO; the
+built-in ones are currently "mysql", "psycopg", and "sqlite".
+``connectArgs`` are arguments to pass to the underlying DBAPI driver's
+``connect()`` function; you can pass a tuple of positional args, a
+dictionary of keyword args, or a single object that will be treated
+like a tuple of length 1. ``pool`` is an optional connection pool; if
+you want one, you can either pass a ``ConnectionPool`` instance or
+something with a compatible ``connect()`` method, or a true value, in
+which case a default ``ConnectionPool`` will be created.  By default
+no pool is used.  ``verbose`` is whether or not to log the generated
+SQL; by default no logging is done.
+
+The class method ``PyDO.getDBI()`` returns a database interface object
+(an instance of a driver-specific ``PyDO.dbi.DBIBase`` subclass),
+which in turn uses an underlying DBAPI database connection.  The DBAPI
+connection is stored in thread-local storage and created lazily when
+an attempt is made to access it, so transactions in different threads
+will transparently use different connections.  By default the
+connection will live as long as the current thread.  If you use a
+pool, every time a transaction is completed, the connection will be
+released by the DBI object and returned to the pool.  If you aren't
+using a pool and are using multiple threads, when the thread is
+finished, its connection will go out of scope and will get closed
+during garbage collection.
+
+If you want to manage connections outside of PyDO, you can, by using
+the DBI object's ``swapConnection()`` method::
+
+   oldConnection=myDBI.swapConnection(newConnection)
+   # do something with PyDO
+   
+Because the connections are stored thread-locally, this is
+thread-safe.  Using this technique, one could juggle multiple
+transactions in the same process without using multiple threads.
+
+
+Connection Pools
+++++++++++++++++
+
+If you are using transactions in multiple threads, a connection pool
+can reduce the cost of connecting to the database.  The constructor
+has this signature::
+
+    pool=ConnectionPool(max_poolsize=0, 
+                        keep_poolsize=1, 
+                        delay=0.2,
+                        retries=10)
+
+``max_poolsize`` is the maximum number of connections it will permit
+you to have in the pool at any one time; if 0, there is no upper
+limit. ``keep_poolsize`` is the maximum number of connections it will
+retain in the pool.  (In other words, the pool may grow up to
+``max_poolsize``, but it will keep getting reduced to
+``keep_poolsize`` when connections are released.)  ``delay`` is the
+number of seconds it will delay if it needs to retry getting a
+connection, because the pool has reached its maximum size; ``retries``
+is the number of times to retry before giving up and raising a
+``PyDOError``. 
+
 
 A Complete Example
 ------------------
