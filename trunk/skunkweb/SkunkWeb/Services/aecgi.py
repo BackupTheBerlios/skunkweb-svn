@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: aecgi.py,v 1.1 2001/08/05 14:59:55 drew_csillag Exp $
+# $Id: aecgi.py,v 1.2 2002/05/24 20:56:20 smulloni Exp $
 # Time-stamp: <01/05/04 17:32:39 smulloni>
 ########################################################################
 
@@ -76,17 +76,23 @@ class AecgiProtocol(requestHandler.protocol.Protocol):
     def _marshalData(self, data):
         return "%10d%s" %(len(data), data)
 
-    
+def _serverStartHook(*args, **kw):
+    requestHandler.requestHandler.addRequestHandler(AecgiProtocol(),
+                                                    Configuration.AecgiListenPorts)    
 
 Configuration.mergeDefaults(AecgiListenPorts=['TCP:localhost:9888'])
 if Configuration.AecgiListenPorts:
-    requestHandler.requestHandler.addRequestHandler(AecgiProtocol(),
-                                                    Configuration.AecgiListenPorts)
+    Hooks.ServerStart.append(_serverStartHook)
+
 
 ########################################################################
 # $Log: aecgi.py,v $
-# Revision 1.1  2001/08/05 14:59:55  drew_csillag
-# Initial revision
+# Revision 1.2  2002/05/24 20:56:20  smulloni
+# now add request handlers in ServerStart hook
+#
+# Revision 1.1.1.1  2001/08/05 14:59:55  drew_csillag
+# take 2 of import
+#
 #
 # Revision 1.5  2001/07/09 20:38:40  drew
 # added licence comments
