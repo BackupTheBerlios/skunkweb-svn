@@ -1,5 +1,5 @@
-# Time-stamp: <02/11/08 15:54:01 smulloni>
-# $Id: xhtml.py,v 1.4 2002/11/08 21:16:21 smulloni Exp $
+# Time-stamp: <02/12/13 13:29:19 smulloni>
+# $Id: xhtml.py,v 1.5 2002/12/13 18:34:10 smulloni Exp $
 
 ######################################################################## 
 #  Copyright (C) 2002 Jacob Smullyan <smulloni@smullyan.org>
@@ -136,6 +136,7 @@ CONTAINER_ELEMENTS=['a',
                     'kbd',
                     'label',
                     'legend',
+                    'li',
                     'list',
                     'map',
                     'menu',
