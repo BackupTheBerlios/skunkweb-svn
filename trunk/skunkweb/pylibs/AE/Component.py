@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: Component.py,v 1.6 2001/10/25 01:27:53 drew_csillag Exp $
+# $Id: Component.py,v 1.7 2001/10/28 17:35:09 drew_csillag Exp $
 # Time-stamp: <2001-07-10 12:20:38 drew>
 ########################################################################
 
@@ -350,14 +350,14 @@ def _realRenderComponent( name, argDict, auxArgs, compType, srcModTime ):
             DEBUG(COMPONENT_TIMES, "execution of %s in %s" % (
                 name, time.time() - beg))
 
-    # normally this is equivalent to a pop, but if a component exception
-    # was handled somewhere, we need to clean up the residual shit
-    ns_copy = namespace.copy( )
-    del componentStack[ topOfComponentStack+1 : ]
-    namespace = ns_copy
     expiration = namespace.get('__expiration',
                                time.time()
                                + cfg.Configuration.defaultExpiryDuration )
+
+    # normally this is equivalent to a pop, but if a component exception
+    # was handled somewhere, we need to clean up the residual shit
+
+    del componentStack[ topOfComponentStack+1 : ]
     
     if compType != DT_INCLUDE:
         #DEBUG(COMPONENT, 'clearing the namespace!!! %s %s' % (DT_INCLUDE, compType))
@@ -385,6 +385,9 @@ def _getAuxArgs( argDict ):
 
 ########################################################################
 # $Log: Component.py,v $
+# Revision 1.7  2001/10/28 17:35:09  drew_csillag
+# finally got the caching bug fixed for good
+#
 # Revision 1.6  2001/10/25 01:27:53  drew_csillag
 # fixed so expiration actually works properly
 #
