@@ -423,5 +423,5 @@ class ConnectionPool(object):
 __all__=['initAlias',
          'delAlias',
          'getConnection',
-         'ConnectionPool',
-         'ConnectionWrapper']
+         'ConnectionPool']
+
