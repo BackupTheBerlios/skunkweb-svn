@@ -6,7 +6,7 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: Server.py,v 1.11 2003/05/01 20:45:55 drew_csillag Exp $
+# $Id: Server.py,v 1.12 2003/05/08 14:14:13 drew_csillag Exp $
 ########################################################################
 
 ########################################################################
@@ -163,7 +163,8 @@ def addService(sockAddr, func):
     
     if hasattr(os, 'geteuid') and os.getuid() != os.geteuid():
         reset = os.geteuid() #uid to switch back to
-        os.seteuid(0)
+        if hasattr(os, 'seteuid'):
+            os.seteuid(0)
     try:
         svr.addConnection(sockAddr, func)
     finally: # make sure we go back to the initial user
