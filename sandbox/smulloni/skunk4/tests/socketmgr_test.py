@@ -14,7 +14,7 @@ def test1():
     logging.basicConfig()
     logger.setLevel(logging.DEBUG)
     tempname='/tmp/socketmgr_test.pid'
-    mgr=SocketManager(2, tempname, logger=logger, maxRequests=30)
+    mgr=SocketManager(tempname, numProcs=2, logger=logger, maxRequests=30)
     def handler(socket, addr):
         logger.info("addr is %s", addr)
         # read some off the socket

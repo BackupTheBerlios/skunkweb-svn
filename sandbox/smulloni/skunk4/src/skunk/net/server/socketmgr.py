@@ -22,28 +22,25 @@ def _serialize_accept():
     
 
 class SocketManager(ProcessManager):
-    def __init__(self,
-                 numProcs,
-                 pidFile,
-                 maxKillTime=5,
-                 pollPeriod=5,
-                 logger=None,
-                 foreground=False,
-                 maxRequests=None,
-                 run_user=None,
-                 run_group=None):
-        self.maxRequests = maxRequests
-        self.socketMap = {}
-        ProcessManager.__init__(self,
-                                numProcs=numProcs,
-                                pidFile=pidFile,
-                                maxKillTime=maxKillTime,
-                                pollPeriod=pollPeriod,
-                                logger=logger,
-                                foreground=foreground,
-                                run_user=run_user,
-                                run_group=run_group)
+    """ a forking server that manages sockets """
+    # shadow ProcessManager's _defaults
+    _defaults=ProcessManager._defaults.copy()
+    _defaults.update(dict(maxRequests=None,
+                          connections=[]))
 
+    
+    def __init__(self,
+                 pidFile,
+                 config=None,
+                 **kw):
+
+        super(SocketManager, self).__init__(pidFile=pidFile,
+                                            config=config,
+                                            **kw)
+        self.socketMap = {}
+        for addr, func in self.connections:
+            self.addConnection(addr, func)
+            
     def preHandle(self):
         pass
 

@@ -15,9 +15,12 @@ TODO:
      purpose pre-forking manager (??)
      
 """
-import atexit
+
+import copy
+import grp
 import logging
 import os
+import pwd
 import signal
 import sys
 import time
@@ -33,31 +36,33 @@ class TermSignal(SignalException):
 class HupSignal(SignalException):
     sig_name='SIGHUP'
 
-
+class bag(object):
+    def __init__(self, **kw):
+        self.__dict__=kw
+    
 class ProcessManager(object):
     """a fixed, preforking process manager"""
-    def __init__(self,
-                 numProcs,
-                 pidFile,
-                 maxKillTime=5,
-                 pollPeriod=5,
-                 logger=None,
-                 foreground=False,
-                 run_user=None,
-                 run_group=None):
-        
-        self.numProcs=numProcs
-        self.pidFile=pidFile
-        self.maxKillTime=maxKillTime        
-        self.pollPeriod=pollPeriod
-        self.foreground=foreground
-        if logger is None:
-            logger=logging.getLogger('skunk.net.server')
-        self._logger=logger
-        self.run_user=run_user
-        self.run_group=run_group
 
-        self._modules = None
+    _defaults=dict(numProcs=5,
+                   maxKillTime=5,
+                   pollPeriod=5,
+                   logger=logging.getLogger('skunk.net.server'),
+                   foreground=False,
+                   run_user=None,
+                   run_group=None)
+
+    def __init__(self,
+                 pidFile,
+                 config=None,
+                 **kw):
+        """create a ProcessManager with the given pidFile path and config object.
+        The config object must be something with the attributes given in _defaults.
+        """
+        self.pidFile=pidFile
+        if config is None:
+            config=bag(**kw)
+        self.config=config
+        self._initAttrs()
         self._children = {}
 
         # catch sigchild and reap kids (mainly to interrupt a sleep() call)
@@ -72,27 +77,34 @@ class ProcessManager(object):
         # get a module snapshot.
         self.moduleSnapshot()
 
+    def _initAttrs(self):
+        # sync instance attributes with config object and defaults
+        for k, v in self._defaults.iteritems():
+            # some values in the defaults may be mutable, so use
+            # copy.copy
+            setattr(self, k, getattr(self.config, k, copy.copy(v)))
+
     # logging methods
     def log(self, level, *args, **kwargs):
-        self._logger.log(level, *args, **kwargs)
+        self.logger.log(level, *args, **kwargs)
 
     def debug(self, *args, **kwargs):
-        self._logger.debug(*args, **kwargs)
+        self.logger.debug(*args, **kwargs)
 
     def info(self, *args, **kwargs):
-        self._logger.info(*args, **kwargs)
+        self.logger.info(*args, **kwargs)
 
     def warn(self, *args, **kwargs):
-        self._logger.warn(*args, **kwargs)
+        self.logger.warn(*args, **kwargs)
 
     def critical(self, *args, **kwargs):
-        self._logger.critical(*args, **kwargs)
+        self.logger.critical(*args, **kwargs)
 
     def error(self, *args, **kwargs):
-        self._logger.error(*args, **kwargs)
+        self.logger.error(*args, **kwargs)
 
     def exception(self, *args, **kwargs):
-        self._logger.exception(*args, **kwargs)
+        self.logger.exception(*args, **kwargs)
 
 
     def _SIGCHLDHandler(self, *args):
@@ -204,8 +216,12 @@ class ProcessManager(object):
             except HupSignal:
                 # nice restart
                 self.info('restarting')
+                # kill off children
                 self._die()
+                # reload modules
                 self.reload()
+                # reload configuration
+                self._initAttrs()
                 self._sig = None
                 self.init()
 
@@ -278,10 +294,6 @@ class ProcessManager(object):
         what you must.
         """
         
-        # Check that snapshot_modules been called
-        if not self.__dict__.has_key ('_modules') or not self._modules:
-             raise RuntimeError, 'moduleSnapshot() was not called' 
-
         # Just reload ALL the modules but the ones we keep 
         for m in sys.modules.iterkeys():
             if m not in self._modules:
@@ -301,10 +313,12 @@ class ProcessManager(object):
                     mm.__dict__.clear()
                 del sys.modules[m]
 
+        
+
     def stop(self):
         """override this to be called when the server is shut down
         """
         pass
 
 
-# handling of user and group should be added.
+__all__=['ProcessManager']

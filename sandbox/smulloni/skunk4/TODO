@@ -3,4 +3,18 @@ This can be made a constructor argument, but generally configuration
 needs to be integrated now so that it can be re-read on HUP.  Then
 reset() can really reset, rather than just clearing connections out
 and leaving some other module with the job of fixing them up again.
+THIS IS DONE.
 
+-- 
+
+I'd like it if the config system could have qualified namespaces:
+
+   server.connections=['whatever']
+   sessions.something_or_other=4
+
+It would help to keep things organized.  Otherwise, it is necessary to
+use naming conventions, or have chaos.
+
+-- 
+
+The socket server should support SSL sockets.
