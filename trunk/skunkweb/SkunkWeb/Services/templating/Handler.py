@@ -1,5 +1,5 @@
-# Time-stamp: <03/02/05 22:51:28 smulloni>
-# $Id: Handler.py,v 1.9 2003/05/01 20:45:54 drew_csillag Exp $
+# Time-stamp: <2003-05-02 11:16:48 drew>
+# $Id: Handler.py,v 1.10 2003/05/02 17:20:29 drew_csillag Exp $
 
 ########################################################################
 #  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>
@@ -22,6 +22,7 @@ from SkunkWeb.LogObj import ACCESS, ERROR, DEBUG
 from web.protocol import Redirect
 from SkunkWeb.ServiceRegistry import TEMPLATING
 import vfs
+import Date
 
 Configuration.mergeDefaults(
     indexDocuments = ['index.html'],
@@ -152,8 +153,16 @@ def plainHandler(connObj, sessionDict):
         return # file exists, but is a directory
     if connObj.mimeType in Configuration.hideMimeTypes:
         return # something that shouldn't be uri accessible
+
+    modtime = Date.HTTPDate(connObj.statInfo[2])
+    ims = connObj.requestHeaders.get('If-Modified-Since')
+    if ims:
+        if ims == modtime:
+            connObj.setStatus(304)
+            return connObj.response()
         
     connObj.responseHeaders['Content-Type'] = connObj.mimeType
+    connObj.responseHeaders['Last-Modified'] = modtime
     DEBUG(TEMPLATING, "spewing raw file")
     connObj.write(AE.Cache._readDocRoot(connObj.uri))
     return connObj.response()
