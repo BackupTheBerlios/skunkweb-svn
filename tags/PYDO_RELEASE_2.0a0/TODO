@@ -1,0 +1,46 @@
+Needed now:
+
+  * mysql needs type wrapper converters, test improvements
+  * docs -- discuss type wrappers, arrayfetch (when it is ready).
+  * tests: many more.  creating PyDO classes within the test might
+       be a good idea in many cases.
+
+2nd priority:
+
+  * joins could use additional parameters so you could add to the
+    where clause, and order, offset, limit.
+  * array fetch (preliminary version done, needs some way of
+    specifying joins other than literal sql, and dealing with all-null
+    objects).
+
+Other databases to support (eventually):
+  * firebird
+  * sqlrelay 
+  * gadfly (does anyone use this?)
+  * maxdb
+  * odbc bindings (mxODBC; Drew's pure python version?) 
+  * oracle (which adapter?)
+  * sybase
+
+Deferred goals:
+  * introspection (especially, what are the columns of a table?) 
+    and hence, generating CREATE TABLE statements (not a huge priority of
+    mine, but someone might use it).
+
+
+
+
+..
+   Local Variables:
+   mode: rst
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
+
+
+
+  
+
+
