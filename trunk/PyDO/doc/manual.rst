@@ -153,11 +153,11 @@ case.
 
 It is not necessary to declare any uniqueness constraints in a
 ``PyDO`` class at all, either implicitly with the ``Unique`` field
-class, or via the ``unique`` class attribute.  However, if your table
-has no uniqueness constraints, an instance of the corresponding
-``PyDO`` class won't be able to identify the unique row in the
-database to which it corresponds, and hence will not be mutable.  (If
-the class is mutable, however, it will still be possible to perform
+class, or via the ``unique`` class attribute.  However, if you do not,
+instances of the corresponding ``PyDO`` class won't be able to
+identify the unique rows in the database table to which they
+correspond, and hence the instances will not be mutable.  (If the
+class is mutable, however, it will still be possible to perform
 inserts and mass updates and deletes.)
 
 The inherited fields, uniqueness constraints, and sequences of a class
@@ -334,12 +334,10 @@ Connection Parameters
 
 [TBD]
 
-
-Caveats
--------
+Connection Caching
+++++++++++++++++++
 
 [TBD]
-
 
 A Complete Example
 ------------------
