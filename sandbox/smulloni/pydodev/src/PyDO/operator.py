@@ -79,6 +79,7 @@ class PolyadicOperator(SQLOperator):
     def __init__(self, *values):
         super(PolyadicOperator, self).__init__(self, (self.__class__.operator,)+values)
 
+symbol_table={}
 def __makeOperators():
     """
     generates the operator classes;
