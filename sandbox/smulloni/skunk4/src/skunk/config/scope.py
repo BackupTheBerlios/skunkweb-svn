@@ -107,26 +107,8 @@ class ScopeMatcher(object):
         for k in kids:
             insort_right(self._children, k)
 
-
-    def __str__(self):
-        return "%s : %s (%s %s)" % (self.param,
-                                   self.matchObj,
-                                   self.overlay,
-                                   self.children)
-
-    def __repr__(self):
-        return "<%s.%s instance: %s>" % (self.__class__.__module__,
-                                         self.__class__.__name__,
-                                         self)
-
-    def __hash__(self):
-        return hash((self.param, self.matchObj))
-
     def __cmp__(self, other):
         if isinstance(other, ScopeMatcher):
-            # I don't want two different matchers whose top level is
-            # identical to exist in the same dictionary, regardless of
-            # their match type.
             return cmp((self.param, self.matchObj),
                        (other.param, other.matchObj))
         else:
