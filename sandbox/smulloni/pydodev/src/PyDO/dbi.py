@@ -37,8 +37,8 @@ class DBIBase(object):
         of the return result as necessary.
         result is list of dictionaries, or number of rows affected"""
         if self.verbose:
-            debug("SQL: %s", (sql,))
-            debug("bind variables: %s", (values,))
+            debug("SQL: %s", sql)
+            debug("bind variables: %s", values)
 
         c=self.conn.cursor()
         if values:
@@ -127,22 +127,36 @@ def _get_driver_class(name):
         return cls
     return _loadedDrivers[name]
              
-def InitAlias(alias, driver, connectArgs, cache=False, verbose=False):
-    """initializes a connection alias with the stated connection arguments."""
+def initAlias(alias, driver, connectArgs, cache=False, verbose=False):
+    """initializes a connection alias with the stated connection arguments.
     
-    # I find that it can cause confusion to let this be called
-    # repeatedly; you might think you are initializing it one way and
-    # not realize it is being initialized elsewhere differently.  So
-    # I'm raising a BooBoo if it is already initialized.
-    
-    if _aliases.has_key(alias):
-        raise ValueError, "already initialized: %s" % alias
-    _aliases[alias]=dict(driver=driver,
-                         connectArgs=connectArgs,
-                         cache=cache,
-                         verbose=verbose)
+    It can cause confusion to let this be called repeatedly; you might
+    think you are initializing it one way and not realize it is being
+    initialized elsewhere differently.  Therefore, this raises a
+    ValueError if the alias is already initialized with different
+    data.  Multiple initializations with the same data (such as
+    happens when a module called InitAlias is reloaded) are permitted.
 
-def GetConnection(alias):
+    If you need to change the connect values at runtime, call delAlias
+    before initAlias.
+    
+    """
+    data=dict(driver=driver,
+              connectArgs=connectArgs,
+              cache=cache,
+              verbose=verbose)
+    old=_aliases.get(alias)
+    if old and data!=old:
+        raise ValueError, "already initialized: %s" % alias
+    _aliases[alias]=data
+
+
+def delAlias(alias):
+    if _aliases.has_key(alias):
+        del _aliases[alias]
+
+
+def getConnection(alias):
     """get a connection given a connection alias"""
     try:
         conndata=_aliases[alias]
@@ -155,4 +169,4 @@ def GetConnection(alias):
     return conndata['connection']
 
 
-__all__=['InitAlias', 'GetConnection']
+__all__=['initAlias', 'delAlias', 'getConnection']

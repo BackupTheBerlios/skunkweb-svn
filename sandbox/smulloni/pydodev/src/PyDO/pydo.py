@@ -3,7 +3,7 @@ try:
 except NameError:
     from sets import Set as set
 
-from PyDO.dbi import GetConnection
+from PyDO.dbi import getConnection
 from PyDO.field import Field
 from PyDO.exceptions import PyDOError
 from PyDO.operators import *
@@ -31,7 +31,9 @@ class _metapydo(type):
         # add attributes declared for this class
         for f in cls.fields:
             # support for tuple syntax for plain Jane fields
-            if not isinstance(f, Field):
+            if isinstance(f, str):
+                f=Field(f)
+            elif not isinstance(f, Field):
                 f=Field(*f)
             # add to field container
             cls._fields[f.name]=f
@@ -71,14 +73,38 @@ class PyDO(dict):
         # Check that the fields in the dictionary are kosher
         self._validateFields(d)
         # do the actual update
-        self.updateRawValues(self, d)
+        self._update_raw(d)
         # if successful, modify the object's field data
-        super(PyDO, self).update(self, d)
+        super(PyDO, self).update(d)
 
     def onUpdate(self, adict):
         """a hook for subclasses to modify updates; 
         by default returns the original data unchanged."""
         return adict
+
+    def __setitem__(self, k, v):
+        self.update({k:v})
+
+    def _update_raw(self, adict):
+        """update self in database with the values in adict"""
+
+        # precondition: fields in adict are already validated
+        
+        if not self.mutable:
+            raise ValueError, "instance isn't mutable!"
+
+        conn=self.getDBI()
+        converter=conn.getConverter()
+        sqlbuff=["%s  = %s" % (x, converter(y)) for x, y in adict.iteritems()]
+        values=converter.values
+        where, wvals=self._uniqueWhere(conn, self)
+        values+=wvals
+        sql = "UPDATE %s SET %s WHERE %s" % (self.table,
+                                             ", ".join(sqlbuff),
+                                             where)
+        result=conn.execute(sql, values, self._fields)
+        if result > 1:
+            raise PyDOError, "updated %s rows instead of 1" % result        
 
     def dict(self):
         return dict(self)
@@ -113,7 +139,7 @@ class PyDO(dict):
 
     def getDBI(cls):
         """return the database interface"""
-        conn=GetConnection(cls.connectionAlias)
+        conn=getConnection(cls.connectionAlias)
         return conn
     getDBI=classmethod(getDBI)
 
@@ -149,11 +175,12 @@ class PyDO(dict):
         cols=fieldData.keys()
         vals=[fieldData[c] for c in cols]
         converter=conn.getConverter()
-        op=SQLOperator([',']+vals, converter=converter)
-        sql = 'INSERT INTO %s (%s) VALUES  %s' \
+        converted=map(converter, vals)
+        
+        sql = 'INSERT INTO %s (%s) VALUES  (%s)' \
               % (cls.table,
                  ', '.join(cols),
-                 op)
+                 ', '.join(converted))
         res = conn.execute(sql, converter.values, cls._fields)
         if res != 1:
             raise PyDOError, "inserted %s rows instead of 1" % res
@@ -237,6 +264,9 @@ class PyDO(dict):
 
         [todo: examples of use of operators, column-name keyword args,
         order, limit, and offset.]
+
+        If you use SQL directly and pass variables, it is up to
+        you to use the same paramstyle as the underlying driver.
         
         """
         order=fieldData.pop('order', None)
@@ -250,9 +280,7 @@ class PyDO(dict):
                 raise ValueError, "cannot pass keyword args when including sql string"
             sql=args[0]
             values=args[1:]
-            # if you use SQL directly and pass variables, it is up to
-            # you to use the same paramstyle as the underlying driver.
-            # mention this in docstring! XXX
+
             if len(values)==1 and isinstance(values[0], dict):
                 values=values[0]
         else:
@@ -285,12 +313,130 @@ class PyDO(dict):
             return []
     getSome=classmethod(getSome)
 
+    def clear(self):
+        raise AttributeError, "PyDO classes don't implement clear()"
+
+    def delete(self):
+        """remove the row that represents me in the database"""
+        if not self.mutable:
+            # this used to be a value error, but there are no parameters,
+            # so I'm using PyDOError
+            raise PyDOError, "instance isn't mutable!"
+        if not self.unique:
+            raise PyDOError, "cannot delete, no unique index!"
+        conn = self.getDBI()
+        unique, values = self._uniqueWhere(conn, self)
+        # if the class has unique constraints, and all data
+        # is presented, there will be something returned from
+        # unique unless someone is doing bad things to the
+        # object 
+        assert unique
+        sql = 'DELETE FROM %s WHERE %s' % (self.table, unique)
+        conn.execute(sql, values, self._fields)
+        # shadow the class attribute with an instance attribute
+        self.mutable = False
+
+    
+    def refresh(self):
+        """refetch myself from the database"""
+        obj = self.getUnique(**self)
+        if not obj:
+            raise ValueError, "current object doesn't exist in database!"
+        # the ordinary dict update needs to be called here, not the
+        # overloaded method that updates the database!
+        super(PyDO, self).update(obj)
+
+
+    
+    def joinTableSQL(self,
+                     thisAttrNames,
+                     pivotTable,
+                     thisSideColumns,
+                     thatSideColumns,
+                     thatObject,
+                     thatAttrNames,
+                     extraTables = None):
+        """Handle many to many relations.  In short, do a
+        
+        SELECT thatObject.getColumns(1)
+        FROM thatObject.table, pivotTable
+        WHERE pivotTable.thisSideColumn = self[myAttrName]
+        AND pivotTable.thatSideColumn = thatObject.table.thatAttrName
+        
+        and return a list of thatObjects representing the resulting rows.
+        """
+        if extraTables is None:
+            extraTables=[]
+        
+        thisAttrNames = self._convertTupleKW(_tupleize(thisAttrNames))
+        thisSideColumns = _tupleize(thisSideColumns)
+        thatSideColumns = _tupleize(thatSideColumns)
+        thatAttrNames = self._convertTupleKW(_tupleize(thatAttrNames))
+        
+        if len(thisSideColumns) != len(thisAttrNames):
+            raise ValueError, ('thisSideColumns and thisAttrNames must '
+            'contain the same number of elements')
+        if len(thatSideColumns) != len(thatAttrNames):
+            raise ValueError, ('thatSideColumns and thatAttrNames must '
+            'contain the same number of elements')
+        
+        conn = self.getDBI()
+        
+        sql = '%s,%s WHERE ' % (thatObject._baseSelect(1),
+                                ', '.join([pivotTable]+extraTables))
+        
+        thisJoin = []
+        vals = []
+        
+        for attr, col in map(None, thisAttrNames, thisSideColumns):
+            lit, val = conn.sqlStringAndValue(
+                self[attr], attr, self.dbColumns[attr])
+            thisJoin.append('%s.%s = %s' % (pivotTable, col, lit))
+            vals.append(val)
+        
+        sql = '%s%s AND ' % (sql, ' AND '.join(thisJoin))
+        
+        thatJoin = []
+        thatTable = thatObject.table
+        for attr, col in map(None, thatAttrNames, thatSideColumns):
+            thatJoin.append('%s.%s = %s.%s' % (pivotTable,
+                                               col,
+                                               thatTable,
+                                               attr))
+        
+        sql = '%s%s' % (sql, ' AND '.join(thatJoin))
+        return sql, vals
+    
+    
+    def joinTable(self,
+                  thisAttrNames,
+                  pivotTable,
+                  thisSideColumns,
+                  thatSideColumns,
+                  thatObject,
+                  thatAttrNames):
+        """see joinTableSQL for arguments
+        
+        This method executes the statement returned by joinTableSQL
+        with the arguments and produces object from them.
+        """
+        
+        conn = self.getDBI()
+        sql, vals = self.joinTableSQL(thisAttrNames, pivotTable,
+        thisSideColumns, thatSideColumns,
+        thatObject, thatAttrNames)
+        results = conn.execute(sql, vals, thatObject.dbColumns)
+        return map(thatObject, results)        
+    
+
+
+
 ## BELOW ISN'T WORKED ON YET....
 
     def scatterFetchSQL(cls, objs):
         """ Select objects from multiple tables
         
-        Do a scatter fetch (a select from more than one table) based
+        Do a scatter fetch (a select from more than one ta ble) based
         on the relation information in objs which is of the form:
         [
         (object, attributes, destinationObject, destinationAttributes),
@@ -409,137 +555,6 @@ class PyDO(dict):
         return cls.scatterFetchPost(objs, sql, values, cols)
     scatterFetch=classmethod(scatterFetch)
     
-    ##############################
-    ## Public instance methods
-    ##############################
-    
-    def updateRawValues(self, dict):
-        """update self in database with the values in dict"""
-        if not self.mutable:
-            raise ValueError, "instance isn't mutable!"
-        sql = "UPDATE %s SET " % self.table
-        sets = []
-        values = []
-        conn = self.getDBI()
-        atts = []
-        
-        for dbname, value in dict.items():
-            fld=self._fields[dbname]
-            conn.typeCheckAndConvert(v, fld)
-            lit, val = conn.sqlStringAndValue(v, fld)
-            atts.append(dbtype)
-            values.append(val)
-            sets.append("%s = %s" % (dbname, lit))
-        
-        where, wvalues = self._uniqueWhere(conn, self._dict)
-        values = values + wvalues
-        sql = '%s%s WHERE %s' % (sql, ', '.join(sets), where)
-        result = conn.execute(sql, values, self.dbColumns)
-        if result > 1:
-            raise PyDOError, "updated %s rows instead of 1" % result        
-        conn.resetQuery()
-        conn.postInsertUpdate(self, dict, 0)
-    
-    def delete(self):
-        """remove the row that represents me in the database"""
-        if not self.mutable:
-            raise ValueError, "instance isn't mutable!"
-        conn = self.getDBI()
-        unique, values = self._uniqueWhere(conn, self._dict)
-        sql = 'DELETE FROM %s WHERE %s' % (self.table, unique)
-        conn.execute(sql, values, self.dbColumns)
-        # shadow the class attribute with an instance attribute
-        self.mutable = 0
-    
-    def refresh(self):
-        """refetch myself from the database"""
-        obj = apply(self.getUnique, (), self._dict)
-        if not obj:
-            raise ValueError, "current object doesn't exist in database!"
-        #        mutable = self.mutable #save if was deleted, it still is deleted
-        self._dict = obj._dict
-    #        self.mutable = self._cls.mutable
-    
-    def joinTableSQL(self,
-                     thisAttrNames,
-                     pivotTable,
-                     thisSideColumns,
-                     thatSideColumns,
-                     thatObject,
-                     thatAttrNames,
-                     extraTables = []):
-        """Handle many to many relations.  In short, do a
-        
-        SELECT thatObject.getColumns(1)
-        FROM thatObject.table, pivotTable
-        WHERE pivotTable.thisSideColumn = self[myAttrName]
-        AND pivotTable.thatSideColumn = thatObject.table.thatAttrName
-        
-        and return a list of thatObjects representing the resulting rows.
-        """
-        
-        thisAttrNames = self._convertTupleKW(_tupleize(thisAttrNames))
-        thisSideColumns = _tupleize(thisSideColumns)
-        thatSideColumns = _tupleize(thatSideColumns)
-        thatAttrNames = self._convertTupleKW(_tupleize(thatAttrNames))
-        
-        if len(thisSideColumns) != len(thisAttrNames):
-            raise ValueError, ('thisSideColumns and thisAttrNames must '
-            'contain the same number of elements')
-        if len(thatSideColumns) != len(thatAttrNames):
-            raise ValueError, ('thatSideColumns and thatAttrNames must '
-            'contain the same number of elements')
-        
-        conn = self.getDBI()
-        
-        sql = '%s,%s WHERE ' % (thatObject._baseSelect(1),
-                                ', '.join([pivotTable]+extraTables))
-        
-        thisJoin = []
-        vals = []
-        
-        for attr, col in map(None, thisAttrNames, thisSideColumns):
-            lit, val = conn.sqlStringAndValue(
-                self[attr], attr, self.dbColumns[attr])
-            thisJoin.append('%s.%s = %s' % (pivotTable, col, lit))
-            vals.append(val)
-        
-        sql = '%s%s AND ' % (sql, ' AND '.join(thisJoin))
-        
-        thatJoin = []
-        thatTable = thatObject.table
-        for attr, col in map(None, thatAttrNames, thatSideColumns):
-            thatJoin.append('%s.%s = %s.%s' % (pivotTable,
-                                               col,
-                                               thatTable,
-                                               attr))
-        
-        sql = '%s%s' % (sql, ' AND '.join(thatJoin))
-        return sql, vals
-    
-    
-    def joinTable(self,
-                  thisAttrNames,
-                  pivotTable,
-                  thisSideColumns,
-                  thatSideColumns,
-                  thatObject,
-                  thatAttrNames):
-        """see joinTableSQL for arguments
-        
-        This method executes the statement returned by joinTableSQL
-        with the arguments and produces object from them.
-        """
-        
-        conn = self.getDBI()
-        sql, vals = self.joinTableSQL(thisAttrNames, pivotTable,
-        thisSideColumns, thatSideColumns,
-        thatObject, thatAttrNames)
-        results = conn.execute(sql, vals, thatObject.dbColumns)
-        return map(thatObject, results)        
-    
-    
-
 
 
 def _tupleize(item):

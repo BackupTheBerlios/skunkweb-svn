@@ -7,7 +7,7 @@ class Field(object):
 
     __slots__=('name', 'dbtype', 'attrs')
     
-    def __init__(self, name, dbtype, attrs=None):
+    def __init__(self, name, dbtype=None, attrs=None):
         self.name=name
         self.dbtype=dbtype
         if name in keyword.kwlist:
@@ -20,7 +20,7 @@ class Field(object):
     
     def __set__(self, obj, value):
         """descriptor method"""
-        return obj.update[{self.name: value}]
+        return obj.update({self.name: value})
 
     def __str__(self):
         return self.name

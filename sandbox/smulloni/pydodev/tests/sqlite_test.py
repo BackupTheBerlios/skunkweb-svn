@@ -24,9 +24,9 @@ class PyDOUser(base):
     table='pydouser'
     auto_increment={'id' : 1}
     unique=['id']
-    fields=(('id', 'integer'),
-            ('firstname', 'text'),
-            ('lastname', 'text'))
+    fields=('id',
+            'firstname',
+            'lastname')
 
 
 class Article(base):
@@ -39,7 +39,7 @@ class Article(base):
             ('creator', 'int'),
             ('created', 'timestamp'))
 
-InitAlias('sqlitetest', 'sqlite', dict(database=SQLITE_DB), verbose=True)
+initAlias('sqlitetest', 'sqlite', dict(database=SQLITE_DB), verbose=True)
 import logging
 logging.basicConfig()
 from PyDO.log import debug, logger
@@ -63,3 +63,31 @@ class SqliteTest(unittest.TestCase):
 
     def runTest(self):
         pass
+
+    def test_insert(self):
+        users=[PyDOUser.new(refetch=1,
+                            firstname='Colin',
+                            lastname='Powell'),
+               PyDOUser.new(refetch=1,
+                            firstname='Richard',
+                            lastname='Clark'),
+               PyDOUser.new(refetch=1,
+                            firstname='Jacques',
+                            lastname='Chirac'),
+               PyDOUser.new(refetch=1,
+                            firstname='Goldie',
+                            lastname='Hawn')]
+        groups=[PyDOGroup.new(refetch=1,
+                              groupname='ForkLovers'),
+                PyDOGroup.new(refetch=1,
+                              groupname='SpoonLovers'),
+                PyDOGroup.new(refetch=1,
+                              groupname='KnifeLovers'),
+                PyDOGroup.new(refetch=1,
+                              groupname='ChopstickLovers'),
+                PyDOGroup.new(refetch=1,
+                              groupname='HandLovers')]
+
+if __name__=='__main__':
+    unittest.main()
+                        
