@@ -4,10 +4,10 @@ except NameError:
     # Python 2.3 compat
     from sets import Set as set
 
-from PyDO.dbi import getConnection
-from PyDO.field import Field
-from PyDO.exceptions import PyDOError
-from PyDO.operators import AND, EQ, FIELD
+from pydo.dbi import getConnection
+from pydo.field import Field
+from pydo.exceptions import PyDOError
+from pydo.operators import AND, EQ, FIELD
 
 def _tupleize(item):
     if isinstance(item, tuple):
