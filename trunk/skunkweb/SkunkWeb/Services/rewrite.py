@@ -1,5 +1,5 @@
-# Time-stamp: <02/07/15 09:54:01 smulloni>
-# $Id: rewrite.py,v 1.8 2002/07/28 19:18:19 smulloni Exp $
+# Time-stamp: <02/11/09 16:00:56 smulloni>
+# $Id: rewrite.py,v 1.9 2002/11/12 19:53:46 smulloni Exp $
 
 ########################################################################
 #  
@@ -33,7 +33,8 @@ import re
 import sys
 from requestHandler.protocol import PreemptiveResponse
 
-Configuration.mergeDefaults(rewriteRules = [],
+Configuration.mergeDefaults(rewriteBeforeScope=1,
+                            rewriteRules = [],
                             rewriteApplyAll = 1,
                             rewriteMatchToArgs=1)
 
@@ -218,13 +219,22 @@ def __initHooks():
     import SkunkWeb.constants as sc
     import requestHandler.requestHandler as rh
     jobGlob="%s*" % sc.WEB_JOB
-    wp.PreHandleConnection.addFunction(_rewritePre, jobGlob)
+    if Configuration.rewriteBeforeScope:
+        hook=wp.HaveConnection
+    else:
+        hook=wp.PreHandleConnection
+    hook.addFunction(_rewritePre, jobGlob)
     rh.CleanupRequest.addFunction(_rewritePost, jobGlob)
 
 __initHooks()
 
 ########################################################################
 # $Log: rewrite.py,v $
+# Revision 1.9  2002/11/12 19:53:46  smulloni
+# moved rewrite's rewriting to an earlier hook; progress on tutorial
+# demo app; put the code from CONNECTION.extract_args in a separate module
+# so it can be used by formlib.
+#
 # Revision 1.8  2002/07/28 19:18:19  smulloni
 # changes to PyDO documentation, and added a dynamic rewriter to rewrite.py
 #
