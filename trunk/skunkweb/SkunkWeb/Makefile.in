@@ -16,7 +16,7 @@
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
 # makefile for Skunkweb
-# $Id: Makefile.in,v 1.15 2002/06/28 21:09:00 smulloni Exp $
+# $Id: Makefile.in,v 1.16 2002/07/11 22:57:00 smulloni Exp $
 # Time-stamp: <01/04/10 11:43:17 smulloni>
 ########################################################################
 
@@ -33,7 +33,7 @@ services_dir    = $(skunklib)/Services
 util_dir	= @prefix@/util
 conf_dir	= @sysconfdir@
 localstate_dir  = @localstatedir@
-log_dir		= $(localstate_dir)/log
+log_dir		= @LOGDIR@
 pid_dir		= $(localstate_dir)/run
 components 	= @MOD_SKUNKWEB@ Services
 
@@ -145,6 +145,9 @@ clean:
 
 ########################################################################
 # $Log: Makefile.in,v $
+# Revision 1.16  2002/07/11 22:57:00  smulloni
+# configure changes to support other layouts
+#
 # Revision 1.15  2002/06/28 21:09:00  smulloni
 # groundwork laid for preventing attribute assignment to Configuration.
 #
