@@ -46,7 +46,10 @@ and tests added.
 I'm using Python 2.4 constructs now -- decorators and generator
 expressions.
 
+--
 
+Perhaps refetch should be implicit if there is a sequenced field and
+the value isn't stated.
 
 
 

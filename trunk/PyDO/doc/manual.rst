@@ -39,12 +39,12 @@ Overview
     ``PyDO.PyDO`` class, we shall just write ``PyDO``.)
 
 PyDO's basic strategy is to let you define a ``PyDO`` subclass for
-every table in a database that you wish to represent.  Each instance
-of a PyDO class contains the data for one row in a database table. As
-``PyDO`` is a ``dict`` subclass, you can access this data by key, or,
-if the class attribute ``use_attributes`` is true (the default) by
-attribute.  In either case, the key or attribute name is the name of
-the database column::
+every table in a database that you wish to represent.  Each ``PyDO``
+instance contains the data for one row in a database table. As
+``PyDO`` is a ``dict`` subclass, you can access this data by key, and,
+if the class attribute ``use_attributes`` is true (the default) also
+by attribute.  In either case, the key or attribute name is the name
+of the database column::
 
    >>> MyPyDOInstance.title
    'Fustian Wonders'
@@ -54,7 +54,8 @@ the database column::
 If you have column names that are Python keywords (such as "pass",
 "class", etc.)  a warning will be raised when the class is defined and
 an attempt at attribute access of that field will give rise to a
-SyntaxError, but you'll still be able to access it dictionary-style.
+``SyntaxError``, but you'll still be able to access it
+dictionary-style.
 
 Instances are obtained, not by directly invoking the PyDO class's
 constructor, but by calling one of various class methods, discussed
@@ -74,17 +75,16 @@ Multiple updates can be done together via ``update()``::
     MyInstance.update(dict(fieldname=newValue,
                            otherFieldname=otherValue))
 
-If you attempt to mutate an immutable PyDO instance, a ``PyDOError``
-will be raised.
+Each mutation will cause an UPDATE statement to be executed on the
+underlying database. If you attempt to mutate an immutable ``PyDO``
+instance, a ``PyDOError`` will be raised.
 
 
 Defining Table Classes
 ----------------------
 
-To create a database access api for a database using PyDO, you define
-a subclasses of ``PyDO``, each corresponding to a single database
-table and declaring the attributes of that table's columns by
-populating class attributes::
+To model a database table, you define a subclass of ``PyDO`` and set
+some class attributes that describe the table::
 
   from PyDO import PyDO, Sequence, Unique
 
@@ -116,14 +116,14 @@ connection.
 
 The ``table`` attribute is simply the name of the table, view, or
 table-like entity (set function, for instance).  If the database
-supports schemas, like later version of postgresql, the schema name
+supports schemas, like later version of PostgreSQL, the schema name
 can be included here, if desired (e.g., ``myschema.mytable``).
 
 The ``fields`` attribute should be a tuple or list of either ``Field``
 instances (of which ``Sequence`` and ``Unique`` are subclasses),
 strings (which should be column names), or tuples that can be passed
 to the ``Field`` constructor (i.e., ``Field(**fieldTuple)``).  You can
-use your own ``Field`` subclasses if you wish to store additional
+also use your own ``Field`` subclasses if you wish to store additional
 information about fields (e.g., data type, validators, etc.).
 
 A ``Sequence`` field is used to represent either an auto-increment
@@ -169,21 +169,24 @@ may be read, but not changed, through the class methods
 Inheritance Semantics
 +++++++++++++++++++++
 
-PyDO classes are normal Python classes which use a metaclass to parse
-the ``field`` and ``unique`` class attribute declarations and store
-the derived information in private fields.  Special inheritance
-semantics obtain for ``field`` and ``unique`` in that the privately
-stored parsed values corresponding to those declarations are inherited
-from superclasses even if they are not declared in the subclass.
-Subclasses therefore augment the field listing of their base classes.
-This behavior is applicable not only to PostgreSQL table inheritance,
-but to defining base or mixin classes, which need not be PyDO
-subclasses themselves, that define groups of fields that are shared by
-multiple tables.  Normally, if a subclasses redeclares a field
-declared by a base class, the subclass's declaration overrides, but an
+``PyDO`` classes are normal Python classes (subclassing ``dict``)
+which use a metaclass to parse the ``field`` and ``unique`` class
+attribute declarations and store the derived information in private
+fields.  Special inheritance semantics obtain for ``field`` and
+``unique``, in that the privately stored parsed values corresponding
+to those declarations are inherited from superclasses even if
+``fields`` is redeclared in the subclass, shadowing any superclass's
+declaration.  Subclasses therefore may augment the field listing of
+their base classes.  This behavior is applicable not only to
+PostgreSQL table inheritance, but to defining base or mixin classes
+(which need not be ``PyDO`` subclasses themselves) that define groups
+of fields that are shared by multiple tables.  
+
+Normally, if a subclasses redeclares a field declared by a base class,
+the subclass's declaration overrides that of the base class, but an
 exception is made for declarations that simply state the fieldname as
 a string; in that case, any previous, more informative declaration
-will be inherited.  
+will be inherited.
 
     *Caveat*: This is generally useful (in the case of projections
     particularly --see below) but if you wished to override a
@@ -196,19 +199,20 @@ Projections
 +++++++++++
 
 An exception is made to the default inheritance behavior -- that
-subclasses augment their superclasses' field listing -- for the case
-of projection subclasses, in which the local declaration of fields
-overrides that of superclasses.  Projections are useful when you wish
-to select only a few columns from a larger table.  To derive a
-projection from a PyDO class, simply call the class method
-``project()`` on the class, passing in a tuple of fields that you wish
-to include in the projection::
+subclasses augment, rather than shadow, their superclasses' field
+listing -- for the case of projection subclasses, in which the local
+declaration of fields overrides that of superclasses.  Projections are
+useful when you wish to select only a few columns from a larger table.
+To derive a projection from a ``PyDO`` class, simply call the class
+method ``project()`` on the class, passing in a tuple of fields that
+you wish to include in the projection::
 
    myProjection=MyBaseClass.project(('id', 'title'))
 
-The return value is a new PyDO class. This class is cached, so if you
-call ``project()`` again with the same arguments you'll get a
-reference to the same class.
+The return value is a subclass of ``myBaseClass`` with the fields
+``id`` and ``title``. This class is cached, so if you call
+``project()`` again with the same arguments you'll get a reference to
+the same class.
 
 Because of the special inheritance semantics for simple string field
 declarations, if ``MyBaseClass`` in the above example is defined as
@@ -236,20 +240,23 @@ There are two class methods provided for performing SELECTs.
    {'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' : None}]
 
 ``getUnique`` returns a single instance.  You must provide enough
-information to getUnique to satisfy an uniqueness constraint; this is
-accomplished by passing in keyword parameters where the keywords are
-column names corresponding to the columns of a uniqueness constraint
-declared for the object, and the values are what you are asserting
-those columns equal::
+information to ``getUnique`` to satisfy precisely one declared
+uniqueness constraint; this is accomplished by passing in keyword
+parameters where the keywords are column names corresponding to the
+columns of a uniqueness constraint declared for the object, and the
+values are what you are asserting those columns equal for the unique
+row::
 
   >>> myFungi.getUnique(id=2)
   {'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' : None}
   >>> myFungi.getUnique(id=55) is None
-  True
+  True 
   
-Assuming that ``comment`` is not a unique field above, you could not
-add selection criteria based on ``comment`` to ``getUnique()``, but
-could to ``getSome``::
+``getSome`` is similar, but admits a much wider range of query
+options, and returns a list of ``PyDO`` instances.  Assuming that
+``comment`` is not a unique field above, you could not add selection
+criteria based on ``comment`` to ``getUnique()``, but could to
+``getSome``::
 
  >>> myFungi.getSome(comment=None)
  [{'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' :  None}]
@@ -311,16 +318,50 @@ are synonyms).  Another helper class is ``SET``, for use with the
     >>> myFungi.getSome(IN(FIELD('comment'), 
     ...                    SET('nice shroom!', 'has pincers')))
 
-Order, Offset and Limit
+
+Order, Limit and Offset
 +++++++++++++++++++++++
 
-[TBD]
+``getSome()`` accepts three additional keyword arguments::
+
+   order 
+        a fieldname to order by, with optional ' ASC' or ' DESC'
+        suffix, or a tuple of such fieldnames.
+   offset
+        an integer
+   limit 
+        an integer
 
 
 Inserts, Updates, and Deletes
 -----------------------------
 
-[TBD]
+To insert a new record in the database and create the corresponding
+``PyDO`` object, use the class method ``new()``::
+
+   >>> subscription=Subscriptions.new(email='alvin@krinst.org',
+                                      magazine='NYRB')
+   >>> subscription
+   {'email' : 'alvin@krinst.org', 'magazine' : 'NYRB'}
+
+If the object has a sequenced field and you want to get the default
+value for it rather than specifying an out-of-sequence value, pass the
+keyword argument ``refetch`` with a true value::
+
+   >>> poem=Sonnet.new(refetch=True,
+                       title='Anguished Parsnips',
+                       body='\n'.join(' '.join(['oy veh!' * 5]) * 14))
+   >>> poem.id
+   456740
+
+Updating an instance has already been described::
+ 
+   >>> poem.title='Sayings of the Robo-Rabbi'
+
+It is also possible to update potentially many rows at once with the
+class method ``updateSome``::
+
+   >>> # TBD   
 
 
 Joins
