@@ -1,5 +1,9 @@
+# Time-stamp: <01/10/15 22:56:21 smulloni>
+# $Id: constants.py,v 1.1.1.1.2.1 2001/10/16 03:27:15 smulloni Exp $
+
 #  
-#  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>
+#  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>,
+#                     Jacob Smullyan <smulloni@smullyan.org>
 #  
 #      This program is free software; you can redistribute it and/or modify
 #      it under the terms of the GNU General Public License as published by
@@ -15,8 +19,6 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: constants.py,v 1.1 2001/08/05 14:59:37 drew_csillag Exp $
-# Time-stamp: <01/05/04 13:31:34 smulloni>
 ########################################################################
 
 """
@@ -24,10 +26,11 @@ a repository for constants defined by other services.
 """
 
 # Keys in the requestHandler session dictionary.
-# Dependent services will add more here.
+# Dependent services will add more here (or munge them in).
 
 IP='ip'
 PORT='port'
+UNIXPATH='unixpath'
 JOB='job'
 CONNECTION='connection'
 HOST='host'
@@ -36,8 +39,7 @@ LOCATION='location'
 HTTP_VERSION='httpVersion'
 CONNECTION_CLOSE='connectionClose'
 
-# Job names.  These shouldn't be  defined here, but
-# I haven't figured out a better way, yet -- FIX ME ***
+# Job names.  
 
 WEB_JOB="/web/"
 AE_COMPONENT_JOB='/ae_component/'
@@ -46,11 +48,19 @@ TEMPLATING_JOB= WEB_JOB + AE_COMPONENT_JOB + '/templating/'
 
 ########################################################################
 # $Log: constants.py,v $
-# Revision 1.1  2001/08/05 14:59:37  drew_csillag
-# Initial revision
+# Revision 1.1.1.1.2.1  2001/10/16 03:27:15  smulloni
+# merged HEAD (basically 3.1.1) into dev3_2
+#
+#
+# Revision 1.2  2001/10/02 00:06:35  smulloni
+# fixes for unix sockets, which were broken due to profound cognitive
+# impairment.
 #
 # Revision 1.2  2001/07/09 20:38:40  drew
 # added licence comments
+#
+# Revision 1.1.1.1  2001/08/05 14:59:37  drew_csillag
+# take 2 of import
 #
 # Revision 1.1  2001/05/04 18:38:53  smullyan
 # architectural overhaul, possibly a reductio ad absurdum of the current

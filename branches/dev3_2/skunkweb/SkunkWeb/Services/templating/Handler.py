@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-#$Id: Handler.py,v 1.1.1.1.2.1 2001/09/19 05:07:15 smulloni Exp $
+# $Id: Handler.py,v 1.1.1.1.2.2 2001/10/16 03:27:15 smulloni Exp $
 
 import AE.Cache
 import AE.Component
@@ -41,7 +41,8 @@ Configuration.mergeDefaults(
     interpretMimeTypes = [
         "text/html",
         "application/x-python"
-        ]
+        ],
+    defaultIndexHtml = None
     )
 
 def _handleException(connObj):
@@ -59,9 +60,9 @@ def _handleException(connObj):
     connObj.responseHeaders['Content-Type'] = 'text/plain'
     return connObj.response()
 
-def _pathSlashRedirect(connObj, uri):
+def _pathSlashRedirect(connObj):
     connObj.responseHeaders['Location'] = (
-        "http://%s%s/" % (connObj.requestHeaders['Host'], uri))
+        "http://%s%s/" % (connObj.requestHeaders['Host'], connObj.realUri))
     connObj.setStatus(301) # redirect
     return connObj.response()
 
@@ -75,12 +76,21 @@ def requestHandler(connObj, sessionDict):
     except:
         return
     
+#<<<<<<< Handler.py
     # if a directory fix uri as appropriate
     if fs.isdir(fixed):
         DEBUG(TEMPLATING, "%s is a directory" % fixed)
-        if uri[-1] != '/':
+        if (not uri) or uri[-1] != '/':
+##=======
+##    if stat.S_ISDIR(st[stat.ST_MODE]): # if a directory fix uri as appropriate
+##        DEBUG(TEMPLATING, "%s is a directory" % uri)
+##        if not uri:
+##            DEBUG(TEMPLATING, "no uri, / redirecting")
+##            return _pathSlashRedirect(connObj)
+##        elif uri[-1] != '/':
+##>>>>>>> 1.3
             DEBUG(TEMPLATING, "doesn't end in / redirecting")
-            return _pathSlashRedirect(connObj, uri)
+            return _pathSlashRedirect(connObj)
         else:
             DEBUG(TEMPLATING, "looping over indexDocuments")
             for i in Configuration.indexDocuments:
@@ -98,8 +108,16 @@ def requestHandler(connObj, sessionDict):
                     connObj.statInfo = st
                     break
             if not st: #no index document exists
-                return
+##<<<<<<< Handler.py
+##                return
 
+##=======
+                if Configuration.defaultIndexHtml:
+                    s = Configuration.defaultIndexHtml
+                    st = AE.Cache._statDocRoot(uri)
+                else:
+                    return
+#>>>>>>> 1.3
             connObj.uri = s
             DEBUG(TEMPLATING, "uri is now %s" % s)
 

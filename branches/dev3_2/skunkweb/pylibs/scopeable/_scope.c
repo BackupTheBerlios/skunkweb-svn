@@ -1,6 +1,6 @@
 /* 
- * $Id: _scope.c,v 1.8.2.1 2001/09/19 05:38:46 smulloni Exp $ 
- * Time-stamp: <01/09/19 01:27:28 smulloni>
+ * $Id: _scope.c,v 1.8.2.2 2001/10/16 03:27:15 smulloni Exp $ 
+ * Time-stamp: <01/10/15 23:00:04 smulloni>
  */
 
 /***********************************************************************
@@ -364,7 +364,7 @@ static PyObject *Scopeable_pop(PyObject *self, PyObject *args) {
     popped=PyList_GetItem(dictList, len-1);
     Py_INCREF(popped);
     ndl=PyList_GetSlice(dictList, 0, len-1);
-    /*Py_INCREF(ndl);*/
+    Py_DECREF(ndl);
     PyMapping_SetItemString(((PyInstanceObject *)self)->in_dict, DICTLIST, ndl);
 
     _resetMash(self);
@@ -386,9 +386,9 @@ static PyObject *Scopeable_trim(PyObject *self, PyObject *args) {
   dictList=GET_DICTLIST(self);
   len=PyList_Size(dictList);
   if (len>1) {
-    newList=PyList_GetSlice(dictList, 0, len-1);
-    Py_INCREF(newList);
+    newList=PyList_GetSlice(dictList, len-1, len);
     PyMapping_SetItemString(((PyInstanceObject *)self)->in_dict, DICTLIST, newList);
+    Py_DECREF(newList);
     _resetMash(self);
     Py_DECREF(dictList);
     dictList=NULL;
@@ -487,6 +487,15 @@ void init_scope(void) {
 
 /************************************************************************
  * $Log: _scope.c,v $
+ * Revision 1.8.2.2  2001/10/16 03:27:15  smulloni
+ * merged HEAD (basically 3.1.1) into dev3_2
+ *
+ * Revision 1.10  2001/10/02 02:35:34  smulloni
+ * support for scoping on unix socket path; very serious scope bug fixed.
+ *
+ * Revision 1.9  2001/09/19 05:37:59  smulloni
+ * fixed typo.
+ *
  * Revision 1.8.2.1  2001/09/19 05:38:46  smulloni
  * fixed typo.
  *

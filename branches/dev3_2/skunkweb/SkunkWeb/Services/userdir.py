@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: userdir.py,v 1.4 2001/10/11 22:08:55 smulloni Exp $
+# $Id: userdir.py,v 1.4.2.1 2001/10/16 03:27:15 smulloni Exp $
 ########################################################################
 import pwd
 from SkunkWeb import Configuration

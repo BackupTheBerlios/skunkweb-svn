@@ -1,5 +1,6 @@
-#   Time-stamp: <01/09/17 15:01:41 smulloni> 
-#   $Id: TODO,v 1.13.2.1 2001/09/19 05:25:35 smulloni Exp $
+#   Time-stamp: <01/10/15 22:47:06 smulloni> 
+#   $Id: TODO,v 1.13.2.2 2001/10/16 03:27:14 smulloni Exp $
+
 
 * - TODO
 - - low priority
@@ -22,12 +23,17 @@ Do Quick release
 
 SkunkWeb 3.1
 ------------------------------
+* unix socket fixes
 
-Future stuff
+SkunkWeb 3.2
 ------------------------------
 * DAV server [js]
 L support for cheetah templates
 * pluggable file retrieval system for AE (would have to rework pars)
+* DAV support built on httpd;
+
+Future stuff
+------------------------------
 * a means to pass arguments to a cachable component that do not become
   part of the cache key
 * ways to get expired and rendered flags via the component tags
@@ -51,7 +57,6 @@ L support for cheetah templates
     > The latter, yes, so apps other than SkunkWeb can use SW components.  And
     > just as important, so SW can make component calls to XML-RPC servers.
 * remote debugging (again!);
-* DAV support built on httpd;
 * SW products (combined par/service), with an swpython-based installer:
   wiki, bulletin board, and other standard web toys (the toys themselves
   would obviously not be part of the core);
@@ -60,7 +65,6 @@ L support for cheetah templates
   without knowing whether it is remote or, if remote, what host it is from.
   Would be useful for product deployment; this could be done with a component
   handler that delegates to other handlers depending on configuration options.
-
 
 
 Unknowns
@@ -97,6 +101,7 @@ N add a superteam service
 
 DONE
 ------------------------------
+X add semi-autoindex functionality
 X update PyDO/postconn docs about host|port thing
 X update PyDO/postconn docs about SERIAL columns
 X add host|port thing to pgenscript

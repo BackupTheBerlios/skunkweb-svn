@@ -1,3 +1,5 @@
+# Time-stamp: <01/10/15 22:52:00 smulloni>
+
 #  
 #  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>
 #  
@@ -15,8 +17,8 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: protocol.py,v 1.3.2.1 2001/09/27 03:36:07 smulloni Exp $
-# Time-stamp: <01/05/04 15:57:35 smulloni>
+# $Id: protocol.py,v 1.3.2.2 2001/10/16 03:27:15 smulloni Exp $
+#
 ########################################################################
 
 from SkunkExcept import SkunkCriticalError
@@ -111,7 +113,7 @@ class HTTPConnection:
         self.responseCookie = Cookie.SimpleCookie()        
 
     def _initURI(self, env):
-        self.uri=env.get('SCRIPT_NAME', '') + env.get('PATH_INFO', '')
+        self.uri=self.realUri = env.get('SCRIPT_NAME', '') + env.get('PATH_INFO', '')
 
     def setContentType(self, type):
         self.responseHeaders['Content-Type'] = type
@@ -318,14 +320,27 @@ def _cleanupConfig(requestData, sessionDict):
     if sessionDict.has_key(constants.LOCATION):
         del sessionDict[constants.LOCATION]
     Configuration.trim()
-    Configuration.scope({constants.IP : sessionDict[constants.IP],
-                         constants.PORT: sessionDict[constants.PORT]})
+
+    if sessionDict.has_key(constants.IP):
+        Configuration.scope({constants.IP : sessionDict[constants.IP],
+                             constants.PORT: sessionDict[constants.PORT]})
+    elif sessionDict.has_key(constants.UNIXPATH):
+        Configuration.scope({constants.UNIXPATH : sessionDict[constants.UNIXPATH]})
     #Configuration.saveMash()
 
 ########################################################################
 # $Log: protocol.py,v $
+# Revision 1.3.2.2  2001/10/16 03:27:15  smulloni
+# merged HEAD (basically 3.1.1) into dev3_2
+#
 # Revision 1.3.2.1  2001/09/27 03:36:07  smulloni
 # new pylibs, work on PyDO, code cleanup.
+#
+# Revision 1.5  2001/10/02 02:35:34  smulloni
+# support for scoping on unix socket path; very serious scope bug fixed.
+#
+# Revision 1.4  2001/09/21 20:16:31  drew_csillag
+# added userdir service (and subsidiary changes to other services) and multi-line ability for <:call:> tag
 #
 # Revision 1.3  2001/09/04 19:12:57  smulloni
 # integrated scopeable package into SkunkWeb.

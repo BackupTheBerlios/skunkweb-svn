@@ -15,9 +15,11 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-#$Id: Executables.py,v 1.1 2001/08/05 15:00:37 drew_csillag Exp $
+# $Id: Executables.py,v 1.1.1.1.2.1 2001/10/16 03:27:15 smulloni Exp $
+
 import sys
 import cStringIO
+import copy
 
 from SkunkExcept import *
 from DT import DT_REGULAR, DT_DATA, DT_INCLUDE
@@ -130,8 +132,14 @@ class STMLExecutable:
             return namespace
             
     def run( self ):
-        return self.dt(self.namespace, self.namespace,
-                       _hidden_namespace, self.compType)
+        hns = copy.copy(_hidden_namespace)
+        hns.OUTPUT = cStringIO.StringIO()
+        sys.stdout = hns.OUTPUT
+        try:
+            return self.dt(self.namespace, self.namespace,
+                           hns, self.compType)
+        finally:
+            sys.stdout = sys.__stdout__
         
 executableByTypes = {
     ("text/x-stml-component",             DT_INCLUDE) : STMLExecutable,

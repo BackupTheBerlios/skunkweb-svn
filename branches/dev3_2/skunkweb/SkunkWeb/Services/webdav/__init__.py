@@ -1,5 +1,5 @@
-# $Id: __init__.py,v 1.1.2.1 2001/09/27 03:36:07 smulloni Exp $
-# Time-stamp: <01/09/26 23:24:16 smulloni>
+# $Id: __init__.py,v 1.1.2.2 2001/10/16 03:27:15 smulloni Exp $
+# Time-stamp: <01/10/07 14:05:59 smulloni>
 
 ########################################################################  
 #  Copyright (C) 2001 Jacob Smullyan <smulloni@smullyan.org>
@@ -25,6 +25,15 @@
 def __initFlag():
     import SkunkWeb.ServiceRegistry as sr
     sr.registerService('webdav')
+
+def __initConfig():
+    import SkunkWeb.Configuration as C
+    import os
+    C.mergeDefaults(
+        webdavDB=os.join(C.SkunkRoot, 'var/run/WEBDAVdb'),
+        webdavFS=fs.WebdavFS(),
+        )
+    
     
 
 def __initHooks():

@@ -1,5 +1,5 @@
 # $Id$
-# Time-stamp: <01/09/24 21:27:03 smulloni>
+# Time-stamp: <01/10/07 14:14:31 smulloni>
 
 ########################################################################
 #  
@@ -162,9 +162,15 @@ class PathPropertyStore:
 
 class LocalFS(FS):
 
+    def __init__(self, followSymlinks=0):
+        self.followSymlinks=followSymlinks
+
     def ministat(self, path):
         try:
-            return os.stat(path)[6:10]
+            if self.followSymlinks:
+                return os.stat(path)[6:10]
+            else:
+                return os.lstat(path)[6:10]
         except os.error, oyVeh:
             raise VFSException, "[Errno %d] %s: %s" % (oyVeh.errno,
                                                        oyVeh.strerror,
@@ -176,7 +182,7 @@ class LocalFS(FS):
         os.makedirs(dir)
     
     def remove(self, path):
-        is self.isdir(path):
+        if self.isdir(path):
             shutil.rmtree(path)
         else:
             os.remove(path)
@@ -220,6 +226,9 @@ class LocalFS(FS):
 
 ########################################################################
 # $Log$
+# Revision 1.1.2.2  2001/10/16 03:27:15  smulloni
+# merged HEAD (basically 3.1.1) into dev3_2
+#
 # Revision 1.1.2.1  2001/09/27 03:36:07  smulloni
 # new pylibs, work on PyDO, code cleanup.
 #

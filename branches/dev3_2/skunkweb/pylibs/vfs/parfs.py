@@ -1,5 +1,5 @@
 # $Id$
-# Time-stamp: <01/09/22 18:24:57 smulloni>
+# Time-stamp: <01/09/28 12:47:29 smulloni>
 
 ######################################################################## 
 #  Copyright (C) 2001 Jocob Smullyan <smulloni@smullyan.org>
@@ -49,13 +49,16 @@ class ParFS(FS):
                       names)
 
     def isfile(self, path):
-        return !self.__pfile.isdir(path)
+        return not self.__pfile.isdir(path)
 
     def isdir(self, path):
         return self.__pfile.isdir(path)
 
 ########################################################################
 # $Log$
+# Revision 1.1.2.2  2001/10/16 03:27:15  smulloni
+# merged HEAD (basically 3.1.1) into dev3_2
+#
 # Revision 1.1.2.1  2001/09/27 03:36:07  smulloni
 # new pylibs, work on PyDO, code cleanup.
 #

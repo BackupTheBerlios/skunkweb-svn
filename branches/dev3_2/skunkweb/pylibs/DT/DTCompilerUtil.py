@@ -15,8 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: DTCompilerUtil.py,v 1.1 2001/08/05 15:00:49 drew_csillag Exp $
-# Time-stamp: <01/04/12 13:13:08 smulloni>
+# $Id: DTCompilerUtil.py,v 1.1.1.1.2.1 2001/10/16 03:27:15 smulloni Exp $
 ########################################################################
 
 import sys
@@ -67,7 +66,7 @@ def pyifyArgs(tag, args, parenthesize_exprs = 0):
 
         if type(nd[k]) == types.StringType:
             try:
-                compile(nd[k], nd[k], 'exec')
+                compile(nd[k]+'\n', nd[k], 'exec')
             except SyntaxError, val:
                 raise DTExcept.DTCompileError ( tag, 
                             'syntax error in argument: %s' % val)
@@ -87,6 +86,11 @@ class Output:
 
     def write(self, indent, s):
         self.textlist.append((' '*indent) + s)
+
+    def writemultiline(self, indent, s):
+        it = ' '*indent
+        for i in s.split('\n'):
+            self.textlist.append(it + i)
 
     def getText(self):
         return string.join(self.textlist,'\n')+'\n'
@@ -157,7 +161,8 @@ def setup_h ( cur_h ):
     Add some variables to our hidden namespace
     """
     cur_h.NEWOUTPUT = StringIO.StringIO
-    cur_h.OUTPUT = cur_h.NEWOUTPUT()
+    if not hasattr(cur_h, 'OUTPUT'):
+        cur_h.OUTPUT = cur_h.NEWOUTPUT()
 
     if not hasattr ( cur_h, 'VALFMTRGY' ):
         cur_h.VALFMTRGY = DTCommon.ValFmtRgy
@@ -189,8 +194,23 @@ def checkName(tag, argname, val, ppval = None):
 
 ########################################################################
 # $Log: DTCompilerUtil.py,v $
-# Revision 1.1  2001/08/05 15:00:49  drew_csillag
-# Initial revision
+# Revision 1.1.1.1.2.1  2001/10/16 03:27:15  smulloni
+# merged HEAD (basically 3.1.1) into dev3_2
+#
+# Revision 1.4  2001/09/21 21:07:14  drew_csillag
+# now made
+# it so that if you have a multi-line <:call:> tag, you don't have
+# to have the ':> on it's own line for it to work.
+#
+# Revision 1.3  2001/09/21 20:36:08  drew_csillag
+# fixed so print statements in templates now work
+#
+# Revision 1.2  2001/09/21 20:16:31  drew_csillag
+# added userdir service (and subsidiary changes to other services) and multi-line ability for <:call:> tag
+#
+# Revision 1.1.1.1  2001/08/05 15:00:49  drew_csillag
+# take 2 of import
+#
 #
 # Revision 1.26  2001/07/09 20:38:41  drew
 # added licence comments

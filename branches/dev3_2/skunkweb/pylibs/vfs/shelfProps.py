@@ -1,5 +1,5 @@
 # $Id$
-# Time-stamp: <01/09/23 11:00:06 smulloni>
+# Time-stamp: <01/09/29 21:19:57 smulloni>
 
 ######################################################################## 
 #  Copyright (C) 2001 Jocob Smullyan <smulloni@smullyan.org>
@@ -32,6 +32,7 @@ class ShelfPathPropertyStore(PathPropertyStore):
             self.__db=shelve.open(dbname)
         
     def getproperty(self, path, property):
+        property=str(property)
         if db.has_key(path):
             pathhash=db[path]
             if pathhash.has_key(property):
@@ -39,6 +40,7 @@ class ShelfPathPropertyStore(PathPropertyStore):
         raise KeyError, property
             
     def setproperty(self, path, property, value):
+        property=str(property)
         if db.has_key(path):
             pathhash=db[path]
             pathhash[property]=value
@@ -52,10 +54,13 @@ class ShelfPathPropertyStore(PathPropertyStore):
         return {}
 
     def has_property(self, path, property):
-        return self.properties().has_key(property)
+        return self.properties().has_key(str(property))
             
 ########################################################################
 # $Log$
+# Revision 1.1.2.2  2001/10/16 03:27:15  smulloni
+# merged HEAD (basically 3.1.1) into dev3_2
+#
 # Revision 1.1.2.1  2001/09/27 03:36:07  smulloni
 # new pylibs, work on PyDO, code cleanup.
 #

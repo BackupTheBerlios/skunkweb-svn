@@ -1,3 +1,59 @@
+
+2001-10-11  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* SkunkWeb/Services/userdir.py (doUserDirPost): fixed typo.
+
+2001-10-10  Drew Csillag  <drew@starmedia.net>
+
+	* SkunkWeb/Services/userdir.py(doUserDirPost): fix to function
+	signature.  Had extra stuff.
+
+2001-10-02  Drew Csillag  <drew@naxos.starmedia.net>
+
+	* 3.1beta3 cut
+
+2001-10-01  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* SkunkWeb/SkunkWeb/KickStart.py (CONFIG_STRING): added new imports into sw.conf
+	environment.
+
+	* SkunkWeb/Services/web/protocol.py (_cleanupConfig): cleanup hijinxs necessary for 
+	dealing with UNIXPath.
+
+	* pylibs/scopeable/_scope.c: Bizarrely dumb error in trim() repaired.
+
+	* SkunkWeb/SkunkWeb/ConfigAdditives.py (UNIXPath): added scope directive for sw.conf
+	for unix sockets, rather maladroitly called UNIXPath.
+
+	* SkunkWeb/Services/requestHandler/requestHandler.py (RequestHandler.__initPorts): 
+	fixed bug that would appear if you left out the permissions of the unix socket from 
+	sw.conf.
+
+	* pylibs/SocketMan/SocketMan.py (SocketMan._run): added a more useful error trace.
+
+	* SkunkWeb/SkunkWeb/constants.py (UNIXPATH): added constant for sessionDict key
+
+	* SkunkWeb/Services/requestHandler/requestHandler.py (_beginSession): fix
+	for unix sockets.
+
+2001-10-01  Drew Csillag  <drew@starmedia.net>
+
+	* SkunkWeb/sw.conf.in: added userdir config and defaultIndexHtml
+	stuff
+
+	* SkunkWeb/Services/templating/Handler.py: added functionality
+	for defaultIndexHtml
+
+	* docs/opman/opman.tex: added bit about defaultIndexHtml
+
+	* pylibs/PyDO/doc, pylibs/PyDO/example: Added docs re: scatterFetch*
+
+	* pylibs/PyDO/PyDO.py: moved scatterFetch* methods to static_ section
+
+2001-09-29  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* pylibs/xmlutils.py (end): essential fixes.
+
 2001-09-26  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* SkunkWeb/Services/httpd/protocol.py (jobGlob): some minor cleanup.
@@ -19,6 +75,64 @@
 
 	* pylibs/PyDO/operators.py (__makeOperators): adding changes made a couple of weeks ago,
 	all of which I need to reexamine, to enrich the user-space query syntax.
+	
+
+2001-09-26  Drew Csillag  <drew@starmedia.net>
+
+	* pylibs/static.py: fixed so static classes not defined in modules
+	won't blow up
+
+2001-09-25  Drew Csillag  <drew@starmedia.net>
+
+	* pylibs/PyDO/postconn.py: never stored connection in itself
+	if using cache
+
+	* pylibs/PyDO/doc: fixed connectstring inaccuracy
+
+	* pylibs/PyDO/PyDO.py: made commit and rollback static methods
+
+	* pylibs/PostgreSql/__init__.py: forgot to import SkunkExcept
+	
+2001-09-24  Drew Csillag  <drew@starmedia.net>
+
+	* 3.1beta2 cut
+
+	* pylibs/AE/Executables.py: fixed idiocy bug introduced when
+	making print statements work in STML templates
+
+2001-09-21  Drew Csillag  <drew@starmedia.net>
+
+	* pylibs/DT/DTTags.py, pylibs/DT/DTCompilerUtil: now made
+	it so that if you have a multi-line <:call:> tag, you don't have
+	to have the ':> on it's own line for it to work.
+
+	* pylibs/DT/DTCompilerUtil.py, pylibs/AE/Executables.py: made
+	so print statements in templates now work.
+
+	* configure.in, SkunkWeb/configure.in: added userdir to help and
+	default list of services
+
+	* SkunkWeb/Services/web/protocol.py (HTTPConnection._initURI): now
+	creates self.realUri so that we know what is actually requested in
+	the event we screw with self.uri later.
+	
+	* SkunkWeb/Services/templating/Handler.py (_pathSlashRedirect): no
+	longer requires the uri since it can fetch it from the connection
+	anyway.  Now uses realUri (not any munged one we might have
+	replaced uri with) since we want the redirect to be relative to
+	the one the browser requested, not the one we've screwed with
+
+	* SkunkWeb/Services/userdir.py: added new userdir service
+
+	* pylibs/DT/DTTags.py (CallTag.genCode): now uses new writemultiline
+	method so user doesn't need to now reall current indentation level
+
+	* pylibs/DT/DTCompilerUtil.py (Output.writemultiline): added to
+	write multiple lines at current indentation.
+
+2001-09-20  Drew Csillag  <drew@naxos.starmedia.net>
+
+	* 3.1beta1 release cut
 
 2001-09-19  Jacob Smullyan  <smulloni@smullyan.org>
 
@@ -34,7 +148,7 @@
 	via a vfs interface.
 	(Configuration): added Configuration variable "documentRootFS", a list of
 	filesystems (vfs.FS implementations) that the Cache will look in, in order, 
-	to find a given resource.
+	to find a given resource.	
 
 2001-09-18  Drew Csillag  <drew@starmedia.net>
 

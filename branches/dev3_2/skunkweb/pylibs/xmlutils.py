@@ -1,5 +1,5 @@
 # $Id$
-# Time-stamp: <01/09/24 13:39:24 smulloni>
+# Time-stamp: <01/10/14 12:55:05 smulloni>
 
 ######################################################################## 
 #  Copyright (C) 2001 Jocob Smullyan <smulloni@smullyan.org>
@@ -27,9 +27,11 @@ Based on the Java xml parser (org.skunk.minixml)
 used for SkunkDAV (http://skunkdav.sf.net/).
 """
 
+import types
+
 try:
     import xml.parsers.expat as expat
-    
+
     class ExpatParser:
         """
         takes an input xml string and produces a corresponding XMLElement (deposited in the 'document' attribute).
@@ -60,14 +62,14 @@ try:
             i=-1
             stackLen=len(self.__stack)
             while stackLen+i >= 0:
-                pindex=i
                 p=self.__stack[i]
                 if isinstance(p, XMLElement) and hasattr(p, 'OPEN'):
                     # found element
-                    popped=self.__stack[pindex+1:]
+                    postind=stackLen+i+1
+                    popped=self.__stack[postind:]
                     map (lambda x, y=p: y.addChild(x), popped)
                     delattr(p, 'OPEN')
-                    self.__stack=self.__stack[:pindex+1]
+                    self.__stack=self.__stack[:postind]
                     break
                 else:
                     i-=1
@@ -75,6 +77,11 @@ try:
         def parse(self, data):
             self.__parser.Parse(data, 0)
 
+    def parse(xmlstring):
+        p=ExpatParser()
+        p.parse(xmlstring)
+        return p.document
+    
 except ImportError:
     pass
             
@@ -98,7 +105,10 @@ class XMLElement:
         self.__namespaces={}
         self.__defaultNamespace=''
         if namespace:
-            self.setAttribute('%s:%s' % (XMLNS_ATTR, namespaceCode), namespace)
+            if namespaceCode:
+                self.setAttribute('%s:%s' % (XMLNS_ATTR, namespaceCode), namespace)
+            else:
+                self.setAttribute(XMLNS_ATTR, namespace)
         self.__parent=None
 
     def __str__(self):
@@ -133,13 +143,21 @@ class XMLElement:
                 self.setNamespace(value, name[colindex+1:])
         self.__attributes[name]=value
 
-    def getChildren(self):
-        return self.__children[:]
+    def getChildren(self, suppressWhitespace=1):
+        if suppressWhitespace:
+            return filter(lambda x: type(x) not in (types.UnicodeType,
+                                                    types.StringType) or x.strip(),
+                          self.__children)
+        else:
+            return self.__children[:]
 
-    def addChild(self, child):
-        if isinstance(child, XMLElement):
-            child.__parent=self
-        self.__children.append(child)
+    def addChild(self, *children):
+        for child in children:
+            if isinstance(child, XMLElement):
+                child.__parent=self
+            self.__children.append(child)
+        # for convenience
+        return self
 
     def getNamespace(self, namespaceCode=None):
         if not namespaceCode:
@@ -171,8 +189,13 @@ class XMLElement:
                     return kid
         return None
 
+    
+
 ########################################################################
 # $Log$
+# Revision 1.1.2.2  2001/10/16 03:27:15  smulloni
+# merged HEAD (basically 3.1.1) into dev3_2
+#
 # Revision 1.1.2.1  2001/09/27 03:36:07  smulloni
 # new pylibs, work on PyDO, code cleanup.
 #
