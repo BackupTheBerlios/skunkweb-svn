@@ -7,8 +7,19 @@ import socket
 import errno
 import sys
 import os
+import platform
 import stat
 import time
+
+def _serialize_accept():
+    system=platform.system()
+    version=platform.release()
+    if system=='Linux':
+        return  version <'2.2'
+    # most unices support this now, so the default is False.
+    # add more exceptions  -- TBD
+    return False
+    
 
 class SocketManager(ProcessManager):
     def __init__(self,
@@ -39,7 +50,21 @@ class SocketManager(ProcessManager):
         connectionCount = 0
         info=self.info
         exception=self.exception
-        dolocking=self.numProcs>1
+
+        # this shouldn't change in the child process!
+        socks=self.socketMap.keys()
+        lensocks=len(socks)
+        if not lensocks:
+            return
+        # no need to select if there is only one, just block on accept
+        doselect=lensocks>1
+        if doselect:
+            # don't lock on a single process
+            dolocking=self.numProcs>1
+        else:
+            # blocking on accept, lock only if the OS has a thundering herd
+            # problem and there are multiple processes
+            dolocking=_serialize_accept() and self.numProcs>1
         if dolocking:
             lockfile=open(self.pidFile)
             lfd=lockfile.fileno()
@@ -51,20 +76,23 @@ class SocketManager(ProcessManager):
                 break
             have_connection = 0
             while not have_connection:
-                pids=self.socketMap.keys()
+
                 if dolocking:
                     # serialize both select and accept, together
                     fcntl.flock(lfd, fcntl.LOCK_EX)
                 try:
-                    try:
-                        r,w,e = select(pids, [], [])
-                    except:
-                        # this should only happen if errno is EINTR, but
-                        # exiting is still probably the best idea here
-                        exception('select failed! socketmap is %s', pids)
-                        break
+                    if doselect:
+                        try:
+                            r,w,e = select(socks, [], [])
+                        except:
+                            # this should only happen if errno is EINTR, but
+                            # exiting is still probably the best idea here
+                            exception('select failed! socket list is %s', socks)
+                            break
 
-                    s = r[0]
+                        s = r[0]
+                    else:
+                        s=socks[0]
                     try:
                         sock, addr = s.accept()
                         sock.setblocking(1)
@@ -78,9 +106,7 @@ class SocketManager(ProcessManager):
                     if dolocking:
                         fcntl.flock(lfd, fcntl.LOCK_UN)
             if not have_connection:
-                # because of a select error
                 self.warn('exiting due to no connection')
-                # die!
                 break 
             
             r = None
@@ -132,7 +158,7 @@ class SocketManager(ProcessManager):
     def addConnection(self, addrspec, handler_func):
         if addrspec[0] == 'TCP':
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.setblocking(0)
+            #s.setblocking(0)
             s.setsockopt (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             # Make sure the socket will be closed on exec
             fcntl.fcntl (s.fileno(), fcntl.F_SETFD, 1)
@@ -157,7 +183,7 @@ class SocketManager(ProcessManager):
                           "socket is to be created: %s" % addrspec[1]
                     
             s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            s.setblocking(0)
+            #s.setblocking(0)
             # Make sure the socket will be closed on exec
             fcntl.fcntl(s.fileno(), fcntl.F_SETFD, 1)
             self.retrying_bind(s, addrspec[1], 5)
@@ -168,6 +194,13 @@ class SocketManager(ProcessManager):
         else:
             raise ValueError, "unknown bind address type"
         self.socketMap[s] = handler_func, addrspec
+        # if there is only one socket, set it to be blocking, as we
+        # won't be using select.  Otherwise, set all sockets not to
+        # block.
+        block=len(self.socketMap)==1        
+        for sock in self.socketMap:
+            sock.setblocking(block)
+        
             
     def stop(self):
         self._reset()
@@ -184,3 +217,13 @@ class SocketManager(ProcessManager):
                                 ' for the best') % a[1])
 
         self.socketMap = {}
+
+# NOTES
+
+# Apache handles the case of a single listening socket differently
+# than multiple sockets.  When there are multiple sockets, you need
+# select and you need a mutex; with one socket, you don't need select
+# and you may not need a mutex, depending on the architecture.  This
+# refinement could be added.
+
+

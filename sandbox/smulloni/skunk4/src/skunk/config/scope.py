@@ -116,33 +116,46 @@ class ScopeMatcher(object):
             return cmp(str(self), str(other))
 
 class CondMatcher(ScopeMatcher):
-
+    """A matcher is which the match object is a callable that
+    takes one argument and returns a boolean indicating whether the
+    value matches."""
     def _match(self, other):
         return self.matchObj(other)
 
 class InMatcher(ScopeMatcher):
-
+    """A matcher in which the match object is a list, set, iterator or
+    other other object that implements the __contains__ protocol, and
+    the match succeeds if the matched value is in the container."""
+    
     def _match(self, other):
         return other in self.matchObj
 
 class StrictMatcher(ScopeMatcher):
+    """A matcher in which the matched value must equal matchObj for
+    there to be a match."""
 
     def _match(self, other):
         return self.matchObj==other
 
 class SimpleStringMatcher(ScopeMatcher):
+    """A matcher in which there is a match if the matched value
+    startswith the match object."""
     
     def _match(self, other):
         return isinstance(other, basestring)\
                and other.startswith(self.matchObj)
 
 class GlobMatcher(ScopeMatcher):
-    
+    """A matcher in which there is a match if the matched value
+    matches a glob passed as the match object.
+    """
     def _match(self, other):
         return isinstance(other, basestring)\
                and fnmatch.fnmatchcase(other, self.matchObj)
 
 class RegexMatcher(ScopeMatcher):
+    """A matcher in which matchObj is compiled into a regular expression
+    and the match succeeds if the regex matches the matched value."""
 
     def __init__(self, matchObj, overlay, children=[]):
         ScopeMatcher.__init__(self, matchObj, overlay, children)
