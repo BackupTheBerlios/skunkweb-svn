@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: __init__.py,v 1.5 2001/08/13 01:08:09 smulloni Exp $
+# $Id: __init__.py,v 1.6 2002/02/02 01:40:02 smulloni Exp $
 # Time-stamp: <01/05/04 13:25:03 smulloni>
 ########################################################################
 # session handling package
@@ -71,7 +71,8 @@ def __initConfig():
 def __initSession():
     import SkunkWeb.Configuration as Configuration
     if not Configuration.SessionStore:
-        LOG("no sessionStore defined: cannot load sessionHandler service")
+        import SkunkWeb.LogObj as lo
+        lo.LOG("no sessionStore defined: cannot load sessionHandler service")
     else:
         import Session
         import SkunkWeb.constants as skc
@@ -93,6 +94,9 @@ __initSession()
 
 ########################################################################
 # $Log: __init__.py,v $
+# Revision 1.6  2002/02/02 01:40:02  smulloni
+# fixed import error
+#
 # Revision 1.5  2001/08/13 01:08:09  smulloni
 # added an evil boolean flag and an InitRequest hook to reset it.  These ensure
 # that a session store is only touched if the session has not already been
