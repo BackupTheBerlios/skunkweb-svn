@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: protocol.py,v 1.3 2001/09/07 16:40:44 smulloni Exp $
+# $Id: protocol.py,v 1.3.2.1 2001/09/27 03:36:07 smulloni Exp $
 # Time-stamp: <01/05/04 13:27:08 smulloni>
 ########################################################################
 
@@ -350,18 +350,7 @@ class HTTPProtocol(Protocol):
     implements the server side of the HTTP protocol, in order to serve
     web requests directly
     """
-##    # job specifier stuff below pasted from AecgiProtocol.
-##    # I wonder whether to move this job-specifier code to Protocol,
-##    # or to an intermediate subclass. -- js Fri Apr 13 14:11:05 2001
-##    def __init__(self, jobSpecifier):
-##        self.jobSpecifier=jobSpecifier
-##        self.handlers={}
 
-##    def _getJob(self, requestData):
-##        if callable(self.jobSpecifier):
-##            return apply(self.jobSpecifier, [requestData])
-##        else:
-##            return self.jobSpecifier
     def __init__(self):
         self.handlers={}
         
@@ -520,6 +509,9 @@ HaveConnection.addFunction(_seekTerminus, jobGlob)
 
 ########################################################################
 # $Log: protocol.py,v $
+# Revision 1.3.2.1  2001/09/27 03:36:07  smulloni
+# new pylibs, work on PyDO, code cleanup.
+#
 # Revision 1.3  2001/09/07 16:40:44  smulloni
 # improved handling of SERVER_NAME
 #

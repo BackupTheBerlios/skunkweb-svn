@@ -1,3 +1,25 @@
+2001-09-26  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* SkunkWeb/Services/httpd/protocol.py (jobGlob): some minor cleanup.
+
+	* SkunkWeb/Services/web/protocol.py (_fixheader): some minor cleanup.
+
+	* pylibs/parfile.py: moved Drew's par stuff into a pylib module.
+
+	* pylibs/vfs/__init__.py: moved vfs to a package, rather than a module; added
+	zipfile and parfile support.
+
+	* pylibs/xmlutils.py): ported XMLElement from Java (org.skunk.minixml package)
+	to Python.
+
+	* SkunkWeb/Services/webdav/__init__.py: started webdav service.
+
+	* pylibs/PyDO/PyDO.py (PyDO.static_getSomeWhere): added methods to use the enriched query
+	syntax.
+
+	* pylibs/PyDO/operators.py (__makeOperators): adding changes made a couple of weeks ago,
+	all of which I need to reexamine, to enrich the user-space query syntax.
+
 2001-09-19  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* pylibs/scopeable/_scope.c: fixed typo in _scope.c.

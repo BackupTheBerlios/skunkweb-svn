@@ -1,5 +1,5 @@
-# $Id: vfs.py,v 1.1.2.1 2001/09/19 05:24:58 smulloni Exp $
-# Time-stamp: <01/09/19 01:21:56 smulloni>
+# $Id$
+# Time-stamp: <01/09/24 21:27:03 smulloni>
 
 ########################################################################
 #  
@@ -22,6 +22,7 @@
 
 import exceptions
 import os
+import shutil
 import stat
 
 # constants for "ministat"
@@ -86,9 +87,9 @@ class FS:
     def mkdirs(self, dir):
         raise NotImplementedError
     
-    def rmdir(self, dir):
+    def remove(self, path):
         raise NotImplementedError
-    
+
     def open(self, path, mode='r'):
         """
         returns a file object
@@ -105,11 +106,14 @@ class FS:
             return
         visitfunc(arg, dir, names)
         for name in names:
-            name = os.path.join(top, name)
+            name = os.path.join(dir, name)
             if self.exists(name) and self.isdir(name):
                 self.walk(name, func, arg)
             
     def rename(self, path, newpath):
+        raise NotImplementedError
+
+    def copy(self, path, newpath):
         raise NotImplementedError
     
     def exists(self, path):
@@ -140,6 +144,14 @@ class FS:
     def getsize(self, path):
         st=self.ministat(path)
         return st[MST_SIZE]
+
+class PathPropertyStore:
+
+    def properties(self, path):
+        raise NotImplementedError
+
+    def hasproperty(self, path, property):
+        raise NotImplementedError
     
     def getproperty(self, path, property):
         raise NotImplementedError
@@ -163,8 +175,11 @@ class LocalFS(FS):
     def mkdirs(self, dir):
         os.makedirs(dir)
     
-    def rmdir(self, dir):
-        os.rmdir(dir)
+    def remove(self, path):
+        is self.isdir(path):
+            shutil.rmtree(path)
+        else:
+            os.remove(path)
     
     def open(self, path, mode='r'):
         """
@@ -174,6 +189,25 @@ class LocalFS(FS):
     
     def listdir(self, dir):
         return os.listdir(dir)
+
+    def copy(self, path, newpath):
+        # based on shutil.copytree, but always copies symlinks, and doesn't
+        # catch exceptions
+        if self.isdir(path):
+            names = os.listdir(path)
+            os.mkdir(newpath)
+            for name in names:
+                srcname = os.path.join(path, name)
+                dstname = os.path.join(newpath, name)
+                if os.path.islink(srcname):
+                    linkto = os.readlink(srcname)
+                    os.symlink(linkto, dstname)
+                elif os.path.isdir(srcname):
+                    self.copy(srcname, dstname)
+                else:
+                    shutil.copy2(srcname, dstname)        
+        else:
+            shutil.copy(path, newpath)
 
     def rename(self, path, newpath):
         os.rename(path, newpath)
@@ -185,7 +219,10 @@ class LocalFS(FS):
         return os.path.isfile(path)
 
 ########################################################################
-# $Log: vfs.py,v $
+# $Log$
+# Revision 1.1.2.1  2001/09/27 03:36:07  smulloni
+# new pylibs, work on PyDO, code cleanup.
+#
 # Revision 1.1.2.1  2001/09/19 05:24:58  smulloni
 # adding vfs
 #

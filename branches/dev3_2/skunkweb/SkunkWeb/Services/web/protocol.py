@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: protocol.py,v 1.3 2001/09/04 19:12:57 smulloni Exp $
+# $Id: protocol.py,v 1.3.2.1 2001/09/27 03:36:07 smulloni Exp $
 # Time-stamp: <01/05/04 15:57:35 smulloni>
 ########################################################################
 
@@ -149,7 +149,8 @@ class _File:
         self.contents, self.filename = val.value, val.filename
 
     def __str__(self):
-        return 'Uploaded file %s -- use obj.contents to get contents' % self.filename
+        return 'Uploaded file %s -- use obj.contents to get contents' \
+               % self.filename
 
 ########################################################################
     
@@ -164,22 +165,23 @@ class NullOutput:
         return ''
 
 ########################################################################
-import skunklib
+import skunklib.normheader as _fixheader
+
 class HeaderDict:
     '''
     dictionary class that stores headers and formats them consistently.
     '''
     def __init__(self, initval={}):
-        self._fixHeader = skunklib.normheader
+        #self._fixHeader = skunklib.normheader
         self._d = {}
         for k, v in initval.items():
-            self._d[self._fixHeader(k)] = v
+            self._d[_fixHeader(k)] = v
 
     def __getitem__(self, d):
-        return self._d[self._fixHeader(d)]
+        return self._d[_fixHeader(d)]
 
     def __setitem__(self, k, v):
-        self._d[self._fixHeader(k)] = v
+        self._d[_fixHeader(k)] = v
 
     def __repr__(self):
         return repr(self._d)
@@ -193,11 +195,11 @@ class HeaderDict:
     def items(self):
         return self._d.items()
 
-    def _fixHeader(self, s):
-        '''
-        utility function for formatting headers in a consistent manner.
-        '''
-        return '-'.join([i.capitalize() for i in s.split('-')])
+##    def _fixHeader(self, s):
+##        '''
+##        utility function for formatting headers in a consistent manner.
+##        '''
+##        return '-'.join([i.capitalize() for i in s.split('-')])
 
 ########################################################################
 
@@ -322,6 +324,9 @@ def _cleanupConfig(requestData, sessionDict):
 
 ########################################################################
 # $Log: protocol.py,v $
+# Revision 1.3.2.1  2001/09/27 03:36:07  smulloni
+# new pylibs, work on PyDO, code cleanup.
+#
 # Revision 1.3  2001/09/04 19:12:57  smulloni
 # integrated scopeable package into SkunkWeb.
 #
