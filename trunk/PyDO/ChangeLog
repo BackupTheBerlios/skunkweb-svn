@@ -1,4 +1,17 @@
+2005-03-19  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO/joins.py (Join.getSome): reimplemented a bit.  Still
+	doesn't work with nested joins or self-joins.
+
+2005-03-18  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO/joins.py: starting work on module that does various
+	types of joins.  Doesn't work yet.
+
 2005-03-17  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO/utils.py: moved some utility functions to a separate
+	module. 
 
 	* src/PyDO/base.py (PyDO.getColumns): change to behavior, and
 	method signature (optional parameter is now "qualifier", not

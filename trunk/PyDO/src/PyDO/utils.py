@@ -43,3 +43,14 @@ def _import_a_class(fqcn):
         raise ValueError, "impossible to import: %s" % fqcn
 
     
+def every(val, iter):
+    for i in iter:
+        if i != val:
+            return False
+    return True
+
+def any(val, iter):
+    for i in iter:
+        if i==val:
+            return True
+    return False

@@ -8,26 +8,30 @@ N.B.: this is a sketch -- it doesn't work yet!
 """
 
 from PyDO.operators import SQLOperator, AND
-from PyDO.utils import _strip_tablename
+from PyDO.utils import every
 
 from itertools import izip
+
+all_jointypes=('LEFT',
+               'LEFT OUTER',
+               'NATURAL LEFT',
+               'NATURAL LEFT OUTER',
+               'RIGHT',
+               'RIGHT OUTER',
+               'NATURAL RIGHT',
+               'NATURAL RIGHT OUTER',
+               'FULL',
+               'FULL OUTER',
+               'NATURAL FULL',
+               'NATURAL FULL OUTER',
+               'INNER',
+               'NATURAL',
+               'NATURAL INNER',
+               'CROSS')
 
 class Join(object):
     """
     """
-
-    LEFT=LEFT_OUTER = 'LEFT OUTER'
-    NATURAL_LEFT = NATURAL_LEFT_OUTER = 'NATURAL LEFT OUTER'
-    RIGHT = RIGHT_OUTER = 'RIGHT OUTER'
-    NATURAL_RIGHT = NATURAL_RIGHT_OUTER = 'NATURAL RIGHT OUTER'
-    FULL = FULL_OUTER = 'FULL OUTER'
-    NATURAL_FULL = NATURAL_FULL_OUTER = 'NATURAL FULL OUTER'
-    INNER = 'INNER'
-    NATURAL = NATURAL_INNER = 'NATURAL INNER'
-    CROSS = 'CROSS'
-    
-    all_jointypes=(LEFT, NATURAL_LEFT, RIGHT, NATURAL_RIGHT,
-                   FULL, NATURAL_FULL, INNER, NATURAL, CROSS)
 
     def __init__(self,
                  objL,
@@ -41,13 +45,13 @@ class Join(object):
         
         if jointype is None:
             if on is None and using is None:
-                jointype=Join.CROSS
+                jointype='CROSS'
             else:
-                jointype=Join.INNER
+                jointype='INNER'
         else:
             # in case the string is passed in
             jointype=jointype.upper()
-            if not jointype in Join.all_jointypes:
+            if not jointype in all_jointypes:
                 raise ValueError, "unsupported join type: %s" % jointype
             if jointype.startswith('NATURAL'):
                 if on or using:
@@ -67,6 +71,9 @@ class Join(object):
         self.objR=objR
         self.on=on
         self.using=using
+        cols=self.objL.getColumns(False)
+        self._lenL=len(cols)
+        self._allcols=cols+self.objR.getColumns(False)
 
 
     def getDBI(self):
@@ -100,26 +107,21 @@ class Join(object):
             raise ValueError, "unsupported type for ON: %s" % type(on)
         return " ON (%s)" % sql, vals
 
-    def _convertUsing(self):
-        using=self.using
-        # what is acceptable here? just a list of fieldnames, no?
-        return ' USING (%s)' % ' ,'.join(using)
-        
-
     def _baseSelect(self):
         fieldlist=', '.join(self.getColumns())
         if self.on:
             cond, vals=self._convertOn()
-        elif self.using:
-            cond, vals=self._convertUsing()
         else:
-            cond=''
             vals=[]
+            if self.using:
+                cond=' USING (%s)' % ', '.join(self.using)
+            else:
+                cond=''
+
         oL=self.objL
         oR=self.objR
         if oL.table==oR.table:
-            # special case, but this doesn't work too well, actually
-            # BROKEN
+            # this won't work with nesting, but then, nothing will
             t1="%s AS TL" % oL.table
             t2="%s AS TR" % oR.table
         else:
@@ -139,6 +141,14 @@ class Join(object):
     def getColumns(self, qL=True, qR=True):
         return self.objL.getColumns(qL) + self.objR.getColumns(qR)
 
+    def _resolveObjects(self, resultRow):
+        pairs=zip(self._allcols, resultRow)
+        lenL=self._lenL
+        dL, dR=map(dict, (pairs[:lenL], pairs[lenL:]))
+        makeobj=lambda kls, d: (not every(None, d.itervalues())) and kls(**d) or None
+        return makeobj(self.objL, dL), makeobj(self.objR, dR)
+
+
     def getSome(self, *args, **fieldData):
         """
         """
@@ -150,31 +160,21 @@ class Join(object):
         query=[self._baseSelect()]
         if sql:
             query.extend(['WHERE', sql])
-        if filter(None, (order, limit, offset)):
+        if not every(None, (order, limit, offset)):
             query.append(conn.orderByString(order, limit, offset))
         query=' '.join(query)
-        result=conn.execute(query, values, True)
-        if not result:
-            return ()
+        # we don't use the execute() method here, because we don't
+        # want a dictionary, we need to know the order of columns in
+        # the result set
+        cursor=conn.cursor()
+        cursor.execute(query, values)
         ret=[]
-        for row in result:
-            retrow=[]
-            for o in (self.objL, self.objR):
-                d=dict((_strip_tablename(c), row[c]) for c in o.getColumns(True))
-                # if all values are NULL, take that as meaning that this
-                # is a full or outer join and the whole object is NULL, and append
-                # None
-                for v in d.itervalues():
-                    if v is not None:
-                        notnull=True
-                        break
-                else:
-                    notnull=False
-                if notnull:
-                    retrow.append(o(**d))
-                else:
-                    retrow.append(None)
-            ret.append(tuple(retrow))
+        while 1:
+            row=cursor.fetchone()
+            if row is None:
+                break
+            ret.append(self._resolveObjects(row))
+        cursor.close()
         return tuple(ret)
     
         
@@ -195,7 +195,10 @@ go away.  So values could be found by position.  But since we'll be
 explicitly stating all the columns we want, the column labels just
 don't matter; we need to associate column with value by position in
 the result set, not by name.  The same works also for the other joins.
+This means that calling execute() isn't what we need, as it de-orders
+the result.
 
-Getting joins to nest is another problem...
+Getting joins to nest is another problem, and I'll defer dealing with it.
+
 
 """
