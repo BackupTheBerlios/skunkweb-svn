@@ -564,6 +564,8 @@ class PyDO(dict):
         
         """
         extraTables=extra.pop('extraTables', None)
+        if extraTables:
+            extraTables=list(_tupleize(extraTables))
         order=extra.pop('order', None)
         limit=extra.pop('limit', None)
         offset=extra.pop('offset', None)

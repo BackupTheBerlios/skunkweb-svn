@@ -327,8 +327,6 @@ inaccurate or out of date, you can refresh it by calling
 so it is possible to get the unique row to which it corresponds.
 
 
-
-
 Inserts, Updates, and Deletes
 -----------------------------
 
@@ -441,6 +439,15 @@ junction table ``J``, add an instance method that calls
     the destination object
 ``thatAttrNames``
     attribute(s) in destination object to join to
+
+In addition, ``joinTable()`` takes positional and keyword arguments,
+similar to ``getSome()``; it will accept raw SQL and bind values or
+``SQLOperator`` instances as positional arguments, and understands the
+keyword arguments ``order``, ``limit``, and ``offset`` as well as
+column name keyword arguments.  Also, if you wish to pass in
+additional tables to the select, you can do so with the
+``extraTables`` keyword argument, with which you can pass a single
+table name, or a list of names.
 
 
 Managing Database Connections
