@@ -2,23 +2,45 @@ from itertools import izip
 from threading import Lock, local
 from marshal import dumps as marshal_dumps
 from collections import deque
+import time
 from PyDO.log import *
 from PyDO.operators import BindingConverter
 from PyDO.exceptions import PyDOError
 
 
 class DBIBase(object):
-    """base class for db connection wrappers"""
+    """base class for db connection wrappers.
+    """
     paramstyle='format'
     autocommit=False
     # default to postgresql style for sequences,
     # out of sheer postgresql bigotry. 
     auto_increment=False
     
-    def __init__(self, connectArgs, cache=False, verbose=False):
-        self.cache=cache
-        self.verbose=verbose
+    def __init__(self,
+                 connectArgs,
+                 connectFunc,
+                 pool=None,
+                 autorelease=False,
+                 verbose=False):
+        """
+        constructor.
+        * connectArgs are arguments passed directly to the underlying
+          DBAPI driver.
+        * connectFunc is the connect function from the DBAPI module.
+        * pool is a connection pool instance.
+        * autorelease is whether or not to release connections
+          automatically at the close of a transaction.
+          This only has meaning for the case when a pool is not in use
+          (when using a pool, a connection is released to the pool
+           at the end of a transaction anyway).
+        * verbose is whether or not to log the sql being executed.
+        """
         self.connectArgs=connectArgs
+        self.connectFunc=connectFunc        
+        self.pool=pool
+        self.autorelease=autorelease
+        self.verbose=verbose
         self._local=local()
 
     def autocommit():
@@ -57,15 +79,15 @@ class DBIBase(object):
     def commit(self):
         """commits a transaction"""
         self.conn.commit()
-        if self.cache:
-            # return connection to cache
+        if self.pool or self.autorelease:
+            # release connection
             del self.conn
 
     def rollback(self):
         """rolls back a transaction"""
         self.conn.rollback()
-        if self.cache:
-            # return connection to cache
+        if self.pool or self.autorelease:
+            # release connection
             del self.conn
 
     def cursor(self):
@@ -73,7 +95,10 @@ class DBIBase(object):
         return self.conn.cursor()
 
     def _connect(self):
-        raise NotImplementedError
+        if self.pool:
+            return self.pool.connect(self.connectFunc, self.connectArgs)
+        else:
+            return _real_connect(self.connectFunc, self.connectArgs)
 
     def getConverter(self):
         """returns a converter instance."""
@@ -99,11 +124,12 @@ class DBIBase(object):
             return c.rowcount
         res=self._convertResultSet(c.description, resultset, qualified)
         c.close()
-        if self.cache and self.autocommit:
-            # return connection to pool
+        if self.autocommit and (self.pool or self.autorelease):
+            # release connection
             del self.conn
         return res
-
+    
+    @staticmethod
     def _convertResultSet(description, resultset, qualified=False):
         """internal function that turns a result set into a list of dictionaries."""
         if qualified:
@@ -111,8 +137,8 @@ class DBIBase(object):
         else:
             fldnames=[_strip_tablename(x[0]) for x in description]
         return [dict(izip(fldnames, row)) for row in resultset]
-    _convertResultSet=staticmethod(_convertResultSet)
 
+    @staticmethod
     def orderByString(order, limit, offset):
         def do_order(o):
             if isinstance(o, str):
@@ -133,14 +159,16 @@ class DBIBase(object):
         else:
             offset=""
         return " ".join(filter(None, (order, limit, offset)))
-    orderByString=staticmethod(orderByString)
+
 
     def getSequence(self, name):
-        """If db has sequences, this should return the next value of the sequence named 'name'"""
+        """If db has sequences, this should return
+        the next value of the sequence named 'name'"""
         pass
 
     def getAutoIncrement(self, name):
-        """If db uses auto increment, should obtain the value of the auto-incremented field named 'name'"""
+        """If db uses auto increment, should obtain
+        the value of the auto-incremented field named 'name'"""
         pass
 
     def listTables(self, schema=None):
@@ -169,10 +197,18 @@ _loadedDrivers = {}
 _aliases= {}
 _connlock=Lock()
 
-def _connect(driver, connectArgs, cache, verbose):
+def _real_connect(connfunc, connargs):
+    if isinstance(connargs, dict):
+        return connfunc(**connargs)
+    elif isinstance(connargs, tuple):
+        return connfunc(*connargs)
+    else:
+        return connfunc(connargs)
+
+def _connect(driver, connectArgs, pool=None, autorelease=False, verbose=False):
     if isinstance(driver, str):
         driver=_get_driver_class(driver)
-    return driver(connectArgs, cache, verbose)
+    return driver(connectArgs, pool, autorelease, verbose)
 
 def _import_a_class(fqcn):
     lastDot=fqcn.rfind('.')   
@@ -197,7 +233,7 @@ def _get_driver_class(name):
         return cls
     return _loadedDrivers[name]
              
-def initAlias(alias, driver, connectArgs, cache=False, verbose=False):
+def initAlias(alias, driver, connectArgs, pool=None, autorelease=False, verbose=False):
     """initializes a connection alias with the stated connection arguments.
     
     It can cause confusion to let this be called repeatedly; you might
@@ -213,7 +249,8 @@ def initAlias(alias, driver, connectArgs, cache=False, verbose=False):
     """
     data=dict(driver=driver,
               connectArgs=connectArgs,
-              cache=cache,
+              pool=pool,
+              autorelease=autorelease,
               verbose=verbose)
     _connlock.acquire()
     try:
@@ -233,8 +270,7 @@ def delAlias(alias):
         if _aliases.has_key(alias):
             del _aliases[alias]
     finally:
-        _connlock.release
-
+        _connlock.release()
 
 def getConnection(alias):
     """get a connection given a connection alias"""
@@ -252,19 +288,17 @@ def getConnection(alias):
     finally:
         _connlock.release()
 
-
 class ConnectionWrapper(object):
     """a connection object returned from a connection pool which wraps
     a real db connection.  It delegates to the real connection, but
     overrides close(), which instead of closing the connection,
     returns the it to the pool.  """
     
-    __slots__=('_conn', '_cache', '_args')
+    __slots__=('_conn', '_pool')
     
-    def __init__(self, conn, args, cache):
+    def __init__(self, conn, pool):
         self._conn=conn
-        self._args=args
-        self._cache=cache
+        self._pool=pool
         
     def __getattr__(self, attr):
         return getattr(self._conn, attr)
@@ -277,20 +311,24 @@ class ConnectionWrapper(object):
 
     def close(self):
         # tell the cache that we are done and can be reused
-        self._cache.release(self._conn, self._args)
+        self._pool.release(self._conn)
 
     def __del__(self):
         self.close()
 
 
-class ConnectionCache(object):
-    """ a connection cache/pool """
-    def __init__(self, max_poolsize=0, keep_poolsize=1, delay=0.2, retries=10):
+class ConnectionPool(object):
+    """ a connection pool """
+    def __init__(self,
+                 max_poolsize=0,
+                 keep_poolsize=1,
+                 delay=0.2,
+                 retries=10):
         # deques of unused connections, keyed by serialized connection args
-        self._free={}
+        self._free=deque()
         # lists of in-use connections, keyed by serialized connection args.
         # we need real references to these, not just a count.
-        self._busy={}
+        self._busy=[]
         # maximum number of connections to create per connection args;
         # 0 or a negative value means no maximum
         self._max_poolsize=max_poolsize
@@ -303,26 +341,20 @@ class ConnectionCache(object):
         self._retries=retries
         self._lock=Lock()
 
-    def real_connect(self, connectArgs):
-        raise NotImplementedError, "subclasses should implement this!"
-
-    def connect(self, connectArgs):
-        args=marshal_dumps(connectArgs)
-        self._free.setdefault(args, deque())
-        self._busy.setdefault(args, [])
-        return self._connect(connectArgs,
-                             args,
+    def connect(self, connectFunc, connectArgs):
+        return self._connect(connectFunc,
+                             connectArgs,
                              self._retries)
 
-    def _connect(self, connectArgs, args, retries):
+    def _connect(self, connectFunc, connectArgs, retries):
         """internal method; don't call it"""
         max_poolsize=self._max_poolsize
             
         self._lock.acquire()            
         try:
             # is there a connection available?
-            free=self._free[args]
-            busy=self._busy[args]
+            free=self._free
+            busy=self._busy
             if free:
                 c=free.popleft()
                 busy.append(c)
@@ -345,17 +377,17 @@ class ConnectionCache(object):
                     else:
                         # All are in use and we are allowed to create more.
                         # Do so.
-                        c=self.real_connect(connectArgs)
+                        c=_real_connect(connectFunc, connectArgs)
                         busy.append(c)
                 else:
                     # unlimited headroom, create new connection
-                    c=self.real_connect(connectArgs)
+                    c=_real_connect(connectFunc, connectArgs)
                     busy.append(c)
         finally:
             self._lock.release()
         if c:
             if self.onHandOut(c):
-                return ConnectionWrapper(c, args, self)
+                return ConnectionWrapper(c, self)
             else:
                 # not ok, completely expunge this connection
                 busy.remove(c)
@@ -363,15 +395,15 @@ class ConnectionCache(object):
                 del c
         # wait and then retry
         time.sleep(self._delay)             
-        return self._connect(connectArgs, args, self._delay, retries-1)
+        return self._connect(connectFunc, connectArgs, retries-1)
 
-    def release(self, conn, args):
+    def release(self, conn):
         keep_poolsize=self._keep_poolsize
         self._lock.acquire()
         try:
             # do we keep this connection?
-            free=self._free[args]
-            busy=self._busy[args]
+            free=self._free
+            busy=self._busy
             numconns=len(free)+len(busy)
             keep=keep_poolsize<numconns
             busy.remove(conn)
@@ -399,5 +431,5 @@ class ConnectionCache(object):
 __all__=['initAlias',
          'delAlias',
          'getConnection',
-         'ConnectionCache',
+         'ConnectionPool',
          'ConnectionWrapper']

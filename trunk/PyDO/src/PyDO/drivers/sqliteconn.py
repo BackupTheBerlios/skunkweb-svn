@@ -9,7 +9,7 @@ TODO: add support for sqlite3 and corresponding version of pysqlite.
 """
 
 
-from PyDO.dbi import DBIBase, ConnectionCache
+from PyDO.dbi import DBIBase, ConnectionPool
 from PyDO.field import Field
 from PyDO.exceptions import PyDOError
 from PyDO.dbtypes import DATE, TIMESTAMP, BINARY, INTERVAL, \
@@ -78,27 +78,19 @@ _converters={datetime.datetime: lambda x: mx.DateTime.DateTimeFromTicks(time.mkt
 class SqliteConverter(BindingConverter):
     converters=_converters
 
-class SqliteCache(ConnectionCache):
-   def real_connect(self, connectArgs):
-      return sqlite.connect(**connectArgs)
 
 class SqliteDBI(DBIBase):
    # sqlite uses an auto increment approach to sequences
    auto_increment=True
 
-   def __init__(self, connectArgs, cache=False, verbose=False):
-      if cache and not hasattr(cache, 'connect'):
-         cache=SqliteCache()
-      super(SqliteDBI, self).__init__(connectArgs, cache, verbose)
+   def __init__(self, connectArgs, pool=None, autorelease=False, verbose=False):
+      if pool and not hasattr(pool, 'connect'):
+         pool=ConnectionPool()
+      super(SqliteDBI, self).__init__(connectArgs, sqlite.connect, pool, autorelease, verbose)
    
    def getConverter(self):
       return SqliteConverter(self.paramstyle)
 
-   def _connect(self):
-      if self.cache:
-         return self.cache.connect(self.connectArgs)
-      return sqlite.connect(**self.connectArgs)
-   
    def getAutoIncrement(self, name):
       return self.conn.db.sqlite_last_insert_rowid()
    
