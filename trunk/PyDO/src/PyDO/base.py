@@ -267,17 +267,22 @@ class PyDO(dict):
         raise NotImplementedError, "PyDO classes don't implement setdefault()"
     
     @classmethod
-    def getColumns(cls, qualified=False):
-        """Returns a list of all columns in this table, in no particular order.
+    def getColumns(cls, qualifier=None):
+        """Returns a list of all columns in this table, in no
+        particular order.
 
-        If qualified is true, returns fully qualified column names
-        (i.e., table.column)
+        If qualifier is true, returns fully qualified column names
+        (i.e., table.column).  If you pass in a string to qualifier,
+        it will be used as a table alias; otherwise the table name
+        will be used.
+        
         """
-        if not qualified:
+        if not qualifier:
             return cls._fields.keys()
         else:
-            t=cls.table
-            return ["%s.%s" % (t, x) for x in cls._fields.iterkeys()]
+            if not isinstance(qualifier, basestring):
+                qualifier=cls.table
+            return ["%s.%s" % (qualifier, x) for x in cls._fields.iterkeys()]
 
     @classmethod
     def getFields(cls):

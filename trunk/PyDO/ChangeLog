@@ -1,3 +1,11 @@
+2005-03-17  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO/base.py (PyDO.getColumns): change to behavior, and
+	method signature (optional parameter is now "qualifier", not
+	"qualified").  If qualifier is a string, it will be used as the
+	table alias; if it isn't and is true, the full table name will be
+	used. 
+
 2005-03-16  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
 	* src/PyDO/base.py (_metapydo.__init__): removed unnecessary
