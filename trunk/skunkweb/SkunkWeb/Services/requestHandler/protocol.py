@@ -15,9 +15,16 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: protocol.py,v 1.1 2001/08/05 15:00:05 drew_csillag Exp $
+# $Id: protocol.py,v 1.2 2002/07/19 16:21:02 smulloni Exp $
 # Time-stamp: <01/05/03 16:59:54 smulloni>
 ########################################################################
+
+# not used here, but used by convention
+# by other services in Protocol.marshalException
+# so they need not depend on one another
+import hooks
+RequestFailed=hooks.KeyedHook()
+
 
 # abstract class for protocols used in handling request and response
 
@@ -59,8 +66,13 @@ class PreemptiveResponse(Exception):
 
 ########################################################################
 # $Log: protocol.py,v $
-# Revision 1.1  2001/08/05 15:00:05  drew_csillag
-# Initial revision
+# Revision 1.2  2002/07/19 16:21:02  smulloni
+# removed spurious dependencies on aecgi from httpd and templating by
+# moving the RequestFailed hook into requestHandler.
+#
+# Revision 1.1.1.1  2001/08/05 15:00:05  drew_csillag
+# take 2 of import
+#
 #
 # Revision 1.8  2001/07/09 20:38:40  drew
 # added licence comments
