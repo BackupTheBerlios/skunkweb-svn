@@ -1,5 +1,5 @@
-# Time-stamp: <03/01/28 16:35:44 smulloni>
-# $Id: rewrite.py,v 1.10 2003/01/28 21:40:46 smulloni Exp $
+# Time-stamp: <03/01/28 17:00:54 smulloni>
+# $Id: rewrite.py,v 1.11 2003/01/28 22:01:42 smulloni Exp $
 
 ########################################################################
 #  
@@ -154,12 +154,12 @@ class _HostMatchBase(DynamicRewriter):
             self.hostregex=hostregex
         else:
             self.hostregex=re.compile(hostregex)
-        self.replacement=replacement
+
 
     def __call__(self, match):
         if self.hostregex.match(self.connection.host):
             return self.real_call(match)
-        # clear the 
+
         return match.group(0)
 
 class HostMatchRewrite(_HostMatchBase):
@@ -309,6 +309,9 @@ __initHooks()
 
 ########################################################################
 # $Log: rewrite.py,v $
+# Revision 1.11  2003/01/28 22:01:42  smulloni
+# typo fix to rewrite; hoptime ddl updated for postgres 7.3
+#
 # Revision 1.10  2003/01/28 21:40:46  smulloni
 # added host-based rewriters to the rewrite service.
 #
