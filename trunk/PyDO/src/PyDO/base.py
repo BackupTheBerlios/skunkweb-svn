@@ -236,7 +236,7 @@ class PyDO(dict):
                  ', '.join(["%s = %s" % (x, converter(y)) \
                             for x, y in adict.iteritems()])]
         values=converter.values
-        where, wvals=self._processWhere(conn, args, fieldData)
+        where, wvals=cls._processWhere(conn, args, fieldData)
         if where:
             sqlbuff.extend([' WHERE ', where])
             values+=wvals
@@ -400,7 +400,6 @@ class PyDO(dict):
         if no row was retrieved.
         """
         cls._validateFields(fieldData)
-        unique = cls._matchUnique(fieldData)
         conn = cls.getDBI()
         where, values = cls._uniqueWhere(conn, fieldData)
         sql = "%s WHERE %s" % (cls._baseSelect(), where)
@@ -419,8 +418,8 @@ class PyDO(dict):
                                       cls.table)
 
 
-    @classmethod
-    def _processWhere(cls, conn, args, fieldData):
+    @staticmethod
+    def _processWhere(conn, args, fieldData):
         if args and isinstance(args[0], str):
             if fieldData:
                 raise ValueError, "cannot pass keyword args when including sql string"
