@@ -39,7 +39,10 @@ class SocketManager(ProcessManager):
         connectionCount = 0
         info=self.info
         exception=self.exception
-        lockfile=open(self.pidFile);lfd=lockfile.fileno()
+        dolocking=self.numProcs>1
+        if dolocking:
+            lockfile=open(self.pidFile)
+            lfd=lockfile.fileno()
         
         while 1:
             connectionCount += 1
@@ -49,8 +52,9 @@ class SocketManager(ProcessManager):
             have_connection = 0
             while not have_connection:
                 pids=self.socketMap.keys()
-                # serialize both select and accept, together
-                fcntl.flock(lfd, fcntl.LOCK_EX)
+                if dolocking:
+                    # serialize both select and accept, together
+                    fcntl.flock(lfd, fcntl.LOCK_EX)
                 try:
                     try:
                         r,w,e = select(pids, [], [])
@@ -71,7 +75,8 @@ class SocketManager(ProcessManager):
                     else:
                         have_connection = 1
                 finally:
-                    fcntl.flock(lfd, fcntl.LOCK_UN)
+                    if dolocking:
+                        fcntl.flock(lfd, fcntl.LOCK_UN)
             if not have_connection:
                 # because of a select error
                 self.warn('exiting due to no connection')
