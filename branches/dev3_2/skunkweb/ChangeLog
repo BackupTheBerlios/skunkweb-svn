@@ -1,3 +1,8 @@
+2001-10-16  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* SkunkWeb/Services/web/protocol.py: fixed typo (introduced in dev3_2 branch).
+
+	* many files: merged HEAD (3.1.1 release vintage) into the dev3_2 branch.
 
 2001-10-11  Jacob Smullyan  <smulloni@smullyan.org>
 

@@ -1,4 +1,4 @@
-# Time-stamp: <01/10/15 22:52:00 smulloni>
+# Time-stamp: <01/10/16 00:49:05 smulloni>
 
 #  
 #  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>
@@ -17,7 +17,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: protocol.py,v 1.3.2.2 2001/10/16 03:27:15 smulloni Exp $
+# $Id: protocol.py,v 1.3.2.3 2001/10/16 04:56:57 smulloni Exp $
 #
 ########################################################################
 
@@ -37,6 +37,8 @@ import time
 import types
 import browser
 from SkunkWeb.Hooks import KeyedHook
+from skunklib import normheader as _fixHeader
+
 
 headersOnlyMethods=['HEAD'] 
 headersOnlyStatuses=[100, 101, 102, 204, 304]
@@ -167,7 +169,7 @@ class NullOutput:
         return ''
 
 ########################################################################
-import skunklib.normheader as _fixheader
+#from skunklib import normheader as _fixheader
 
 class HeaderDict:
     '''
@@ -330,6 +332,9 @@ def _cleanupConfig(requestData, sessionDict):
 
 ########################################################################
 # $Log: protocol.py,v $
+# Revision 1.3.2.3  2001/10/16 04:56:57  smulloni
+# fixed typo.
+#
 # Revision 1.3.2.2  2001/10/16 03:27:15  smulloni
 # merged HEAD (basically 3.1.1) into dev3_2
 #
