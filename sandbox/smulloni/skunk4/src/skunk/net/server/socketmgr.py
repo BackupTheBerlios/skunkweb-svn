@@ -11,13 +11,14 @@ import stat
 import time
 
 class SocketManager(ProcessManager):
-    def __init__(self, numProcs,
+    def __init__(self,
+                 numProcs,
                  pidFile,
                  maxKillTime=5,
                  pollPeriod=5,
                  logger=None,
                  foreground=False,
-                 maxRequests=None)
+                 maxRequests=None):
         self.maxRequests = maxRequests
         self.socketMap = {}
         ProcessManager.__init__(self,
@@ -36,26 +37,27 @@ class SocketManager(ProcessManager):
     
     def _run(self):
         connectionCount = 0
-        log=self.log
+        info=self.info
         exception=self.exception
-        lockfile=open(self.pidFile)
+        lockfile=open(self.pidFile);lfd=lockfile.fileno()
+        
         while 1:
             connectionCount += 1
             if self.maxRequests and connectionCount > self.maxRequests:
-                log('hit maxRequests %d, recycling', self.maxRequests)
+                info('hit maxRequests %d, recycling', self.maxRequests)
                 break
             have_connection = 0
             while not have_connection:
                 pids=self.socketMap.keys()
                 # serialize both select and accept, together
-                fcntl.lockf(lockfile, fcntl.LOCK_EX)
+                fcntl.flock(lfd, fcntl.LOCK_EX)
                 try:
                     try:
                         r,w,e = select(pids, [], [])
                     except:
                         # this should only happen if errno is EINTR, but
                         # exiting is still probably the best idea here
-                        log('select failed! socketmap is %s', pids, exc_info=1)
+                        exception('select failed! socketmap is %s', pids)
                         break
 
                     s = r[0]
@@ -64,14 +66,15 @@ class SocketManager(ProcessManager):
                         sock.setblocking(1)
                     except socket.error, (err, errstr):
                         if err not in (errno.EAGAIN, errno.EWOULDBLOCK):
+                            exception("socket error!")
                             raise
                     else:
                         have_connection = 1
                 finally:
-                    fcntl.lockf(lockfile, fcntl.LOCK_UN)
+                    fcntl.flock(lfd, fcntl.LOCK_UN)
             if not have_connection:
                 # because of a select error
-                log('SM exiting due to no connection')
+                self.warn('exiting due to no connection')
                 # die!
                 break 
             
@@ -93,7 +96,7 @@ class SocketManager(ProcessManager):
                           self.socketMap[s][0])
             sock.close()
             if r:
-                log('socket manager exiting due to r being true') 
+                info('socket manager exiting due to return value from handler being true') 
                 break
                 
     def run(self):
@@ -128,7 +131,7 @@ class SocketManager(ProcessManager):
             s.setsockopt (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             # Make sure the socket will be closed on exec
             fcntl.fcntl (s.fileno(), fcntl.F_SETFD, 1)
-            self.retrying_bind(s, addrspec[1:], 5)
+            self.retrying_bind(s, tuple(addrspec[1:]), 5)
             s.listen(5)
         elif addrspec[0] == 'UNIX':
             try:

@@ -10,14 +10,15 @@ If you want to write a multi-process, static number of kids (until
 reload anyway) server, this is for you.
 
 TODO:
-
-   * rationalize logging
+   * numProcs=1 is broken (at least for socket manager, which expects
+     a pid file at the moment, for file locking.  I could use a temporary
+     file, I suppose.)
    * review reload
    * optionally permit grow/shrink, IPC, so that this is a general
      purpose pre-forking manager (??)
      
 """
-
+import atexit
 import logging
 import os
 import signal
@@ -70,11 +71,21 @@ class ProcessManager(object):
         # get a module snapshot.
         self.moduleSnapshot()
 
-    def log(self, *args, **kwargs):
-        self._logger.log(*args, **kwargs)
+    # logging methods
+    def log(self, level, *args, **kwargs):
+        self._logger.log(level, *args, **kwargs)
+
+    def debug(self, *args, **kwargs):
+        self._logger.debug(*args, **kwargs)
+
+    def info(self, *args, **kwargs):
+        self._logger.info(*args, **kwargs)
 
     def warn(self, *args, **kwargs):
         self._logger.warn(*args, **kwargs)
+
+    def critical(self, *args, **kwargs):
+        self._logger.critical(*args, **kwargs)
 
     def error(self, *args, **kwargs):
         self._logger.error(*args, **kwargs)
@@ -121,22 +132,21 @@ class ProcessManager(object):
         """the method used to actually fire off the server"""
         self.init()
         if self.numProcs == 1:
-            self.log('running in non-daemon mode with single process')
-            #do no detach
+            self.info('running in non-daemon mode with single process')
             self.run()
             sys.exit()
 
         # suppress going to background (for running under daemontools)
         if not self.foreground:
            # become daemon and process group leader
-           self.log("daemonizing...")
+           self.info("daemonizing...")
            if os.fork():
                sys.exit()
            if os.fork():
                sys.exit()
            os.setsid()
         else:
-           self.log('not going to background')
+           self.info('not going to background')
 
         #write the pid file
         open(self.pidFile,'w').write('%s' % os.getpid())
@@ -166,19 +176,19 @@ class ProcessManager(object):
                 
             except (TermSignal, KeyboardInterrupt):
                 # server shutdown
-                self.log('shutting down')
+                self.info('shutting down')
                 self._die()
                 self.stop()
                 try:
                     os.unlink(self.pidFile)
                 except:
                     self.exception('could not unlink pid file!')
-                self.log('server shut down')
+                self.info('server shut down')
                 sys.exit()
 
             except HupSignal:
                 # nice restart
-                self.log('restarting')
+                self.info('restarting')
                 self._die()
                 self.reload()
                 self._sig = None
@@ -190,7 +200,7 @@ class ProcessManager(object):
                 pid, exitStatus = os.waitpid(-1, os.WNOHANG)
                 if pid == 0:
                     break
-                self.log('child, pid %d died status %s',
+                self.info('child, pid %d died status %s',
                          pid,
                          exitStatus)
                 del self._children[pid]
@@ -201,9 +211,9 @@ class ProcessManager(object):
         # precondition: len(self._children) < self.numProcs
         numToSpawn = self.numProcs - len(self._children)
         assert numToSpawn > 0
-        self.log('spawning %d child(ren)', numToSpawn)
+        self.info('spawning %d child(ren)', numToSpawn)
         for i in xrange(numToSpawn):
-            self.log('spawning child')
+            self.debug('spawning child')
             kidPid = os.fork()
             if not kidPid:
                 # we're the kid.  Set the signal handlers to their
@@ -219,7 +229,7 @@ class ProcessManager(object):
         curTime = time.time()
 
         # nuke all processes
-        self.log('killing all children with TERM')
+        self.info('killing all children with TERM')
         for pid in self._children.keys():
             os.kill(pid, signal.SIGTERM)
             
@@ -235,7 +245,7 @@ class ProcessManager(object):
 
         if len(self._children):
             # grrr, they're still there! Kill them hard
-            self.log('killing remaining children with KILL')
+            self.info('killing remaining children with KILL')
             for pid in self._children:
                 os.kill(pid, signal.SIGKILL)
 
