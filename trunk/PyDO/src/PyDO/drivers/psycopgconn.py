@@ -10,32 +10,102 @@ from PyDO.dbi import DBIBase
 from PyDO.exceptions import PyDOError
 from PyDO.log import debug
 from PyDO.operators import BindingConverter
-from PyDO.dbtypes import DATE, TIMESTAMP, BINARY, INTERVAL
+from PyDO.dbtypes import DATE, TIMESTAMP, BINARY, INTERVAL, \
+     date_formats, timestamp_formats
 
 import time
 import datetime
 
-# at the moment, this is a dependency
-import mx.DateTime
-from psycopg import connect, TimestampFromTicks, Date, TimestampFromMx, Binary
+import psycopg
 
+if psycopg.__version__[:3] >= '1.9':
+   #psycopg version two.
+   psycopg_version=2
+else:
+   psycopg_version=1
 
-class PsycopgConverter(BindingConverter):
-    converters={datetime.datetime: lambda x: TimestampFromTicks(time.mktime(x.timetuple)),
-                datetime.date: lambda x: Date(x.year, x.month, x.day),
-                DATE: lambda x: DateFromMx(x.value),
-                TIMESTAMP: lambda x: TimestampFromMx(x.value),
-                BINARY: lambda x: Binary(x.value),
-                mx.DateTime.DateTimeType: TimestampFromMx,
-                INTERVAL: lambda x: x.value}
-                
+try:
+   import mx.DateTime
+   havemx=True
+except ImportError:
+   havemx=False
+    
+if havemx:
+   try:
+      from psycopg import TimestampFromMx
+   except:
+      assert psycopg_version==2
+      def TimestampFromMx(x):
+         return psycopg.TimestampFromTicks(x.ticks())
+elif psycopg_version==1:
+   raise ImportError, "mx.DateTime required when using psycopg version 1"
+
+def convert_DATE(dt):
+   val=dt.value
+   if havemx and isinstance(val, mx.DateTime.DateTimeType):
+      return psycopg.DateFromMx(val)
+   elif isinstance(val, datetime.date):
+      return psycopg.Date(dt.year, dt.month, dt.day)
+   elif isinstance(val, (int, float, long)):
+      d=datetime.date.fromtimestamp(val)
+      return psycopg.Date(d.year, d.month, d.day)
+   elif isinstance(val, (tuple, list)):
+      return psycopg.Date(*val[:3])
+   elif isinstance(val, (str, unicode)):
+      for f in date_formats:
+         try:
+            t=time.strptime(val, f)[:3]
+         except ValueError:
+            continue
+         else:
+            return psycopg.Date(*t)
+      else:
+         raise ValueError, "cannot parse date format: '%s'" % val
+   raise ValueError, val
+    
+
+def convert_TIMESTAMP(ts):
+   val=ts.value
+   if havemx and isinstance(val, mx.DateTime.DateTimeType):
+      return TimestampFromMx(val)
+   elif isinstance(val, datetime.datetime):
+      return psycopg.TimestampFromTicks(time.mktime(ts.timetuple()))
+   elif isinstance(val, (int, float, long)):
+      return psycopg.TimestampFromTicks(val)
+   elif isinstance(val, (tuple, list)) and len(val)==9:
+      return psycopg.TimestampFromTicks(time.mktime(val))
+   elif isinstance(val, (str, unicode)):
+      for f in timestamp_formats:
+         try:
+            t=time.strptime(val, f)
+         except ValueError:
+            continue
+         else:
+            return psycopg.TimestampFromTicks(time.mktime(t))
+      else:
+         raise ValueError, "cannot parse timestamp format: '%s'" % val
+   raise ValueError, val
+    
+_converters={datetime.datetime: lambda x: psycopg.TimestampFromTicks(time.mktime(x.timetuple())),
+             datetime.date: lambda x: psycopg.Date(x.year, x.month, x.day),
+             DATE: convert_DATE,
+             TIMESTAMP: convert_TIMESTAMP,
+             BINARY: lambda x: psycopg.Binary(x.value),
+             INTERVAL: lambda x: x.value}
+
+if havemx:
+    # add automatic wrapping for mx.DateTime.DateTimeType
+    _converters[mx.DateTime.DateTimeType]=TimestampFromMx
+
+class PsycopgConverter(BindingConverter): 
+    converters=_converters
 
 class PsycopgDBI(DBIBase):
     
     auto_increment=False
     
     def _connect(self):
-        return connect(self.connectArgs)
+        return psycopg.connect(self.connectArgs)
 
     def getConverter(self):
         return PsycopgConverter(self.paramstyle)

@@ -31,8 +31,21 @@ def unwrap(val):
         return val.value
     return val
 
+date_formats=['%m-%d-%Y',
+              '%m-%d-%y',
+              '%Y-%d-%m',
+              '%y-%d-%m',
+              '%B %d %Y',
+              '%b %d %Y',
+              '%d %B %Y',
+              '%d %b %Y']
+
+timestamp_formats=[]
+
+
 __all__=['DATE',
          'TIMESTAMP',
          'INTERVAL',
          'BINARY',
-         'unwrap']    
+         'unwrap']
+
