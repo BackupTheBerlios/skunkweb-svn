@@ -1,2 +1,0 @@
-class PyDOError(Exception):
-    pass
