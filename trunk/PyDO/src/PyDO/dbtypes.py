@@ -40,7 +40,9 @@ date_formats=['%m-%d-%Y',
               '%d %B %Y',
               '%d %b %Y']
 
-timestamp_formats=[]
+timestamp_formats=['%Y-%m-%d %H:%M:%S',
+                   '%Y-%m-%d %H:%M',
+                   '%y-%m-%d %H:%M:%S']
 
 
 __all__=['DATE',

@@ -1,8 +1,8 @@
 """
 PyDO driver for PostgreSQL, using the psycopg driver.
 
-Currently this has been tested with psycopg 1.1.15, not yet
-with the psycopg2 series.
+Currently this has been tested with psycopg 1.1.18 and 1.99.1.12,
+and attempts to support both.
 
 """
 
@@ -94,8 +94,9 @@ _converters={datetime.datetime: lambda x: psycopg.TimestampFromTicks(time.mktime
              INTERVAL: lambda x: x.value}
 
 if havemx:
-    # add automatic wrapping for mx.DateTime.DateTimeType
+    # add automatic wrapping for mx.DateTime types
     _converters[mx.DateTime.DateTimeType]=TimestampFromMx
+    _converters[mx.DateTime.DateTimeDeltaType=lambda x: x.strftime("%d:%H:%M:%S")
 
 class PsycopgConverter(BindingConverter): 
     converters=_converters

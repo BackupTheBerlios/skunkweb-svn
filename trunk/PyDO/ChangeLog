@@ -1,5 +1,10 @@
 2005-03-06  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
+	* src/PyDO/dbi.py: base class for connection cache (pretty lame so far).
+
+	* src/PyDO/drivers/sqliteconn.py: type wrappers for sqlite, and first
+	cut at a connection cache.
+
 	* src/PyDO/drivers/psycopgconn.py (_converters): support for type
 	wrappers for postgresql.
 

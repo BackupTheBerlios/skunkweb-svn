@@ -1,6 +1,8 @@
 
-  * drivers
+  * drivers (no new ones for first release)
+    - mysql needs type wrapper converters
   * connection caching and pooling
+    - need appropriate abstraction!
   * docs
   * tests
   * first release
@@ -26,8 +28,5 @@ an instance now checks _unique.
 
 ---
 
-Figure out where typewrappers are dealt with.  Clearly they are driver
-dependent; can some of the work be done in the generic converter?
-
---
+Make the cache a bit less stupid.
 

@@ -1,4 +1,11 @@
 from itertools import izip
+from threading import Lock
+try:
+    from threading import local
+except:
+    # not threadsafe in Python 2.3.  Sorry!
+    class local:
+        pass
 
 from PyDO.log import *
 from PyDO.operators import BindingConverter
@@ -191,4 +198,89 @@ def getConnection(alias):
     return conndata['connection']
 
 
-__all__=['initAlias', 'delAlias', 'getConnection']
+class ConnectionWrapper(object):
+    __slots__=('_conn', '_cache', '_args')
+    
+    def __init__(self, conn, args, cache):
+        self._conn=conn
+        self._args=args
+        self._cache=cache
+        
+    def __getattr__(self, attr):
+        return getattr(self._conn, attr)
+
+    def __setattr__(self, attr, val):
+        if attr in self.__slots__:
+            super(ConnectionWrapper, self).__setattr__(attr, val)
+        else:
+            setattr(self._conn, attr, val)
+
+    def close(self):
+        # tell the cache that we are done and can be reused
+        self._cache.returnToPool(self)
+
+    def __del__(self):
+        self.close()
+
+
+class ConnectionCache(object):
+    
+    """ a connection cache that stores one connection per active
+    thread in a thread-local object, and lets connections from dead
+    threads be garbage-collected.  Although thread-safe, this is
+    pretty lame, because it doesn't allow connections to be returned
+    to a pool and reused by different threads. However, that can be
+    added later without too much trouble.... """
+    
+    def __init__(self):
+        self._cache=local().__dict__
+        self._lock=Lock()
+
+    def real_connect(self, connectArgs):
+        raise NotImplementedError, "subclasses should implement this!"
+
+    def _serialize_args(connectArgs):
+        d=connectArgs.items()
+        d.sort()
+        return d
+    _serialize_args=staticmethod(_serialize_args)
+
+    def connect(self, connectArgs):
+        args=self._serialize_args(connectArgs)
+        try:
+            self._lock.acquire()
+            try:
+                c=self._cache[args]
+                if not self.onGive(c):
+                    c=self._cache.connection=self.real_connect(connectArgs)
+            except KeyError:
+                c=self._cache.connection=self.real_connect(connectArgs)
+            return ConnectionWrapper(c, args, self)
+        finally:
+            self._lock.release()
+
+    def returnToPool(self, conn):
+        try:
+            self._lock.acquire()
+            self.onReturn(conn._conn)
+            del self._cache[args]
+        finally:
+            self._lock.release()
+
+    def onReturn(self, realConn):
+        """anything you want to do to a connection when it is returned"""
+        pass
+
+    def onGive(self, realConn):
+        """any test you want to perform on a cached (i.e., not newly
+        connected) connection before giving it out.  If the connection
+        isn't good, return False"""
+        return not realConn.closed
+        
+
+
+__all__=['initAlias',
+         'delAlias',
+         'getConnection',
+         'ConnectionCache',
+         'ConnectionWrapper']
