@@ -24,3 +24,4 @@ from PyDO.field import *
 from PyDO.pydo import *
 from PyDO.operators import *
 from PyDO.dbi import *
+from PyDO.log import *
