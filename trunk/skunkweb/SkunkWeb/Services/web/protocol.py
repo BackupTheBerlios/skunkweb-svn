@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: protocol.py,v 1.10 2002/04/02 22:27:47 smulloni Exp $
+# $Id: protocol.py,v 1.11 2002/05/02 16:29:07 drew_csillag Exp $
 # Time-stamp: <01/05/04 15:57:35 smulloni>
 ########################################################################
 
@@ -77,11 +77,20 @@ class HTTPConnection:
         self._output.write(s)
         
     def _initArgs(self, requestData):
-        oldstdin=sys.stdin
-        sys.stdin = cStringIO.StringIO(requestData['stdin'])
-        query = cgi.FieldStorage(environ = requestData['environ'])
-        sys.stdin = oldstdin
+        stdin = cStringIO.StringIO(requestData['stdin'])
+        env = requestData['environ']
+        query = cgi.FieldStorage(fp = stdin, environ = env,
+                                 keep_blank_values = 1)
         self.args=self._convertArgs(query)
+
+        #if POST, see if any GET args too
+        if env.get("REQUEST_METHOD") != 'POST':
+            return
+        environ = env.copy()
+        environ["REQUEST_METHOD"] = 'GET'
+        query = cgi.FieldStorage(fp = stdin, environ = environ,
+                                 keep_blank_values = 1)
+        self.args.update(self._convertArgs(query))
        
     def _convertArgs(self, query):
         d = {}
@@ -376,6 +385,19 @@ def _cleanupConfig(requestData, sessionDict):
 
 ########################################################################
 # $Log: protocol.py,v $
+# Revision 1.11  2002/05/02 16:29:07  drew_csillag
+# made it so that:
+#
+# 	1) empty form arguments are passed through.  Previously, they were
+# 	   dropped, but it generally wasn't a problem since you usually
+# 	   used <:args:> or CONN.args.get(foo), but occasionally it was
+# 	   confusing.
+#
+# 	2) on a POST request, we now also gather what would usually be GET
+# 	   arguments also (say your form action is /foo/bar.html?baz=fred
+# 	   and it was a POST, you'll now get the baz argument (set to
+# 	   fred, of course))
+#
 # Revision 1.10  2002/04/02 22:27:47  smulloni
 # fixed HTTPConnection.extract_args() bug.
 #
