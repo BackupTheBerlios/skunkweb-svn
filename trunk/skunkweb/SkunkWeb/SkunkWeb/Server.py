@@ -16,7 +16,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: Server.py,v 1.9 2003/04/16 14:41:30 drew_csillag Exp $
+# $Id: Server.py,v 1.10 2003/04/18 16:54:21 smulloni Exp $
 ########################################################################
 
 ########################################################################
@@ -160,7 +160,8 @@ def _setConfigDefaults():
         pollPeriod = 5,
         maxRequests = 256,
         userModuleCleanup = 0,
-        userModuleCleanupIgnore = []
+        userModuleCleanupIgnore = [],
+        runInForeground=0
     )    
 
 def start():
