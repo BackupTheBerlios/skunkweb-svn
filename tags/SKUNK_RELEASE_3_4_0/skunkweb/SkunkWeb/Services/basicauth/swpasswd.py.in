@@ -1,0 +1,65 @@
+#!@PYTHON@
+#  
+#  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>
+#  
+#      You may distribute under the terms of either the GNU General
+#      Public License or the SkunkWeb License, as specified in the
+#      README file.
+#   
+#-*-python-*-
+import sys
+import getopt
+import getpass
+
+sys.path.append('@libdir@/pylibs')
+import Authenticator
+
+def help():
+    print >> sys.stderr, """
+Usage: swpasswd [-cb] password_file username [password]
+
+Options:
+    
+-c   Create a new password file
+-b   Specify the password on the command line as opposed to being
+     asked for it interactively.
+"""
+
+    sys.exit()
+    
+try:
+    optlist, extra = getopt.getopt(sys.argv[1:], 'cb')
+except:
+    help()
+
+if not extra:
+    help()
+
+create=None
+batch=None
+
+for oname, oval in optlist:
+    if oname == '-c':
+        create = not create
+    if oname == '-b':
+        batch = not batch
+
+try:
+    if batch:
+        filename, user, password = extra
+    else:
+        filename, user = extra
+        password = getpass.getpass()
+except ValueError:
+    print >> sys.stderr, "wrong number of arguments"
+    help()
+
+if create:
+    auth = Authenticator.FileAuthenticator('/dev/null')
+    auth.file = filename
+else:
+    auth = Authenticator.FileAuthenticator(filename)
+
+auth.setUserPassword(user, password)
+auth.dump()
+    
