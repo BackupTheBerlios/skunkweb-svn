@@ -1,4 +1,4 @@
-Copyright (C) 2001-2003 Jacob Smullyan <smulloni@smullyan.org>
+Copyright (C) 2001-2005 Jacob Smullyan <smulloni@smullyan.org>
                         Andrew T. Csillag <drew_csillag@yahoo.com>
 
 			 The SkunkWeb License
@@ -32,5 +32,6 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ---END OF LICENSE---
-For those astute readers, you will notice that this is the same as the
-BSD license, changed to apply to the case of SkunkWeb.
+
+Astute readers will notice that this is the same as the BSD license,
+changed to apply to the case of SkunkWeb.
