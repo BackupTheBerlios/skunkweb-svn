@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: protocol.py,v 1.5 2001/10/02 02:35:34 smulloni Exp $
+# $Id: protocol.py,v 1.6 2002/02/14 02:58:25 smulloni Exp $
 # Time-stamp: <01/05/04 15:57:35 smulloni>
 ########################################################################
 
@@ -303,7 +303,8 @@ def _processRequest(requestData, sessionDict):
     # the connection should be available to postResponse and cleanup hooks.
     sessionDict[constants.CONNECTION]=connection
     DEBUG(WEB, 'returning response: %s' % response)
-    DEBUG(WEB, 'length of response: %d' % len(response))
+    if response!=None:
+        DEBUG(WEB, 'length of response: %d' % len(response))
     return response
 
 
@@ -326,6 +327,10 @@ def _cleanupConfig(requestData, sessionDict):
 
 ########################################################################
 # $Log: protocol.py,v $
+# Revision 1.6  2002/02/14 02:58:25  smulloni
+# moved hooks into a pylib; added some logging to templating handler, and minor fix
+# to web service.
+#
 # Revision 1.5  2001/10/02 02:35:34  smulloni
 # support for scoping on unix socket path; very serious scope bug fixed.
 #
