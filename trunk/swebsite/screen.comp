@@ -1,93 +1,89 @@
-<HTML>
-<HEAD>
+<html>
+<head>
 <:default subj "":>
 <link rel="SHORTCUT ICON" href="favicon.ico">
 <:if `subj`:>
-<TITLE>SkunkWEB | <:val `subj`:></TITLE>
+<title>SkunkWEB | <:val `subj`:></title>
 <:else:>
-<TITLE>SkunkWEB</TITLE>
+<title>SkunkWEB</title>
 <:/if:>
-<link rel="stylesheet" href="styles/sWEB.css">
-<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="styles/sWEB.css" />
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <!-- start rollover goodies -->
-<SCRIPT LANGUAGE="JavaScript">
+<script language="JavaScript">
 <!--
 
 function newImage(arg) {
-	if (document.images) {
-		rslt = new Image();
-		rslt.src = arg;
-		return rslt;
-	}
+    if (document.images) {
+	rslt = new Image();
+	rslt.src = arg;
+	return rslt;
+    }
 }
 
 function changeImages() {
-	if (document.images && (preloadFlag == true)) {
-		for (var i=0; i<changeImages.arguments.length; i+=2) {
-			document[changeImages.arguments[i]].src = changeImages.arguments[i+1];
-		}
-	}
+    if (document.images && (preloadFlag == true)) {
+	for (var i=0; i<changeImages.arguments.length; i+=2) {
+	document[changeImages.arguments[i]].src = changeImages.arguments[i+1];
+        }
+    }
 }
 
 var preloadFlag = false;
 function preloadImages() {
-	if (document.images) {
-		selecto_05_over = newImage("images/selecto_05-over.gif");
-		selecto_09_over = newImage("images/selecto_09-over.gif");
-		selecto_13_selecto_09_over = newImage("images/selecto_13-selecto_09_over.gif");
-		selecto_13_over = newImage("images/selecto_13-over.gif");
-		selecto_17_over = newImage("images/selecto_17-over.gif");
-		selecto_21_selecto_17_over = newImage("images/selecto_21-selecto_17_over.gif");
-		selecto_21_over = newImage("images/selecto_21-over.gif");
-		selecto_25_selecto_21_over = newImage("images/selecto_25-selecto_21_over.gif");
-		selecto_25_over = newImage("images/selecto_25-over.gif");
-		selecto_29_selecto_25_over = newImage("images/selecto_29-selecto_25_over.gif");
-		selecto_29_over = newImage("images/selecto_29-over.gif");
-		selecto_33_selecto_29_over = newImage("images/selecto_33-selecto_29_over.gif");
-		selecto_33_over = newImage("images/selecto_33-over.gif");
-		selecto_33_selecto_37_over = newImage("images/selecto_33-selecto_37_over.gif");
-		selecto_37_over = newImage("images/selecto_37-over.gif");
-		preloadFlag = true;
-	}
+    if (document.images) {
+        selecto_05_over = newImage("images/selecto_05-over.gif");
+	selecto_09_over = newImage("images/selecto_09-over.gif");
+	selecto_13_selecto_09_over = newImage("images/selecto_13-selecto_09_over.gif");
+	selecto_13_over = newImage("images/selecto_13-over.gif");
+	selecto_17_over = newImage("images/selecto_17-over.gif");
+	selecto_21_selecto_17_over = newImage("images/selecto_21-selecto_17_over.gif");
+	selecto_21_over = newImage("images/selecto_21-over.gif");
+	selecto_25_selecto_21_over = newImage("images/selecto_25-selecto_21_over.gif");
+	selecto_25_over = newImage("images/selecto_25-over.gif");
+	selecto_29_selecto_25_over = newImage("images/selecto_29-selecto_25_over.gif");
+	selecto_29_over = newImage("images/selecto_29-over.gif");
+	selecto_33_selecto_29_over = newImage("images/selecto_33-selecto_29_over.gif");
+	selecto_33_over = newImage("images/selecto_33-over.gif");
+	selecto_33_selecto_37_over = newImage("images/selecto_33-selecto_37_over.gif");
+	selecto_37_over = newImage("images/selecto_37-over.gif");
+	preloadFlag = true;
+    }
 }
 
 // -->
-</SCRIPT>
+</script>
 <!-- end preload script -->
-</HEAD>
-<BODY BGCOLOR=#FFFFFF ONLOAD="preloadImages();" link="#008800" alink="yellow" text="#202020" vlink="#008800">
+</head>
+<body bgcolor=#FFFFFF onload="preloadImages();" link="#008800" alink="yellow" text="#202020" vlink="#008800">
 <!-- end rollover goodies -->
-		<table align="left" bgcolor="#008800" width="100%" cellspacing="0" cellpadding="0" border="0" cols="*,100,*">
-			<tr>
-				<td colspan="2" bgcolor="#008800"><a href="http://skunkweb.sourceforge.net">
-						<table border="0" cellpadding="0" cellspacing="0" width="100%">
-							<tr>
-								<td><a href="http://skunkweb.sourceforge.net/"><img src="images/WEB400green.gif" width="300" height="86" border="0" alt="SkunkWEB"></a></td>
-								<td align="right"><img src="images/skunkWEB1_04.gif" width=171 height=86 border="0" alt="- smell the power!"></td>
-							</tr>
-						</table>
-					</a></td>
-			</tr>
-			<tr>
-				<td valign="top" width="100" bgcolor="white">
-				<A HREF="about.html"
-				ONMOUSEOVER="changeImages('selecto_05', 'images/selecto_05-over.gif'); return true;"
-				ONMOUSEOUT="changeImages('selecto_05', 'images/selecto_05.gif'); return true;">
-				<IMG NAME="selecto_05" SRC="images/selecto_05.gif" WIDTH=100 HEIGHT=29 BORDER=0 alt="about"></A>
-				</td>
-				<td bgcolor="white" valign="top" align="right"><img src="images/skunkWEB1_08.gif" width=171 height=29 border="0" alt="."></td>
-			</tr>
-			<tr>
-				<td valign="top" width="100" bgcolor="white">
-					<table width=100 border=0 cellpadding=0 cellspacing=0>
-						<tr>
-							<td><a href="docs.html" onmouseover="changeImages('selecto_09', 'images/selecto_09-over.gif', 'selecto_13', 'images/selecto_13-selecto_09_over.gif'); return true;" onmouseout="changeImages('selecto_09', 'images/selecto_09.gif', 'selecto_13', 'images/selecto_13.gif'); return true;"><img name="selecto_09" src="images/selecto_09.gif" width=100 height=28 border=0 alt="docs"></a></td>
-						</tr>
-						<tr>
-							<td><a href="download.html" onmouseover="changeImages('selecto_13', 'images/selecto_13-over.gif'); return true;" onmouseout="changeImages('selecto_13', 'images/selecto_13.gif'); return true;"><img name="selecto_13" src="images/selecto_13.gif" width=100 height=30 border=0 alt="download"></a></td>
-						</tr>
-						<tr>
-							<td><a href="mlist.html" onmouseover="changeImages('selecto_17', 'images/selecto_17-over.gif', 'selecto_21', 'images/selecto_21-selecto_17_over.gif'); return true;" onmouseout="changeImages('selecto_17', 'images/selecto_17.gif', 'selecto_21', 'images/selecto_21.gif'); return true;"><img name="selecto_17" src="images/selecto_17.gif" width=100 height=28 border=0 alt="mailing list"></a></td>
+<table align="left" bgcolor="#008800" width="100%" cellspacing="0" cellpadding="0" border="0" cols="*,100,*">
+ <tr>
+  <td colspan="2" bgcolor="#008800">
+   <a href="http://skunkweb.sourceforge.net">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+     <tr>
+      <td><a href="http://skunkweb.sourceforge.net/"><img src="images/WEB400green.gif" width="300" height="86" border="0" alt="SkunkWEB"></a></td>
+      <td align="right"><img src="images/skunkWEB1_04.gif" width=171 height=86 border="0" alt="- smell the power!"></td>
+     </tr>
+    </table>
+   </a></td>
+ </tr>
+ <tr>
+ <td valign="top" width="100" bgcolor="white"><a href="about.html" onmouseover="changeImages('selecto_05', 'images/selecto_05-over.gif'); return true;" onmouseout="changeImages('selecto_05', 'images/selecto_05.gif'); return true;"><img name="selecto_05" SRC="images/selecto_05.gif" width=100 height=29 border=0 alt="about"></a></td>
+ <td bgcolor="white" valign="top" align="right"><img src="images/skunkWEB1_08.gif" width=171 height=29 border="0" alt="."></td>
+ </tr>
+ <tr>
+  <td valign="top" width="100" bgcolor="white">
+   <table width=100 border=0 cellpadding=0 cellspacing=0>
+    <tr>
+     <td><a href="docs.html" onmouseover="changeImages('selecto_09', 'images/selecto_09-over.gif', 'selecto_13', 'images/selecto_13-selecto_09_over.gif'); return true;" onmouseout="changeImages('selecto_09', 'images/selecto_09.gif', 'selecto_13', 'images/selecto_13.gif'); return true;"><img name="selecto_09" src="images/selecto_09.gif" width=100 height=28 border=0 alt="docs"></a></td>
+   </tr>
+   <tr>
+    <td><a href="download.html" onmouseover="changeImages('selecto_13', 'images/selecto_13-over.gif'); return true;" onmouseout="changeImages('selecto_13', 'images/selecto_13.gif'); return true;"><img name="selecto_13" src="images/selecto_13.gif" width=100 height=30 border=0 alt="download"></a></td>
+  </tr>
+  <tr>
+   <td><a href="mlist.html" onmouseover="changeImages('selecto_17', 'images/selecto_17-over.gif', 'selecto_21', 'images/selecto_21-selecto_17_over.gif'); return true;" onmouseout="changeImages('selecto_17', 'images/selecto_17.gif', 'selecto_21', 'images/selecto_21.gif'); return true;"><img name="selecto_17" src="images/selecto_17.gif" width=100 height=28 border=0 alt="mailing list"></a></td>
 						</tr>
 						<tr>
 							<td><a href="index.html" onmouseover="changeImages('selecto_21', 'images/selecto_21-over.gif', 'selecto_25', 'images/selecto_25-selecto_21_over.gif'); return true;" onmouseout="changeImages('selecto_21', 'images/selecto_21.gif', 'selecto_25', 'images/selecto_25.gif'); return true;"><img name="selecto_21" src="images/selecto_21.gif" width=100 height=29 border=0 alt="news"></a></td>
