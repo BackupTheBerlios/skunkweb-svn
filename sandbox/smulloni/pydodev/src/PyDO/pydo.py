@@ -269,15 +269,15 @@ class PyDO(object):
         and return a data class instance representing said row or None
         if no row was retrieved.
         """
-        kw = cls._convertKW(kw)
+        tkw = cls._translate_dict(kw)
         
-        unique = cls._matchUnique(kw)
+        unique = cls._matchUnique(tkw)
         sql = cls._baseSelect() + " WHERE "
         
         conn = cls.getDBI()
-        where, values = cls._uniqueWhere(conn, kw)
-        sql = sql + where
-        results = conn.execute(sql, values, cls.dbColumns)
+        where, values = cls._uniqueWhere(conn, tkw)
+        sql = "%s WHERE %s" % (cls._baseSelect(), where)
+        results = conn.execute(sql, values, cls._fields.typedict)
         if not results:
             return
         if len(results) > 1:
