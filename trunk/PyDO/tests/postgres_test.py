@@ -17,9 +17,7 @@ rollback=base.rollback
 
 class PyDOGroup(base):
     table="pydogroup"
-    sequenced={'id' : 'pydogroup_id_seq'}
-    unique=['id', 'groupname']
-    fields=(('id', 'int'),
+    fields=(Sequence('id', 'int', 'pydogroup_id_seq'),
             ('groupname', 'text'))
 
     def getUsers(self):
@@ -39,9 +37,7 @@ class user_group(base):
 class PyDOUser(base):
 
     table='pydouser'
-    sequenced={'id' : 'pydouser_id_seq'}
-    unique=['id']
-    fields=('id',
+    fields=(Sequence('id', 'int', 'pydouser_id_seq'),
             'firstname',
             'lastname')
 
@@ -59,9 +55,7 @@ class PyDOUser(base):
 
 class Article(base):
     table="article"
-    sequenced={'id': 'article_id_seq'}
-    unique=['id']
-    fields=(('id', 'int'),
+    fields=(Sequence('id', 'int', 'article_id_seq'),
             ('title', 'text'),
             ('body', 'text'),
             ('creator', 'int'),
