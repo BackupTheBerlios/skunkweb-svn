@@ -1,6 +1,6 @@
 ########################################################################
-# $Id: protocol.py,v 1.16 2002/11/13 21:27:49 smulloni Exp $
-# Time-stamp: <02/11/12 14:56:13 smulloni>
+# $Id: protocol.py,v 1.17 2002/12/05 04:13:59 smulloni Exp $
+# Time-stamp: <02/12/04 16:12:30 smulloni>
 #  
 #  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>
 #  
@@ -138,7 +138,7 @@ class HTTPConnection:
 
         This is supposed to be equivalent to the <:args:> tag in STML.
         """
-        return argextract.extract_args(self, *args, **kwargs)
+        return argextract.extract_args(self.args, *args, **kwargs)
 
     def _initHeaders(self):
         self.requestHeaders = HeaderDict(self._requestDict['headers'])
@@ -374,6 +374,9 @@ def _cleanupConfig(requestData, sessionDict):
 
 ########################################################################
 # $Log: protocol.py,v $
+# Revision 1.17  2002/12/05 04:13:59  smulloni
+# fixing argsextract and its use in web.
+#
 # Revision 1.16  2002/11/13 21:27:49  smulloni
 # incremental formlib modifications.
 #
