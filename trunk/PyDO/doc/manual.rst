@@ -484,6 +484,49 @@ A Complete Example
 
 [TBD]
 
+Differences From PyDO 1
+-----------------------
+
+This version of PyDO differs in several ways from PyDO version 1.x,
+most notably: 
+
+1.  PyDO1 defined fields as a tuple of tuples (fieldname, dbtype);
+    type was required, as PyDO drivers took much of the responsibility 
+    for marshalling Python data types to database types, and did so as
+    a function of column type.  PyDO2 does not need to know about what
+    the database type is of the underlying columns, because DBAPI
+    drivers have gotten a lot smarter in the last few years.
+2.  You couldn't define uniqueness constraints in the field list in
+    PyDO1.   
+3.  Sequences and auto-increment fields were handled separately, and
+    both had to be declared in separate class attributes, which have
+    been dropped in PyDO2.
+4.  The ``SQLOperator`` syntax is now more flexible, and is accepted by
+    ``getSome()``. In PyDO1, there were three additional methods that
+    accepted different query syntaxes: ``getSomeWhere()``,
+    ``getTupleWhere()``, and ``getSQLWhere()``. These have been
+    dropped.
+5.  PyDO1 was not thread-safe, and had no connection pool facilities
+    for multi-threaded use.
+6.  PyDO1 used a different package structure, and important classes
+    needed to be imported directly from sub-modules.  In PyDO2,
+    everything you would normally need is available in the top-level
+    namespace. 
+7.  PyDO1 did not have projections, and the inheritance semantics,
+    while similar, were not exactly the same.
+8.  PyDO1 did not use new-style classes (as it predated them), so the
+    metaclass functionality was more elaborate, including its own
+    implementation of class methods (which it called "static"
+    methods). 
+9.  PyDO1 supports more databases than PyDO2 does at the time of
+    writing.
+10. PyDO2 does not yet implement PyDO1's "scatterFetch" method, which
+    returns multiple ``PyDO`` objects of different types in a single
+    query. 
+
+
+..
+
 
 
 ..
