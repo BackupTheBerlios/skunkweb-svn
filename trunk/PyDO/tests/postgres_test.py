@@ -17,8 +17,8 @@ rollback=base.rollback
 
 class PyDOGroup(base):
     table="pydogroup"
-    fields=(Sequence('id', 'int', 'pydogroup_id_seq'),
-            ('groupname', 'text'))
+    fields=(Sequence('id', 'pydogroup_id_seq'),
+            'groupname')
 
     def getUsers(self):
         return self.joinTable('id',
@@ -37,7 +37,7 @@ class user_group(base):
 class PyDOUser(base):
 
     table='pydouser'
-    fields=(Sequence('id', 'int', 'pydouser_id_seq'),
+    fields=(Sequence('id', 'pydouser_id_seq'),
             'firstname',
             'lastname')
 
@@ -55,11 +55,11 @@ class PyDOUser(base):
 
 class Article(base):
     table="article"
-    fields=(Sequence('id', 'int', 'article_id_seq'),
-            ('title', 'text'),
-            ('body', 'text'),
-            ('creator', 'int'),
-            ('created', 'timestamp'))
+    fields=(Sequence('id', 'article_id_seq'),
+            'title',
+            'body',
+            'creator',
+            'created')
 
 
 logging.basicConfig()
