@@ -1,3 +1,23 @@
+2005-02-22  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO/field.py: dropped "attrs" parameter for fields; to
+	associate additional information with fields, use a subclass.
+	(Arguably I should drop dbtype and nullable -- which I just added
+	--, too.)
+
+	* src/PyDO/{pydo,field}.py: more refactoring: eliminated the
+	sequenced class attribute, and now declare sequences, and most
+	unique constraints, inside fields.  Two new Field subclasses,
+	Sequence and Unique, take care of this.
+
+	* src/PyDO/{pydo,dbi}.py: refactoring underway.  auto_increment is
+	now combined with sequenced, and the driver decides whether it is
+	really auto-increment or not (not a hard decision, since dbs all
+	seem to do either one or the other).  Also, found a bug in which
+	the public class attributes in PyDO, "unique" and "sequenced",
+	were being inherited twice, in the case of projections,
+	incorrectly. 
+
 2005-02-18  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
 	* src/PyDO/pydo.py (PyDO.delete): was testing class attribute
@@ -11,9 +31,10 @@
 2005-02-16  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
 	* src/PyDO/pydo.py (PyDO.project): implemented projections.
+ 
+ 	* tests/sqlite_test.py (SqliteTest.test_project): test for
+	projections.
 
-	* tests/sqlite_test.py (SqliteTest.test_project): test for projections.
-
-	* src/PyDO/operators.py (__makeOperators): removed use of deprecated new module;
-	a little code tightening.
+	* src/PyDO/operators.py (__makeOperators): removed use of
+	deprecated new module; a little code tightening.
 

@@ -5,6 +5,8 @@ from psycopg import connect
 
 class PsycopgDBI(DBIBase):
     
+    auto_increment=False
+    
     def _connect(self):
         return connect(self.connectArgs)
 

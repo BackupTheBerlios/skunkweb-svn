@@ -9,6 +9,8 @@ import sqlite
 _createPat=re.compile(r'\((.*)\)', re.DOTALL)
 
 class SqliteDBI(DBIBase):
+    # sqlite uses an auto increment approach to sequences
+    auto_increment=True
 
     def _connect(self):
         return sqlite.connect(**self.connectArgs)

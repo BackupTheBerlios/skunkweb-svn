@@ -16,10 +16,8 @@ rollback=base.rollback
 
 class PyDOGroup(base):
     table="pydogroup"
-    auto_increment={'id' : 1}
-    unique=['id', 'groupname']
-    fields=(('id', 'int'),
-            ('groupname', 'text'))
+    fields=(Sequence('id'),
+            'groupname')
 
     def getUsers(self):
         return self.joinTable('id',
@@ -38,9 +36,7 @@ class user_group(base):
 class PyDOUser(base):
 
     table='pydouser'
-    auto_increment={'id' : 1}
-    unique=['id']
-    fields=('id',
+    fields=(Sequence('id'),
             'firstname',
             'lastname')
 
@@ -58,13 +54,11 @@ class PyDOUser(base):
 
 class Article(base):
     table="article"
-    auto_increment={'id': 1}
-    unique=['id']
-    fields=(('id', 'int'),
-            ('title', 'text'),
-            ('body', 'text'),
-            ('creator', 'int'),
-            ('created', 'timestamp'))
+    fields=(Sequence('id'),
+            'title',
+            'body',
+            'creator',
+            'created')
 
 
 logging.basicConfig()

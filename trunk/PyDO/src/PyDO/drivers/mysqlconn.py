@@ -4,6 +4,8 @@ from PyDO.exceptions import PyDOError
 import MySQLdb
 
 class MysqlDBI(DBIBase):
+    auto_increment=True
+    
     def _connect(self):
         return MySQLdb.connect(**self.connectArgs)
 

@@ -39,7 +39,6 @@ def _restrict(flds, coll):
                 s.add(v)
         return s
     # It isn't necessary to test for multi-column keys in dicts
-    # (auto-increment and sequenced)
     elif isinstance(coll, dict):
         return dict([(x, y) for x, y in coll.iteritems() if x in flds])
 
@@ -57,8 +56,13 @@ class _metapydo(type):
             # support for tuple syntax for plain Jane fields
             if isinstance(f, str):
                 f=Field(f)
-            elif not isinstance(f, Field):
+            elif isinstance(f, dict):
+                f=Field(**f)
+            elif isinstance(f, (tuple, list)):
                 f=Field(*f)
+            elif not isinstance(f, Field):
+                raise ValueError, "cannot coerce into a field: %s" % f
+                
             # add to field container
             fielddict[f.name]=f
         
@@ -67,8 +71,7 @@ class _metapydo(type):
         
         for a, t in (('_fields', dict),
                      ('_unique', set),
-                     ('_sequenced', dict),
-                     ('_auto_increment', dict)):
+                     ('_sequenced', dict)):
             setattr(cls, a, t())
             # projections don't inherit fields!
             if cls._is_projection and a=='_fields':
@@ -77,17 +80,25 @@ class _metapydo(type):
                 o=getattr(b, a, None)
                 if o:
                     # for projections, restrict the other field attributes
-                    # to those referencing 
+                    # to those referencing the projection's fields
                     if cls._is_projection:
                         o=_restrict(fielddict, o)
                     # set & dict both have update()
                     getattr(cls, a).update(o)
 
-        # manage this class's declared attributes
-        cls._fields.update(fielddict)        
-        cls._unique.update(cls.unique)
-        cls._sequenced.update(cls.sequenced)
-        cls._auto_increment.update(cls.auto_increment)
+        # manage this class's declared attributes.  Don't inherit here
+        # by mistake!  The public variables are just declarations; the
+        # real data is in the private variables.
+        cls._fields.update(fielddict)
+        # N.B.: NOT cls.unique!
+        cls._unique.update(namespace.get('unique', {}))
+
+        # fields may declare sequences
+        for f in cls._fields.itervalues():
+            if f.sequence:
+                cls._sequenced.setdefault(f.name, f.sequence)
+            if f.unique:
+                cls._unique.add(f.name)
 
         # add attribute access to fields
         if cls.use_attributes:
@@ -110,8 +121,6 @@ class PyDO(dict):
     
     fields=()
     unique=[]
-    sequenced={}
-    auto_increment={}
 
     _projections={}
 
@@ -267,9 +276,10 @@ class PyDO(dict):
         
         conn = cls.getDBI()
 
-        for s, sn in cls.sequenced.items():
-            if not fieldData.has_key(s):
-                fieldData[s] = conn.getSequence(sn)
+        if not conn.auto_increment:
+            for s, sn in cls._sequenced.items():
+                if not fieldData.has_key(s):
+                    fieldData[s] = conn.getSequence(sn)
         cols=fieldData.keys()
         vals=[fieldData[c] for c in cols]
         converter=conn.getConverter()
@@ -283,8 +293,8 @@ class PyDO(dict):
         if res != 1:
             raise PyDOError, "inserted %s rows instead of 1" % res
         
-        if cls.auto_increment:
-            for k, v in cls.auto_increment.items():
+        if conn.auto_increment:
+            for k, v in cls._sequenced.items():
                 if not fieldData.has_key(k):
                     fieldData[k] = conn.getAutoIncrement(v)
         

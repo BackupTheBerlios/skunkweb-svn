@@ -16,7 +16,7 @@ rollback=base.rollback
 
 class PyDOGroup(base):
     table="pydogroup"
-    auto_increment={'id' : 1}
+    sequenced={'id' : 1}
     unique=['id', 'groupname']
     fields=(('id', 'int'),
             ('groupname', 'text'))
@@ -38,7 +38,7 @@ class user_group(base):
 class PyDOUser(base):
 
     table='pydouser'
-    auto_increment={'id' : 1}
+    sequenced={'id' : 1}
     unique=['id']
     fields=('id',
             'firstname',
@@ -58,7 +58,7 @@ class PyDOUser(base):
 
 class Article(base):
     table="article"
-    auto_increment={'id': 1}
+    sequenced={'id': 1}
     unique=['id']
     fields=(('id', 'int'),
             ('title', 'text'),

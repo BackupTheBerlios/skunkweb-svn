@@ -7,6 +7,9 @@ class DBIBase(object):
     """base class for db connection wrappers"""
     paramstyle='format'
     autocommit=False
+    # default to postgresql style for sequences,
+    # out of sheer postgresql bigotry
+    auto_increment=False
     
     def __init__(self, connectArgs, cache=False, verbose=False):
         self.cache=cache

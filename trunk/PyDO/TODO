@@ -1,5 +1,5 @@
 Summary:
-
+  * refactor unique/sequenced and field declarations
   * introspection (especially, what are the columns of a table?)
   * connection caching and pooling
   * scatter fetch
@@ -15,59 +15,43 @@ To catch up with the old PyDO:
   * docs
   * connection caching
 
-New features:
-  * support for AS in field names (?).  Maybe more trouble
-    than it is worth. -- NAW
-  * dbtype is currently unused (and isn't necessary for what
-    PyDO does, so is now optional).  But it would be useful for:
-    - on update, coercing the value given to the same type
-      the underlying driver would return.  So if you update
-      an int column with '3', the dict would contain the integer
-      3 for that column (right now, it would contain whatever
-      the user put in and not reflect the database/driver's type
-      coercions, for both old and new PyDO). -- NAW
+Other new features:
     - generating CREATE TABLE statements (not a huge priority of
       mine, but someone might use it). -- DEFER
-  * updateSome, deleteSome(). -- DONE
-  * projection() -- dynamically create a derived PyDO class with a 
-    subset of the table's fields. -- DONE
-  * make it possible to derive the field list, unique, sequence, 
-    auto_increment etc. of a class by  introspection (like SQLObject,
-    Ruby's ActiveRecord). -- YES, DO IT
-  * joins could use additional parameters so you could add to the
-    where clause. (?)
+    - joins could use additional parameters so you could add to the
+      where clause. (?)
 
 
 NOTES
 -----
 
-
-Looking at scatterFetch, which I've never used, I'm thinking that
-perhaps I should first implement projections, and then think about a
-general means for getting multiple objects/projections at once in one
-result set.  -- now projections are implemented, so bite the bullet!
-
-Perhaps, in addition to the *table* class attribute which is helpful
-when the PyDO object is modelling a single table, a _tables attribute
-would be useful, with fields for each table, and a joins
-attribute. One option would be to make the ordinary single-table case
-just a vacuous join.  Another would be to make joins a separate
-although similar object, with a separate implementation of an
-overlapping api (getSome(), especially).
-
-Would any class ever need to use both auto_increment and sequenced?
-Not that I know of.  Can I then coalesce them into one attribute, and
-let drivers decide what to do with them?
-
-In the case of postgresql, it should always be possible to determine
-what sequence is being used by introspection.  In the case of
-auto-increment, neither mysql nor sqlite needs a value associated with
-the column id.  So we might be able to accept a list/tuple rather than
-a dict for the combined auto_increment/sequenced attribute.  Drivers
-would tell the PyDO class whether or not to interpret the sequence as
-an auto_increment (get value after insert) or sequence (get value
-before insert) kind of deal. 
+In the case of postgresql, it should usually be possible to determine
+what sequence is being used by guessing, or by introspection.  In the
+case of auto-increment, neither mysql nor sqlite needs a value
+associated with the column id.  So we might be able to accept a
+list/tuple rather than a dict for the combined auto_increment-
+sequenced attribute.  Drivers would tell the PyDO class whether or
+not to interpret the sequence as an auto_increment (get value after
+insert) or sequence (get value before insert) kind of deal.
 
 -- 
 
-Any table without a unique constraint is immutable.
+Any table without a unique constraint is immutable.  Any mutation of
+an instance now checks _unique.
+
+Fields still reserve second place for a database type, which is no
+longer necessary.  I think going back to Jeroen's idea of putting
+unique and sequence back in the fields declaration would be right.  I
+didn't like the fact that there were two ways of declaring unique, but
+that is how SQL works, also, and it would be convenient in many cases.
+If I do this, perhaps "sequenced" should go away completely.  "unique"
+must stay, because unique indexes can be multi-column.  
+
+Let's find a way to specify fields in an easy way.
+
+   fields=(Sequence('id', 'sequencename'),
+           Unique('name'),
+           'thing',
+           'blah')
+
+A sequence field
