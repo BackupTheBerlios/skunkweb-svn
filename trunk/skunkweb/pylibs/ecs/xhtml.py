@@ -1,5 +1,5 @@
-# Time-stamp: <02/08/29 11:35:48 smulloni>
-# $Id: xhtml.py,v 1.3 2002/08/29 15:37:11 smulloni Exp $
+# Time-stamp: <02/11/08 15:54:01 smulloni>
+# $Id: xhtml.py,v 1.4 2002/11/08 21:16:21 smulloni Exp $
 
 ######################################################################## 
 #  Copyright (C) 2002 Jacob Smullyan <smulloni@smullyan.org>
@@ -86,7 +86,7 @@ EMPTY_ELEMENTS=['area',
                 'frame',
                 'hr',
                 'img',
-                'i',
+                'input',
                 'isindex',
                 'link',
                 'meta',

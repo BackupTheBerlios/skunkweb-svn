@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-#$Id: Cache.py,v 1.10 2002/06/18 15:08:19 drew_csillag Exp $
+#$Id: Cache.py,v 1.11 2002/11/08 21:16:20 smulloni Exp $
 
 #### REMINDER; defer time is the stampeding herd preventer that says
 #### Gimme a bit of time to render this thing before you go ahead and do it
@@ -177,10 +177,13 @@ def _mcUnconstituteFunc( data ):
 
 def getMessageCatalog( name, srcModTime = None ):
     DEBUG(WEIRD, "getting catalog %s" % name)
-    return _getCompiledThing( name, srcModTime, 'message catalog',
-                              _mcCompileFunc, CATALOG_CACHEFILE_VERSION,
-                              _mcReconstituteFunc,
-                              _mcUnconstituteFunc )
+    return _getCompiledThing(Component._rectifyRelativeName(name),
+                             srcModTime,
+                             'message catalog',
+                             _mcCompileFunc,
+                             CATALOG_CACHEFILE_VERSION,
+                             _mcReconstituteFunc,
+                             _mcUnconstituteFunc)
 
 #generic way to get and cache compiled things from cache/disk/memory
 def _getCompiledThing( name, srcModTime, legend, compileFunc, version,
@@ -518,6 +521,10 @@ def clearCache( name, arguments, matchExact = None ):
 
 ########################################################################
 # $Log: Cache.py,v $
+# Revision 1.11  2002/11/08 21:16:20  smulloni
+# Fix for relative paths for specifying message catalogs; added Input to
+# ecs (had been left out due to typo).
+#
 # Revision 1.10  2002/06/18 15:08:19  drew_csillag
 # fixed a DEBUG msg pointed out by pychecker and changed a string.atoi to int()
 #
