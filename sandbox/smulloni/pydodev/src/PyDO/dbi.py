@@ -32,7 +32,7 @@ class DBIBase(object):
         """returns a converter instance."""
         return BindingConverter(self.paramstyle)
 
-    def execute(self, sql, values=(), fields=()):
+    def execute(self, sql, values=(), fields=(), qualified=False):
         """Executes the statement with the values and does conversion
         of the return result as necessary.
         result is list of dictionaries, or number of rows affected"""
@@ -50,13 +50,16 @@ class DBIBase(object):
         resultset=c.fetchall()
         if not resultset:
             return c.rowcount
-        res=self._convertResultSet(c.description, resultset)
+        res=self._convertResultSet(c.description, resultset, qualified)
         c.close()
         return res
 
-    def _convertResultSet(description, resultset):
+    def _convertResultSet(description, resultset, qualified=False):
         """internal function that turns a result set into a list of dictionaries."""
-        fldnames=[_strip_tablename(x[0]) for x in description]
+        if qualified:
+            fldnames=[x[0] for x in description]
+        else:
+            fldnames=[_strip_tablename(x[0]) for x in description]
         return [dict(izip(fldnames, row)) for row in resultset]
     _convertResultSet=staticmethod(_convertResultSet)
 

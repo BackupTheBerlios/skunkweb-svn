@@ -1,6 +1,6 @@
 
 To catch up with the old PyDO:
-  * scatterFetch
+  * scatterFetch (but am defering, see below)
   * more drivers
   * docs
 
@@ -26,5 +26,7 @@ New features:
   * joins could use additional parameters so you could add to the
     where clause. (?)
 
-   
-    
+Looking at scatterFetch, which I've never used, I'm thinking that
+perhaps I should first implement projections, and then think about a
+general means for getting multiple objects/projections at once in one
+result set. 
