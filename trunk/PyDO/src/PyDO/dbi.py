@@ -6,7 +6,9 @@ from collections import deque
 try:
     from threading import local
 except ImportError:
-    # threading goes out the window
+    # threading goes out the window....
+    import warnings
+    warnings.warn("PyDO.ConnectionCache is not threadsafe for this python version!")
     class local:
         pass
     
@@ -29,6 +31,14 @@ class DBIBase(object):
         self.connectArgs=connectArgs
         self._local=local()
 
+    def autocommit():
+        def fget(self):
+            return self.conn.autocommit
+        def fset(self, val):
+            self.conn.autocommit=val
+        return fget, fset, None, None
+    autocommit=property(*autocommit())
+
     def conn():
         def fget(self):
             try:
@@ -49,7 +59,7 @@ class DBIBase(object):
     conn=property(*conn())
 
     def swapConnection(self, connection):
-        """switch the connection in use for a given thread with another one"""
+        """switch the connection in use for the current thread with another one."""
         c=self._local.__dict__.get('connection')
         self._local.connection=connection
         return c
@@ -69,6 +79,7 @@ class DBIBase(object):
             del self.conn
 
     def cursor(self):
+        """returns a database cursor for direct access to the db connection"""
         return self.conn.cursor()
 
     def _connect(self):
@@ -166,6 +177,7 @@ _driverConfig = {
     }
 _loadedDrivers = {}
 _aliases= {}
+_connlock=Lock()
 
 def _connect(driver, connectArgs, cache, verbose):
     if isinstance(driver, str):
@@ -213,31 +225,50 @@ def initAlias(alias, driver, connectArgs, cache=False, verbose=False):
               connectArgs=connectArgs,
               cache=cache,
               verbose=verbose)
-    old=_aliases.get(alias)
-    if old and data!=old:
-        raise ValueError, "already initialized: %s" % alias
-    _aliases[alias]=data
+    _connlock.acquire()
+    try:
+        old=_aliases.get(alias)
+        if old and data!=old:
+            raise ValueError, "already initialized: %s" % alias
+        _aliases[alias]=data
+    finally:
+        _connlock.release()
 
 
 def delAlias(alias):
-    if _aliases.has_key(alias):
-        del _aliases[alias]
+    """delete a connection alias if it has already been initialized;
+    does nothing otherwise"""
+    _connlock.acquire()
+    try:
+        if _aliases.has_key(alias):
+            del _aliases[alias]
+    finally:
+        _connlock.release
 
 
 def getConnection(alias):
     """get a connection given a connection alias"""
+    _connlock.acquire()
     try:
-        conndata=_aliases[alias]
-    except KeyError:
-        raise ValueError, "alias %s not recognized" % alias
-    if not conndata.has_key('connection'):
-        res=_connect(**conndata)
-        conndata['connection']=res
-        return res
-    return conndata['connection']
+        try:
+            conndata=_aliases[alias]
+        except KeyError:
+            raise ValueError, "alias %s not recognized" % alias
+        if not conndata.has_key('connection'):
+            res=_connect(**conndata)
+            conndata['connection']=res
+            return res
+        return conndata['connection']
+    finally:
+        _connlock.release()
 
 
 class ConnectionWrapper(object):
+    """a connection object returned from a connection pool which wraps
+    a real db connection.  It delegates to the real connection, but
+    overrides close(), which instead of closing the connection,
+    returns the it to the pool.  """
+    
     __slots__=('_conn', '_cache', '_args')
     
     def __init__(self, conn, args, cache):
@@ -263,7 +294,6 @@ class ConnectionWrapper(object):
 
 
 class ConnectionCache(object):
-    
     """ a connection cache/pool """
     def __init__(self, max_poolsize=0, keep_poolsize=1, delay=0.2, retries=10):
         # deques of unused connections, keyed by serialized connection args
@@ -280,7 +310,7 @@ class ConnectionCache(object):
         # use before retrying
         self._delay=delay
         # number of times to retry in that case
-        self._retries=10
+        self._retries=retries
         self._lock=Lock()
 
     def real_connect(self, connectArgs):
@@ -317,7 +347,8 @@ class ConnectionCache(object):
                         if not retries:
                             # barf
                             raise PyDOError, \
-                                  "all connections in use, number of retries: %d" % self._retries
+                                  ("all connections in use, attempted retries: "
+                                   "%d") % self._retries
                         else:
                             # retry, but get out of the mutex first
                             c=None
@@ -332,11 +363,17 @@ class ConnectionCache(object):
                     busy.append(c)
         finally:
             self._lock.release()
-        if c and self.onHandOut(c):
-            return ConnectionWrapper(c, args, self)
-        else:
-            time.sleep(self._delay)             
-            return self._connect(connectArgs, args, self._delay, retries-1)
+        if c:
+            if self.onHandOut(c):
+                return ConnectionWrapper(c, args, self)
+            else:
+                # not ok, completely expunge this connection
+                busy.remove(c)
+                # we're going to block, encourage c to die first
+                del c
+        # wait and then retry
+        time.sleep(self._delay)             
+        return self._connect(connectArgs, args, self._delay, retries-1)
 
     def release(self, conn, args):
         keep_poolsize=self._keep_poolsize
@@ -355,8 +392,11 @@ class ConnectionCache(object):
             self._lock.release()
 
     def onRelease(self, realConn):
-        """anything you want to do to a connection when it is returned"""
-        pass
+        """anything you want to do to a connection when it is returned
+        (default: rollback if not autocommit)"""
+        if not realConn.autocommit:
+            realConn.rollback()
+        
 
     def onHandOut(self, realConn):
         """any test you want to perform on a cached (i.e., not newly

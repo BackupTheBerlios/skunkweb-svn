@@ -46,7 +46,11 @@ def _initDB():
     p=subprocess.Popen(['/bin/bash', script], stdout=subprocess.PIPE)
     p.communicate()
 
-initAlias('postgrestest', 'psycopg', "dbname=pydotest user=pydotest", verbose=True)        
+initAlias('postgrestest',
+          'psycopg',
+          "dbname=pydotest user=pydotest",
+          cache=True,
+          verbose=True)        
 
 if __name__=='__main__':
     _initDB()

@@ -6,7 +6,7 @@ and attempts to support both.
 
 """
 
-from PyDO.dbi import DBIBase
+from PyDO.dbi import DBIBase, ConnectionCache
 from PyDO.exceptions import PyDOError
 from PyDO.log import debug
 from PyDO.operators import BindingConverter
@@ -96,7 +96,7 @@ _converters={datetime.datetime: lambda x: psycopg.TimestampFromTicks(time.mktime
 if havemx:
     # add automatic wrapping for mx.DateTime types
     _converters[mx.DateTime.DateTimeType]=TimestampFromMx
-    _converters[mx.DateTime.DateTimeDeltaType=lambda x: x.strftime("%d:%H:%M:%S")
+    _converters[mx.DateTime.DateTimeDeltaType]=lambda x: x.strftime("%d:%H:%M:%S")
 
 class PsycopgConverter(BindingConverter): 
     converters=_converters
@@ -104,6 +104,11 @@ class PsycopgConverter(BindingConverter):
 class PsycopgDBI(DBIBase):
     
     auto_increment=False
+
+    def __init__(self, connectArgs, cache=False, verbose=False):
+       if cache and not hasattr(cache, 'connect'):
+          cache=PsycopgCache()
+       super(PsycopgDBI, self).__init__(connectArgs, cache, verbose)
     
     def _connect(self):
         return psycopg.connect(self.connectArgs)
@@ -148,3 +153,6 @@ class PsycopgDBI(DBIBase):
         return res[0]
 
     
+class PsycopgCache(ConnectionCache):
+   def real_connect(self, connectArgs):
+      return psycopg.connect(**connectArgs)

@@ -47,13 +47,13 @@ class _metapydo(type):
     """metaclass for _pydobase.
     Manages attribute inheritance.
     """
-    
+
     def __init__(cls, cl_name, bases, namespace):
 
         # create Field objects declared locally in this class
         # and store them in a temporary dict
         fielddict={}
-        for f in cls.fields:
+        for f in namespace.get('fields', ()):
             # support for tuple syntax for plain Jane fields
             if isinstance(f, str):
                 f=Field(f)
@@ -92,7 +92,7 @@ class _metapydo(type):
         # real data is in the private variables.
         cls._fields.update(fielddict)
         # N.B.: NOT cls.unique!
-        cls._unique.update(namespace.get('unique', {}))
+        cls._unique.update(namespace.get('unique', ()))
 
         # fields may declare sequences
         for f in cls._fields.itervalues():
@@ -107,8 +107,7 @@ class _metapydo(type):
                 if not hasattr(cls, name):
                     # a field is also a descriptor
                     setattr(cls, name, cls._fields[name])
-
-
+        
 class PyDO(dict):
     """ Base class for PyDO data classes."""
 
@@ -119,10 +118,7 @@ class PyDO(dict):
     mutable=True
     use_attributes=True
     connectionAlias=None
-    
-    fields=()
-    unique=[]
-
+   
     _projections={}
 
     def project(cls, fields):
@@ -236,6 +232,14 @@ class PyDO(dict):
             t=cls.table
             return ["%s.%s" % (t, x) for x in cls._fields.iterkeys()]
     getColumns=classmethod(getColumns)
+
+    def getFields(cls):
+        return cls._fields
+    getFields=classmethod(getFields)
+
+    def getUnique(cls):
+        return cls._unique
+    getUnique=classmethod(getUnique)
 
     def _validateFields(cls, adict):
         """a simple field validator that verifies that the keys

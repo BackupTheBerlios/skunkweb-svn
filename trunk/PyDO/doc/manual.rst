@@ -221,7 +221,11 @@ gives you three other ways:
          >>> myFungi.getSome("comment != %s", None)
 
      If you use bind variables, the paramstyle you use must be the
-     same as that of the underlying Python DBAPI driver.
+     same as that of the underlying Python DBAPI driver.  To support
+     the ``pyformat`` and ``named`` paramstyles, in which variables
+     are passed in a dictionary, you can pass in a dictionary as the
+     second argument.  When using this style with ``getSome()``, you
+     cannot use keyword arguments to express column equivalence.
 
   2. You can use ``SQLOperator``s::
        
@@ -230,7 +234,8 @@ gives you three other ways:
        ...                    LIKE(FIELD('species'), '%micromega%')))
        [{'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' :  None}]
 
-  3. You can use tuples that are turned into SQLOperators for you::
+  3. You can use tuples that are turned into ``SQLOperator``s for you;
+     this is equivalent to the above::
 
        >>> myFungi.getSome(('OR', 
        ...                  ('=', FIELD('comment'), 'has pincers'),
@@ -238,6 +243,12 @@ gives you three other ways:
        ...                  ('LIKE', FIELD('species', '%micromega%'))))
        [{'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' :  None}]
 
+Either operator syntax can be mixed freely with keyword arguments to
+express column equivalence.
+
+The basic idea of operators is that they renotate SQL in a prefix
+rather than infix syntax, which may not be to everyone's taste; you
+don't need to use them, as they are purely syntactical sugar.  
 
 Order, Offset and Limit
 +++++++++++++++++++++++

@@ -1,6 +1,6 @@
 .. -*-rst-*-
 
-PyDO is a ORM (Object-Relational Mapper) database access tool for
+PyDO is a ORM (Object-Relational Mapper) database access library for
 Python that facilitates writing a Python database access layer.  PyDO
 attempts to be simple, flexible, extensible, and unconstraining.
 
@@ -33,4 +33,5 @@ PyDO 2 has several enhancements:
 
 PyDO 2 requires Python 2.4 for full functionality. 
 
- 
+This library is available under either of two licenses: the GNU Public
+License (see COPYING) or a BSD license (see LICENSE).

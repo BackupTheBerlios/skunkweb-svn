@@ -1,7 +1,7 @@
 Copyright (C) 2001-2005 Jacob Smullyan <smulloni@smullyan.org>
                         Andrew T. Csillag <drew_csillag@yahoo.com>
 
-			 The SkunkWeb License
+			 The PyDO License
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -34,4 +34,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ---END OF LICENSE---
 
 Astute readers will notice that this is the same as the BSD license,
-changed to apply to the case of SkunkWeb.
+changed to apply to the case of PyDO.
+
+PyDO is also available under the terms of the GNU Public License; see
+the file COPYING.
