@@ -58,7 +58,9 @@ class DBIBase(object):
             self._local.connection=c
 
         def fdel(self):
+            c=self._local.connection
             del self._local.connection
+            c.close()
             
         return fget, fset, fdel, "the underlying db connection"
     conn=property(*conn())
@@ -286,11 +288,12 @@ class ConnectionWrapper(object):
     overrides close(), which instead of closing the connection,
     returns the it to the pool.  """
     
-    __slots__=('_conn', '_pool')
+    __slots__=('_conn', '_pool', '_closed')
     
     def __init__(self, conn, pool):
         self._conn=conn
         self._pool=pool
+        self._closed=0
         
     def __getattr__(self, attr):
         return getattr(self._conn, attr)
@@ -304,9 +307,11 @@ class ConnectionWrapper(object):
     def close(self):
         # tell the cache that we are done and can be reused
         self._pool.release(self._conn)
+        self._closed=1
 
     def __del__(self):
-        self.close()
+        if not self._closed:
+            self.close()
 
 
 class ConnectionPool(object):
@@ -397,7 +402,7 @@ class ConnectionPool(object):
             free=self._free
             busy=self._busy
             numconns=len(free)+len(busy)
-            keep=keep_poolsize<numconns
+            keep=keep_poolsize <= numconns
             busy.remove(conn)
             if keep:
                 free.append(conn)
