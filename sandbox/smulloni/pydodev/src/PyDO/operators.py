@@ -61,7 +61,25 @@ appropriate formats and accumulating the values inside the converter.
   (((x = y) OR (a <= (b * (c ^ %(n1)s)))) AND (e IN (%(n2)s, %(n3)s, %(n4)s)))
   >>> c.values
   {'n1': 2, 'n2': 'Porthos', 'n3': 'Athos', 'n4': 'Aramis'}
-
+  >>> c.paramstyle='numeric'
+  >>> c.reset()
+  >>> print op
+  (((x = y) OR (a <= (b * (c ^ :1)))) AND (e IN (:2, :3, :4)))
+  >>> c.values
+  [2, 'Porthos', 'Athos', 'Aramis']
+  >>> c.paramstyle='qmark'
+  >>> c.reset()
+  >>> print op
+  (((x = y) OR (a <= (b * (c ^ ?)))) AND (e IN (?, ?, ?)))
+  >>> c.values
+  [2, 'Porthos', 'Athos', 'Aramis']
+  >>> c.paramstyle='named'
+  >>> c.reset()
+  >>> print op
+  (((x = y) OR (a <= (b * (c ^ :n1)))) AND (e IN (:n2, :n3, :n4)))
+  >>> c.values
+  {'n1': 2, 'n2': 'Porthos', 'n3': 'Athos', 'n4': 'Aramis'}
+  
 """
 
 
@@ -136,6 +154,7 @@ class SQLOperator(tuple):
 
     def __init__(self, t, converter=None):
         super(SQLOperator, self).__init__(t)
+        # is this being done twice?
         self.setConverter(converter)
 
     def setConverter(self, converter):
@@ -215,6 +234,8 @@ def __makeOperators():
                ('EXP', '^'),
                ('LIKE', 'LIKE'),
                ('ILIKE', 'ILIKE'),
+               ('REGEX', '~'),
+               ('IREGEX', '~*'),
                ('SIMILAR', 'SIMILAR'),
                ('BETWEEN', 'BETWEEN'),
                ('OVERLAPS', 'OVERLAPS'),
@@ -286,9 +307,9 @@ class BindingConverter(object):
     def values():
         def fget(self):
             p=self.paramstyle
-            if p in ('format', 'qmark'):
+            if p in ('format', 'qmark', 'numeric'):
                 return self._values
-            elif p in ('pyformat', 'numeric', 'named'):
+            elif p in ('pyformat', 'named'):
                 return self._named_values
         return (fget,)
     values=property(*values())
