@@ -1,0 +1,2 @@
+include README ChangeLog COPYING SkunkWebLicense
+recursive-include tests  *.py *.sql *.sh
