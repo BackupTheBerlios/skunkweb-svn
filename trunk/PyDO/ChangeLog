@@ -1,3 +1,11 @@
+2005-03-21  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
+
+	* doc/manual.rst: fixed inaccuracy in describing what input
+	getUnique() tolerates.
+
+	* src/PyDO/drivers/mysqlconn.py: adding stub implementation of
+	typewrapper conversion for mysql, pending testing.
+
 2005-03-20  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
 	* src/PyDO/base.py (__all__): adding arrayfetch.

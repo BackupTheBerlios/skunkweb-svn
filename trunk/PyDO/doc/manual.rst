@@ -231,12 +231,11 @@ There are two class methods provided for performing SELECTs.
    {'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' : None}]
 
 ``getUnique`` returns a single instance.  You must provide enough
-information to ``getUnique`` to satisfy precisely one declared
-uniqueness constraint; this is accomplished by passing in keyword
-parameters where the keywords are column names corresponding to the
-columns of a uniqueness constraint declared for the object, and the
-values are what you are asserting those columns equal for the unique
-row::
+information to ``getUnique`` to satisfy one declared uniqueness
+constraint; this is accomplished by passing in keyword parameters
+where the keywords are column names corresponding to the columns of a
+uniqueness constraint declared for the object, and the values are what
+you are asserting those columns equal for the unique row::
 
   >>> myFungi.getUnique(id=2)
   {'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' : None}
