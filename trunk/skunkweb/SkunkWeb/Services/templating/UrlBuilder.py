@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: UrlBuilder.py,v 1.3 2002/05/09 19:10:46 drew_csillag Exp $
+# $Id: UrlBuilder.py,v 1.4 2002/07/12 14:35:29 drew_csillag Exp $
 # Time-stamp: <01/04/25 16:10:18 smulloni>
 ########################################################################
 """
@@ -44,6 +44,7 @@ try:
     import PIL.Image as Image
     import AE.Cache as Cache
     _havePIL=1
+    import pil_preload
 except:
     _havePIL=0
 
@@ -179,6 +180,10 @@ def hidden ( dict ):
 
 ########################################################################
 # $Log: UrlBuilder.py,v $
+# Revision 1.4  2002/07/12 14:35:29  drew_csillag
+# fixed so that PIL should no longer get hosed when userModuleCleanup is turned
+# on.
+#
 # Revision 1.3  2002/05/09 19:10:46  drew_csillag
 # now encodes key/value pairs where the value is None as "" instead of not putting in the hidden tag altogether
 #
