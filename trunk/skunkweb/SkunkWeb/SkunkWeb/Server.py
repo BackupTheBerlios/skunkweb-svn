@@ -16,7 +16,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: Server.py,v 1.6 2002/08/16 15:56:15 drew_csillag Exp $
+# $Id: Server.py,v 1.7 2003/04/03 17:51:27 smulloni Exp $
 ########################################################################
 
 ########################################################################
@@ -161,7 +161,7 @@ def _setConfigDefaults():
     )    
 
 def start():
-    print "server starting"
+    #print "server starting"
     svr.mainloop()
 
 def addService(sockAddr, func):
@@ -184,6 +184,10 @@ svr.moduleSnapshot()
 
 ########################################################################
 # $Log: Server.py,v $
+# Revision 1.7  2003/04/03 17:51:27  smulloni
+# tweaky changes to first-level-of-defense user docs, a few new options
+# for admin scripts; added optional connection test to PostgreSql.
+#
 # Revision 1.6  2002/08/16 15:56:15  drew_csillag
 # added userModuleCleanupIgnore option to make the umc cleaner not clean out
 # specified modules
