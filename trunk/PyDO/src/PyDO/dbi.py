@@ -1,14 +1,14 @@
 from itertools import izip
 
-from PyDO.log import *
-from PyDO.operators import BindingConverter
+from pydo.log import *
+from pydo.operators import BindingConverter
 
 class DBIBase(object):
     """base class for db connection wrappers"""
     paramstyle='format'
     autocommit=False
     # default to postgresql style for sequences,
-    # out of sheer postgresql bigotry
+    # out of sheer postgresql bigotry. 
     auto_increment=False
     
     def __init__(self, connectArgs, cache=False, verbose=False):
@@ -35,7 +35,7 @@ class DBIBase(object):
         """returns a converter instance."""
         return BindingConverter(self.paramstyle)
 
-    def execute(self, sql, values=(), fields=(), qualified=False):
+    def execute(self, sql, values=(), qualified=False):
         """Executes the statement with the values and does conversion
         of the return result as necessary.
         result is list of dictionaries, or number of rows affected"""

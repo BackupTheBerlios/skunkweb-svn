@@ -1,26 +1,20 @@
 import keyword
 import warnings
 
-
 class Field(object):
     """represents a column in a database table."""
 
-    __slots__=('name', 'sequence', 'unique', 'dbtype', 'nullable')
+    __slots__=('name', 'sequence', 'unique')
     
     def __init__(self,
                  name,
                  sequence=False,
-                 unique=False,
-                 dbtype=None,
-                 nullable=None):
+                 unique=False):
         self.name=name
         if name in keyword.kwlist:
-            warnings.warn('field name "%s" is a Python keyword!' % name)        
+            warnings.warn('field name "%s" is a Python keyword!' % name)
         self.sequence=sequence
         self.unique=unique
-        self.dbtype=dbtype
-        self.nullable=nullable
-
 
     def __get__(self, obj, type_):
         """descriptor method"""
@@ -40,36 +34,30 @@ class Field(object):
                 id(self))
 
 class Sequence(Field):
-    """like a Field, except that sequence defaults to True, and the field must be unique.
-    If a sequence name needs to be specified, pass it through the "sequence" parameter.
+    """like a Field, except that sequence defaults to True, and the
+    field must be unique.  If a sequence name needs to be specified,
+    pass it through the "sequence" parameter.
     
-    If for some reason you want a non-unique sequence, whatever that is, use the Field class
-    directly
+    If for some reason you want a non-unique sequence, whatever that
+    is, use the Field class directly
     """
     def __init__(self,
                  name,
-                 sequence=None,
-                 dbtype=None,
-                 nullable=None):
+                 sequence=None):
         if sequence is None:
             sequence=True
         super(Sequence, self).__init__(name,
                                        sequence,
-                                       True,
-                                       dbtype,
-                                       nullable)
+                                       True)
 
 class Unique(Field):
-    """like a Field, except that it must be unique and isn't a sequence (use Sequence for that)"""
+    """like a Field, except that it must be unique and isn't a
+    sequence (use Sequence for that)"""
     def __init__(self,
-                 name,
-                 dbtype=None,
-                 nullable=None):
+                 name):
         super(Unique, self).__init__(name,
                                      False,
-                                     True,
-                                     dbtype,
-                                     nullable)
+                                     True)
 
 
 __all__=['Field', 'Sequence', 'Unique']

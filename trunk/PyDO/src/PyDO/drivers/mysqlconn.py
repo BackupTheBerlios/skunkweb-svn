@@ -1,5 +1,5 @@
-from PyDO.dbi import DBIBase
-from PyDO.exceptions import PyDOError
+from pydo.dbi import DBIBase
+from pydo.exceptions import PyDOError
 
 import MySQLdb
 
