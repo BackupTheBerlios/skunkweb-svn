@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: protocol.py,v 1.4 2001/09/21 20:16:31 drew_csillag Exp $
+# $Id: protocol.py,v 1.5 2001/10/02 02:35:34 smulloni Exp $
 # Time-stamp: <01/05/04 15:57:35 smulloni>
 ########################################################################
 
@@ -316,12 +316,19 @@ def _cleanupConfig(requestData, sessionDict):
     if sessionDict.has_key(constants.LOCATION):
         del sessionDict[constants.LOCATION]
     Configuration.trim()
-    Configuration.scope({constants.IP : sessionDict[constants.IP],
-                         constants.PORT: sessionDict[constants.PORT]})
+
+    if sessionDict.has_key(constants.IP):
+        Configuration.scope({constants.IP : sessionDict[constants.IP],
+                             constants.PORT: sessionDict[constants.PORT]})
+    elif sessionDict.has_key(constants.UNIXPATH):
+        Configuration.scope({constants.UNIXPATH : sessionDict[constants.UNIXPATH]})
     #Configuration.saveMash()
 
 ########################################################################
 # $Log: protocol.py,v $
+# Revision 1.5  2001/10/02 02:35:34  smulloni
+# support for scoping on unix socket path; very serious scope bug fixed.
+#
 # Revision 1.4  2001/09/21 20:16:31  drew_csillag
 # added userdir service (and subsidiary changes to other services) and multi-line ability for <:call:> tag
 #

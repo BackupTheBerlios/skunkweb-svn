@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: KickStart.py,v 1.1 2001/08/05 14:59:37 drew_csillag Exp $
+# $Id: KickStart.py,v 1.2 2001/10/02 02:35:34 smulloni Exp $
 # Time-stamp: <01/05/03 18:32:41 smulloni>
 ########################################################################
 
@@ -24,7 +24,7 @@ import ConfigLoader
 CONFIG_MODULE='SkunkWeb.Configuration'
 
 CONFIG_STRING="""
-from SkunkWeb.ConfigAdditives import Location, Host, Port, Scope
+from SkunkWeb.ConfigAdditives import Location, Host, Port, Scope, IP, UNIXPath
 from SkunkWeb.constants import *
 """
 
@@ -36,8 +36,12 @@ ConfigLoader.loadConfigString(CONFIG_STRING,
 
 ########################################################################
 # $Log: KickStart.py,v $
-# Revision 1.1  2001/08/05 14:59:37  drew_csillag
-# Initial revision
+# Revision 1.2  2001/10/02 02:35:34  smulloni
+# support for scoping on unix socket path; very serious scope bug fixed.
+#
+# Revision 1.1.1.1  2001/08/05 14:59:37  drew_csillag
+# take 2 of import
+#
 #
 # Revision 1.8  2001/07/09 20:38:40  drew
 # added licence comments
