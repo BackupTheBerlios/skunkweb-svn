@@ -1,3 +1,7 @@
+2005-03-20  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
+
+	* doc/manual.rst: document the Join classes and arrayfetch.
+
 2005-03-19  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
 
 	* src/PyDO/joins.py: curried the Join class with a slew of subclasses. 

@@ -62,7 +62,6 @@ constructor, but by calling one of various class methods, discussed
 below, that return single instances or lists thereof.
 
 
-
 Defining Table Classes
 ----------------------
 
@@ -406,6 +405,9 @@ is the number of affected rows.
 Joins
 -----
 
+Representing Joins Between Tables
++++++++++++++++++++++++++++++++++
+
 To represent a one-to-one join between classes ``A`` and ``B``, add an
 instance method to class ``A`` that calls ``B.getUnique()``::
 
@@ -449,6 +451,60 @@ additional tables to the select, you can do so with the
 ``extraTables`` keyword argument, with which you can pass a single
 table name, or a list of names.
 
+Getting Data From Multiple Tables At Once
++++++++++++++++++++++++++++++++++++++++++
+
+PyDO includes a number of classes that join two ``PyDO`` classes and
+make it possible to get pairs of instances of those classes at once in
+a single query, closely modelling (and generating) SQL joins:
+``CrossJoin``, ``InnerJoin``, ``RightJoin``, ``LeftJoin``,
+``FullJoin``, ``NaturalInnerJoin``, ``NaturalRightJoin``,
+``NaturalLeftJoin``, and ``NaturalFullJoin``.  ``CrossJoin`` and all
+the natural joins have constructors of this form::
+
+   Join(leftObject, rightObject...)
+
+Whereas the rest take two additional parameters::
+
+   Join(leftObject, rightObject, on=None, using=None)
+
+The ``on`` and ``using`` parameters are mutually exclusive.  If
+supplied, ``on`` may be a ``SQLOperator`` instance, a sequence of
+``SQLOperator`` instances, a SQL string, or a sequence of which the
+first element is a string and the rest are bind variables; ``using``,
+if supplied instead, must be a sequence of field names.  
+
+To issue a query, call the ``getSome()`` method on the join instance::
+
+    >>> j1=CrossJoin(Teachers, Students)
+    >>> res=j1.getSome(order=('teacher.lastname DESC', 
+    ...                       'students.lastname DESC'), 
+    ...                limit=1)
+    >>> res[0][0].lastname, res[0][1].lastname
+    Zyznowski, Yeoman
+    
+This ``getSome`` takes the same arguments as ``PyDO.getSome()``, but,
+unlike it, is an instance method.
+
+.. note:: All of these classes generate SQL using the SQL92 JOIN
+    syntax, and not all the database systems supported by PyDO accept all
+    these JOINS at all or in exactly the same way.
+
+Currently these classes do not nest; the objects passed to the
+constructor must be ``PyDO`` classes, not joins themselves.  Nested joins
+may be supported in future.
+
+If you want to join multiple tables and get ``PyDO`` instances back
+without using JOIN syntax, that is possible using the ``arrayfetch``
+method::
+
+   arrayfetch(objs, *args)
+
+Currently ``args`` must be a SQL string, followed by any bind variables.
+ 
+
+.. note:: The various Join classes and ``arrayfetch`` are experimental
+    features, subject to change.  
 
 Managing Database Connections
 -----------------------------
@@ -574,10 +630,11 @@ most notably:
     methods). 
 9.  PyDO1 supports more databases than PyDO2 does at the time of
     writing.
-10. PyDO2 does not yet implement PyDO1's "scatterFetch" method, which
+10. PyDO2 does not implement PyDO1's ``scatterFetch()`` method, which
     returns multiple ``PyDO`` objects of different types in a single
-    query. (A similar method, ``arrayfetch()``, has been implemented,
-    but it is subject to change during the alpha release cycle.)
+    query. Related functionality is implemented by  ``arrayfetch()``
+    and the Join classes, but they are subject to change during the
+    alpha release cycle.
 11. PyDO1 has a variable ``SYSDATE`` that means the current
     datetime, regardless of the underlying db.  PYDO2 does not
     abstract this, as it seems unnecessary now; you can use
