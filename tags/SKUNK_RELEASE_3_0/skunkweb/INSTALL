@@ -1,0 +1,62 @@
+Supported Platforms
+------------------------------
+SkunkWeb has is known to compile and run under the following operating
+systems:
+    Linux
+    Solaris
+
+It should work on any reasonable version of Unix that Python works.
+It *may* run on Windoze under Cygwin, but it hasn't been tested.
+
+
+Prerequisites
+------------------------------
+Python 2.1.1 or later (2.1 works but is not GPL compatible)
+  optionally compiled with the crypt module
+Marc Andre Lemburg's eGenix mx Extensions (BASE)
+    http://www.lemburg.com/files/python/eGenix-mx-Extensions.html#mxBASE
+An ANSI C compiler
+
+Optionally install apache.  Make sure you configure it with at least:
+   --enable-module=so 
+If you don't you will very likely have a *very* bad day
+If you run into problems, try configuring apache with these additional 
+  switches:
+   --disable-module=dir --disable-module=autoindex
+
+
+Installation
+------------------------------
+
+Installing SkunkWeb should be rather painless since it makes use of
+GNU autoconf.  Just untar and run configure.  Make sure that apache's
+bin/ directory is in your path (or alternatively specify the
+--with-apxs directive) if you are going to build the mod_skunkweb
+Apache module. Outside of the usual configure options, the following
+configure options are also available:
+
+  --with-skunkweb       Install SkunkWeb as part of this installation 
+                        (default yes)
+  --with-python=/path/python   Specify path to python executable
+  --with-user=user        Make Skunk installation owned by user
+  --with-group=group      Make Skunk installation owned by group
+
+Additional options if building SkunkWeb:
+  --with-webdoc           Install some sample content
+  --with-services=svcs    Specify the list of services to install
+                           space delimited list of services to install;
+                           valid names are:
+
+                           sessionHandler, requestHandler, remote,
+                           ae_component, remote_client, aecgi,
+                           httpd, basicauth, pars, web, templating,
+                           oracle, postgresql, mysql
+                          Default is to install them all
+
+  --with-sudo=/path/sudo  Specify path to sudo
+  --without-mod_skunkweb  Don't build mod_skunkweb
+  --with-apxs=/path/apxs  Specify path to the apxs program
+
+Once ``configure'' has completed, simply type ``make; make install''.
+
+$Id: INSTALL,v 1.6 2001/08/21 20:48:03 drew_csillag Exp $
