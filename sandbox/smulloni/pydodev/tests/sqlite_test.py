@@ -39,7 +39,12 @@ class Article(base):
             ('creator', 'int'),
             ('created', 'timestamp'))
 
-InitAlias('sqlitetest', 'sqlite', dict(database=SQLITE_DB))
+InitAlias('sqlitetest', 'sqlite', dict(database=SQLITE_DB), verbose=True)
+import logging
+logging.basicConfig()
+from PyDO.log import debug, logger
+logger.setLevel(logging.DEBUG)
+logging.debug("hi there")
 
 def _initDB():
     if os.path.exists(SQLITE_DB):

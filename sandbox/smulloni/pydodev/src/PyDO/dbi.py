@@ -83,11 +83,11 @@ class DBIBase(object):
     orderByString=staticmethod(orderByString)
 
     def getSequence(self, name):
-        """If db has sequences, this should return the sequence named name"""
+        """If db has sequences, this should return the next value of the sequence named 'name'"""
         pass
 
     def getAutoIncrement(self, name):
-        """if things like mysql where can get the sequence after the insert"""
+        """If db uses auto increment, should obtain the value of the auto-incremented field named 'name'"""
         pass
 
 _driverConfig = {

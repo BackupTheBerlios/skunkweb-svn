@@ -141,23 +141,19 @@ class PyDO(dict):
         cls._validateFields(fieldData)
         
         conn = cls.getDBI()
+
         for s, sn in cls.sequenced.items():
             if not fieldData.has_key(s):
                 fieldData[s] = conn.getSequence(sn)
-        
-        cols = []
-        values = []
-        vals = []
-        for dbname, v in fieldData.iteritems():
-            cols.append(dbname)
-            lit, val = conn.sqlStringAndValue(v, cls._fields[dbname])
-            values.append(lit)
-            vals.append(val)
-        sql = 'INSERT INTO %s (%s) VALUES  (%s)' \
+        cols=fieldData.keys()
+        vals=[fieldData[c] for c in cols]
+        converter=conn.getConverter()
+        op=SQLOperator([',']+vals, converter=converter)
+        sql = 'INSERT INTO %s (%s) VALUES  %s' \
               % (cls.table,
                  ', '.join(cols),
-                 ', '.join(values))
-        res = conn.execute(sql, vals, flds)
+                 op)
+        res = conn.execute(sql, converter.values, cls._fields)
         if res != 1:
             raise PyDOError, "inserted %s rows instead of 1" % res
         
@@ -166,7 +162,6 @@ class PyDO(dict):
                 if not fieldData.has_key(k):
                     fieldData[k] = conn.getAutoIncrement(v)
         
-        conn.postInsertUpdate(cls, fieldData, 1)
         if not refetch:
             return cls(fieldData)
         return cls.getUnique(**fieldData)
