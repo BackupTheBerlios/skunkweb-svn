@@ -1,3 +1,11 @@
+2005-03-16  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO/base.py (_metapydo.__init__): removed unnecessary
+	dict() around generator expression passed to update().
+	(PyDO.joinTable): now it is possible to add to the where clause, a
+	la getSome(), including order, limit, and offset, and add extra
+	tables to the select as well.
+
 2005-03-15  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
 	* src/PyDO/base.py (_setize): removed spurious variable

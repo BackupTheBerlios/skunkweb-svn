@@ -111,8 +111,8 @@ class _metapydo(type):
         # subclass as a simple field (just a fieldname), then the
         # previous field definition is inherited; otherwise, the
         # subclass's definition wins.  This is useful for projections.
-        updatefields=dict((x, y) for x, y in fielddict.iteritems() \
-                          if not (x in cls._fields and x in simplefields))
+        updatefields=((x, y) for x, y in fielddict.iteritems() \
+                      if not (x in cls._fields and x in simplefields))
         cls._fields.update(updatefields)
         uniqueset.update(_setize(x) for x in namespace.get('unique', ()))
 
@@ -243,21 +243,27 @@ class PyDO(dict):
 
 
     def dict(self):
+        """retruns a copy of self as a plain dict"""
         return dict(self)
 
     def copy(self):
+        """returns a copy of self"""
         return self.__class__(dict(self))
     
     def clear(self):
+        """not implemented for PyDO classes"""
         raise NotImplementedError, "PyDO classes don't implement clear()"
 
     def pop(self):
+        """not implemented for PyDO classes"""
         raise NotImplementedError, "PyDO classes don't implement pop()"
 
     def popitem(self):
+        """not implemented for PyDO classes"""
         raise NotImplementedError, "PyDO classes don't implement popitem()"
 
     def setdefault(self, key, val):
+        """not implemented for PyDO classes"""
         raise NotImplementedError, "PyDO classes don't implement setdefault()"
     
     @classmethod
@@ -530,7 +536,10 @@ class PyDO(dict):
                   thisSideColumns,
                   thatSideColumns,
                   thatObject,
-                  thatAttrNames):
+                  thatAttrNames,
+                  *whereArgs,
+                  **extra):
+
         """Handles many to many relations.  In short, do:
         
         SELECT thatObject.getColumns(1)
@@ -545,25 +554,53 @@ class PyDO(dict):
         length 1) or tuples of strings.  For each pair P of the two
         pairs (thisSideColumns, thisAttrNames) and (thatSideColumns,
         thatAttrNames) len(P[0]) must equal len(P[1]).
-        """
+
+        In addition, you can add extra tables and arbitrary sql to the
+        where clause, as you can with getSome(), including order,
+        limit and offset, using the "extraTables", "order", "limit"
+        and "offset" keyword arguments, using SQLOperators or
+        (sql-string, bind values) as positional arguments, and by
+        specifying columns by keyword argument.
         
-        sql, vals = self._joinTableSQL(thisAttrNames,
+        """
+        extraTables=extra.pop('extraTables', None)
+        order=extra.pop('order', None)
+        limit=extra.pop('limit', None)
+        offset=extra.pop('offset', None)
+        conn=self.getDBI()
+        wheresql, wherevals=self._processWhere(conn, whereArgs, extra)
+        sql, vals = self._joinTableSQL(conn,
+                                       thisAttrNames,
                                        pivotTable,
                                        thisSideColumns,
                                        thatSideColumns,
                                        thatObject,
-                                       thatAttrNames)
-        results = self.getDBI().execute(sql, vals)
-        return map(thatObject, results)        
+                                       thatAttrNames,
+                                       extraTables,
+                                       wheresql,
+                                       wherevals,
+                                       order,
+                                       limit,
+                                       offset)
+        results = conn.execute(sql, vals)
+        if results:
+            return map(thatObject, results)
+        return []
 
     def _joinTableSQL(self,
-                     thisAttrNames,
-                     pivotTable,
-                     thisSideColumns,
-                     thatSideColumns,
-                     thatObject,
-                     thatAttrNames,
-                     extraTables = None):
+                      conn,
+                      thisAttrNames,
+                      pivotTable,
+                      thisSideColumns,
+                      thatSideColumns,
+                      thatObject,
+                      thatAttrNames,
+                      extraTables,
+                      wheresql,
+                      wherevals,
+                      order,
+                      limit,
+                      offset):
         """SQL generating function for joinTable"""
         if extraTables is None:
             extraTables=[]
@@ -586,7 +623,7 @@ class PyDO(dict):
              ' WHERE ']
         
         joins = []
-        converter=self.getDBI().getConverter()
+        converter=conn.getConverter()
         for attr, col in zip(thisAttrNames, thisSideColumns):
             lit=converter(self[attr])
             joins.append("%s.%s = %s" % (pivotTable, col, lit))
@@ -598,6 +635,12 @@ class PyDO(dict):
                       for attr, col in zip(thatAttrNames,
                                            thatSideColumns)])
         sql.append(' AND '.join(joins))
+        if wheresql:
+            sql.append(' AND (%s)' % wheresql)
+            if wherevals:
+                vals=vals+wherevals
+        if filter(None, (order, limit, offset)):
+            sql.append(conn.orderByString(order, limit, offset))                
         return ''.join(sql), vals
 
 
