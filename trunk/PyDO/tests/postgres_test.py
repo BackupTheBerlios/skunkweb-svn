@@ -49,7 +49,7 @@ def _initDB():
 initAlias('postgrestest',
           'psycopg',
           "dbname=pydotest user=pydotest",
-          cache=True,
+          pool=True,
           verbose=True)        
 
 if __name__=='__main__':

@@ -418,8 +418,13 @@ class ConnectionPool(object):
     def onRelease(self, realConn):
         """anything you want to do to a connection when it is returned
         (default: rollback if not autocommit)"""
-        if not realConn.autocommit:
-            realConn.rollback()
+        try:
+            if not realConn.autocommit:
+                realConn.rollback()
+        except:
+            # psycopg 2 doesn't seems to support autocommit, which
+            # seems bogus to me...
+            pass
         
 
     def onHandOut(self, realConn):
