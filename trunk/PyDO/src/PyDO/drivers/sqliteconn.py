@@ -1,3 +1,12 @@
+"""
+PyDO driver for sqlite, using the pysqlite adapter.
+
+Currently this has been tested with sqlite 2 (not sqlite 3), and
+pysqlite 1.0.1.
+
+"""
+
+
 from PyDO.dbi import DBIBase
 from PyDO.field import Field
 from PyDO.exceptions import PyDOError

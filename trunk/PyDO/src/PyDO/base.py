@@ -8,6 +8,7 @@ from PyDO.dbi import getConnection
 from PyDO.field import Field
 from PyDO.exceptions import PyDOError
 from PyDO.operators import AND, EQ, FIELD
+from PyDO.dbtypes import unwrap
 
 def _tupleize(item):
     if isinstance(item, tuple):
@@ -160,8 +161,10 @@ class PyDO(dict):
         self._validateFields(d)
         # do the actual update
         self._update_raw(d)
-        # if successful, modify the object's field data
-        super(PyDO, self).update(d)
+        # if successful, modify the object's field data,
+        # taking any wrapped values out of their wrappers
+        unwrapped=dict([(k, unwrap(v)) for k,v in d.iteritems()])
+        super(PyDO, self).update(unwrapped)
 
     def onUpdate(self, adict):
         """a hook for subclasses to modify updates; 
@@ -297,7 +300,8 @@ class PyDO(dict):
             for k, v in cls._sequenced.items():
                 if not fieldData.has_key(k):
                     fieldData[k] = conn.getAutoIncrement(v)
-        
+        # unwrap any wrapped values in fieldData
+        fieldData=dict([(k, unwrap(v)) for k,v in fieldData.iteritems()])
         if not refetch:
             return cls(fieldData)
         return cls.getUnique(**fieldData)

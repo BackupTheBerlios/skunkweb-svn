@@ -1,35 +1,34 @@
+"""
+PyDO driver for PostgreSQL, using the psycopg driver.
+
+Currently this has been tested with psycopg 1.1.15, not yet
+with the psycopg2 series.
+
+"""
+
 from PyDO.dbi import DBIBase
 from PyDO.exceptions import PyDOError
 from PyDO.log import debug
 from PyDO.operators import BindingConverter
-from psycopg import connect
+from PyDO.dbtypes import DATE, TIMESTAMP, BINARY, INTERVAL
 
 import time
 import datetime
-try:
-    import mx.DateTime
-    havemx=True
-except ImportError:
-    havemx=False
 
-_converters={}
+# at the moment, this is a dependency
+import mx.DateTime
+from psycopg import connect, TimestampFromTicks, Date, TimestampFromMx, Binary
 
-def _init_converters():
-    _converters[datetime.datetime]=lambda x: pyscopg.TimestampFromTicks(time.mktime(obj.timetuple))
-    _converters[datetime.date]=lambda x: psycopg.Date(obj.year, obj.month, obj.day)
-    if havemx:
-        _converters[mx.DateTime.DateTimeType]=psycopg.TimestampFromMx
 
 class PsycopgConverter(BindingConverter):
-    def _wrapType(obj):
-        converter=_converters.get(type(obj))
-        if converter:
-            return converter(obj)
-        return obj
-    _wrapType=staticmethod(_wrapType)
-
-    def __call__(self, val):
-        return super(PsycopgConverter, self).__call__(self._wrapType(val))
+    converters={datetime.datetime: lambda x: TimestampFromTicks(time.mktime(x.timetuple)),
+                datetime.date: lambda x: Date(x.year, x.month, x.day),
+                DATE: lambda x: DateFromMx(x.value),
+                TIMESTAMP: lambda x: TimestampFromMx(x.value),
+                BINARY: lambda x: Binary(x.value),
+                mx.DateTime.DateTimeType: TimestampFromMx,
+                INTERVAL: lambda x: x.value}
+                
 
 class PsycopgDBI(DBIBase):
     

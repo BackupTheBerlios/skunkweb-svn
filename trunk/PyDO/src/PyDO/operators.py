@@ -288,6 +288,7 @@ class BindingConverter(object):
     [400, 2]
     """
     supported_styles=('format', 'pyformat', 'qmark', 'named', 'numeric')
+    converters={}
 
     def __init__(self, paramstyle):
         self._values=[]
@@ -328,12 +329,18 @@ class BindingConverter(object):
         del self._values[:]
         self._named_values.clear()
 
+    def convert(self, val):
+        converter=self.converters.get(type(val))
+        if converter:
+            return converter(val)
+        return val
+
     def __call__(self, val):
         if val is None:
             return 'NULL'
         if isinstance(val, (CONSTANT, SET, SQLOperator)):
             return repr(val)
-        elif self.paramstyle=='format':
+        if self.paramstyle=='format':
             self._values.append(val)
             return '%s'
         elif self.paramstyle=='qmark':

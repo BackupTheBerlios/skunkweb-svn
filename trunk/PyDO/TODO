@@ -39,22 +39,9 @@ insert) or sequence (get value before insert) kind of deal.
 Any table without a unique constraint is immutable.  Any mutation of
 an instance now checks _unique.
 
-Fields still reserve second place for a database type, which is no
-longer necessary.  I think going back to Jeroen's idea of putting
-unique and sequence back in the fields declaration would be right.  I
-didn't like the fact that there were two ways of declaring unique, but
-that is how SQL works, also, and it would be convenient in many cases.
-If I do this, perhaps "sequenced" should go away completely.  "unique"
-must stay, because unique indexes can be multi-column.  
-
-Let's find a way to specify fields in an easy way.
-
-   fields=(Sequence('id', 'sequencename'),
-           Unique('name'),
-           'thing',
-           'blah')
-
 ---
 
-Problem -- does the driver sometimes need to know the datatype meant
-for the Python value being passed (for updates, comparisons, etc.).  
+Figure out where typewrappers are dealt with.  Clearly they are driver
+dependent; can some of the work be done in the generic converter?
+
+--
