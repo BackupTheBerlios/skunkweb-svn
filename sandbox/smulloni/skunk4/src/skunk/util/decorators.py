@@ -1,41 +1,29 @@
-def simple_decorator(decorator):
-    """
-    This decorator can be used to turn simple functions into
-    well-behaved decorators, so long as the decorators are fairly
-    simple. If a decorator expects a function and returns a function
-    (no descriptors), and if it doesn't modify function attributes or
-    docstring, then it is eligible to use this. Simply apply
-    @simple_decorator to your decorator and it will automatically
-    preserve the docstring and function attributes of functions to
-    which it is applied.
+from __future__ import nested_scopes
 
-    This was adapted from an example in the Python decorator library
-    on the Python wiki:
-    
-    http://www.python.org/moin/PythonDecoratorLibrary
-
-    Unfortunately, neither it nor the original work at the moment....
-    """
-    def new_decorator(f):
-        g = decorator(f)
-        for attr in ('__name__', '__doc__'):
-            if hasattr(f, attr):
-                setattr(g, attr, getattr(f, attr))
-        if hasattr(f, '__dict__') and hasattr(g, "__dict__"):
-            g.__dict__.update(f.__dict__)
-        return g
-    return new_decorator(new_decorator)
+def _share_metadata(fn, dec):
+    dec.__name__=fn.__name__
+    dec.__doc__=fn.__doc__
+    dec.__dict__.update(fn.__dict__)
 
 
-#@simple_decorator
+
 def with_lock(lock):
+    """decorator that synchronizes on the given lock"""
     def wrapper(fn):
         def newfunc(*args, **kwargs):
-            lock.acquire()
+            l=lock
+            if not hasattr(l, 'acquire'):
+                if callable(l):
+                    l=l(*args, **kwargs)
+                else:
+                    raise ValueError, "lock must be either a Lock or a callable that returns a Lock"
+            l.acquire()
             try:
                 return fn(*args, **kwargs)
             finally:
-                lock.release()
+                l.release()
+        _share_metadata(fn, newfunc)
         return newfunc
     return wrapper
+
     

@@ -1,57 +1,79 @@
 from bisect import insort_right
 from threading import Lock
 import fnmatch
+import os
 import re
 
 from skunk.util.decorators import with_lock
-        
 
-class ScopeManager(object):
-    _lock=Lock()
+# helper function for decorator
+def _getlock(self, *args, **kwargs):
+    return self._lock
+
+class ScopedConfig(object):
+    """
+
+
+    """
+
     def __init__(self):
         self.defaults={}
         self._scopes={}
         self._stack=[]
         self.matchers=[]
+        self._lock=Lock()
 
-    @with_lock(_lock)
+    @with_lock(_getlock)
     def mergeDefaults(self, **kw):
+        """ """
         for k in kw:
             self.defaults.setdefault(k, kw[k])
 
-    @with_lock(_lock)
+    @with_lock(_getlock)
     def mash(self):
+        """ """
         masher=self.defaults.copy()
         for d in self._stack:
             masher.update(d)
         return masher
 
-    @with_lock(_lock)
+    @with_lock(_getlock)
     def scope(self, d):
+        """ TBD """
         current=self._scopes
         current.update(d)
-        scopedDict={}
+        scopedict={}
         for m in self.matchers:
-            self._processMatcher(m, scopedDict, d)
-            if scopedDict:
-                self.push(scopedDict)
+            self._processMatcher(m, scopedict, d)
+            if scopedict:
+                self.push(scopedict)
 
-    def _processMatcher(self, matcher, scopedDict, scopeValDict):
-        if (scopeValDict.has_key(matcher.param) 
-            and matcher.match(scopeValDict)
+    def _processMatcher(self, matcher, scopedict, valdict):
+        if (valdict.has_key(matcher.param) 
+            and matcher.match(valdict)
             and matcher.overlay):
-            scopedDict.update(matcher.overlay)
+            scopedict.update(matcher.overlay)
         for kid in matcher.children:
-            self._processMatcher(kid, scopedDict, scopeValDict)
+            self._processMatcher(kid, scopedict, valdict)
             
     def push(self, d):
+        """ """
         self._stack.append(d)
 
     def pop(self):
+        """ """
         return self._stack.pop()
 
     def trim(self):
+        """ """
         del self._stack[:]
+
+    @with_lock(_getlock)
+    def load_from_file(filename):
+        filename=os.path.abspath(filename)
+        co=compile(s, filename, 'exec')
+        exec codeObj in {}, self.defaults
+
                 
 
 class ScopeMatcher(object):
@@ -150,6 +172,12 @@ class RegexMatcher(ScopeMatcher):
                and self._compiledRegex.match(other)
 
 
-    
-
+# TODO:
+#   docstrings,
+#   cleanup.
+#   Other matchers.
+#   reading from config file (ConfigLoader functionality)
+#   dumping a mash into a thread local.
+#
+# then, server integration.
         
