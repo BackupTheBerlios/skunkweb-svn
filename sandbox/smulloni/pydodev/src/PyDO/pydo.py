@@ -106,7 +106,7 @@ class PyDO(dict):
         sql = "UPDATE %s SET %s WHERE %s" % (self.table,
                                              ", ".join(sqlbuff),
                                              where)
-        result=conn.execute(sql, values, self._fields)
+        result=conn.execute(sql, values)
         if result > 1:
             raise PyDOError, "updated %s rows instead of 1" % result        
 
@@ -185,7 +185,7 @@ class PyDO(dict):
               % (cls.table,
                  ', '.join(cols),
                  ', '.join(converted))
-        res = conn.execute(sql, converter.values, cls._fields)
+        res = conn.execute(sql, converter.values)
         if res != 1:
             raise PyDOError, "inserted %s rows instead of 1" % res
         
@@ -245,7 +245,7 @@ class PyDO(dict):
         conn = cls.getDBI()
         where, values = cls._uniqueWhere(conn, fieldData)
         sql = "%s WHERE %s" % (cls._baseSelect(), where)
-        results = conn.execute(sql, values, cls._fields)
+        results = conn.execute(sql, values)
         if not results:
             return
         if len(results) > 1:
@@ -309,7 +309,7 @@ class PyDO(dict):
             query.append(conn.orderByString(order, limit, offset))
         query=' '.join(query)
 
-        results = conn.execute(query, values, cls._fields)
+        results = conn.execute(query, values)
         if results and isinstance(results, list):
             return map(cls, results)
         else:
@@ -345,7 +345,7 @@ class PyDO(dict):
         # object 
         assert unique
         sql = 'DELETE FROM %s WHERE %s' % (self.table, unique)
-        conn.execute(sql, values, self._fields)
+        conn.execute(sql, values)
         # shadow the class attribute with an instance attribute
         self.mutable = False
 
@@ -373,16 +373,16 @@ class PyDO(dict):
         with the arguments and produces object from them.
         """
         
-        conn = self.getDBI()
-        sql, vals = self.joinTableSQL(thisAttrNames, pivotTable,
-        thisSideColumns, thatSideColumns,
-        thatObject, thatAttrNames)
-        results = conn.execute(sql, vals, thatObject.dbColumns)
+        sql, vals = self._joinTableSQL(thisAttrNames,
+                                       pivotTable,
+                                       thisSideColumns,
+                                       thatSideColumns,
+                                       thatObject,
+                                       thatAttrNames)
+        results = self.getDBI().execute(sql, vals)
         return map(thatObject, results)        
 
-
-
-    def joinTableSQL(self,
+    def _joinTableSQL(self,
                      thisAttrNames,
                      pivotTable,
                      thisSideColumns,
@@ -394,7 +394,7 @@ class PyDO(dict):
         
         SELECT thatObject.getColumns(1)
         FROM thatObject.table, pivotTable
-        WHERE pivotTable.thisSideColumn = self[myAttrName]
+        WHERE pivotTable.thisSideColumn = self.myAttrName
         AND pivotTable.thatSideColumn = thatObject.table.thatAttrName
         
         and return a list of thatObjects representing the resulting rows.
@@ -402,48 +402,37 @@ class PyDO(dict):
         if extraTables is None:
             extraTables=[]
 
-
-        
-        thisAttrNames = self._convertTupleKW(_tupleize(thisAttrNames))
+        thisAttrNames = _tupleize(thisAttrNames)
         thisSideColumns = _tupleize(thisSideColumns)
         thatSideColumns = _tupleize(thatSideColumns)
-        thatAttrNames = self._convertTupleKW(_tupleize(thatAttrNames))
+        thatAttrNames = _tupleize(thatAttrNames)
         
         if len(thisSideColumns) != len(thisAttrNames):
             raise ValueError, ('thisSideColumns and thisAttrNames must '
-            'contain the same number of elements')
+                               'contain the same number of elements')
         if len(thatSideColumns) != len(thatAttrNames):
             raise ValueError, ('thatSideColumns and thatAttrNames must '
-            'contain the same number of elements')
+                               'contain the same number of elements')
         
-        conn = self.getDBI()
+        sql=[thatObject._baseSelect(True),
+             ', ',
+             ', '.join([pivotTable]+extraTables),
+             ' WHERE ']
         
-        sql = '%s,%s WHERE ' % (thatObject._baseSelect(1),
-                                ', '.join([pivotTable]+extraTables))
-        
-        thisJoin = []
-        vals = []
-        
-        for attr, col in map(None, thisAttrNames, thisSideColumns):
-            lit, val = conn.sqlStringAndValue(
-                self[attr], attr, self.dbColumns[attr])
-            thisJoin.append('%s.%s = %s' % (pivotTable, col, lit))
-            vals.append(val)
-        
-        sql = '%s%s AND ' % (sql, ' AND '.join(thisJoin))
-        
-        thatJoin = []
-        thatTable = thatObject.table
-        for attr, col in map(None, thatAttrNames, thatSideColumns):
-            thatJoin.append('%s.%s = %s.%s' % (pivotTable,
-                                               col,
-                                               thatTable,
-                                               attr))
-        
-        sql = '%s%s' % (sql, ' AND '.join(thatJoin))
-        return sql, vals
-    
-    
+        joins = []
+        converter=self.getDBI().getConverter()
+        for attr, col in zip(thisAttrNames, thisSideColumns):
+            lit=converter(self[attr])
+            joins.append("%s.%s = %s" % (pivotTable, col, lit))
+        vals=converter.values
+        joins.extend(['%s.%s = %s.%s' % (pivotTable,
+                                         col,
+                                         thatObject.table,
+                                         attr) \
+                      for attr, col in zip(thatAttrNames,
+                                           thatSideColumns)])
+        sql.append(' AND '.join(joins))
+        return ''.join(sql), vals
     
 
 

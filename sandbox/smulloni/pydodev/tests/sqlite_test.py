@@ -20,7 +20,20 @@ class PyDOGroup(base):
     unique=['id', 'groupname']
     fields=(('id', 'int'),
             ('groupname', 'text'))
-    
+
+    def getUsers(self):
+        return self.joinTable('id',
+                              'pydouser_pydogroup',
+                              'group_id',
+                              'user_id',
+                              PyDOUser,
+                              'id')
+
+class user_group(base):
+    table="pydouser_pydogroup"
+    unique=[('user_id', 'group_id')]
+    fields=('user_id',
+            'group_id')
 
 class PyDOUser(base):
 
@@ -32,8 +45,12 @@ class PyDOUser(base):
             'lastname')
 
     def getGroups(self):
-        # join need to be working for this
-        pass
+        return self.joinTable('id',
+                              'pydouser_pydogroup',
+                              'user_id',
+                              'group_id',
+                              PyDOGroup,
+                              'id')
 
     def getArticles(self):
         return Article.getSome(creator=self.id, order='created DESC')
@@ -120,6 +137,12 @@ def _init_data():
                           groupname='ChopstickLovers'),
             PyDOGroup.new(refetch=1,
                           groupname='HandLovers')]
+
+    # each user joins two groups at random
+    for u in users:
+        for x in random.sample(groups, 2):
+            user_group.new(user_id=u.id, group_id=x['id'])
+
     articles=[]
     for u in users:
         for i in range(random.randint(2, 10)):
@@ -152,6 +175,11 @@ class SqliteTest(unittest.TestCase):
         self.assertEqual(len(Article.getSome(title='Blah Blah')),
                          len(Article.getSome(creator=1)))
         rollback()
+
+    def test_join(self):
+        groups=PyDOGroup.getSome()
+        for u in PyDOUser.getSome():
+            u.getGroups()
 
 initAlias('sqlitetest', 'sqlite', dict(database=SQLITE_DB), verbose=True)        
 

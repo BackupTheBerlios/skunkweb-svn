@@ -56,7 +56,7 @@ class DBIBase(object):
 
     def _convertResultSet(description, resultset):
         """internal function that turns a result set into a list of dictionaries."""
-        fldnames=[x[0] for x in description]
+        fldnames=[_strip_tablename(x[0]) for x in description]
         return [dict(izip(fldnames, row)) for row in resultset]
     _convertResultSet=staticmethod(_convertResultSet)
 
@@ -89,6 +89,12 @@ class DBIBase(object):
     def getAutoIncrement(self, name):
         """If db uses auto increment, should obtain the value of the auto-incremented field named 'name'"""
         pass
+
+def _strip_tablename(colname):
+    i=colname.rfind('.')
+    if i==-1:
+        return colname
+    return colname[i+1:]
 
 _driverConfig = {
     'mysql':       'PyDO.drivers.mysqlconn.MysqlDBI',
