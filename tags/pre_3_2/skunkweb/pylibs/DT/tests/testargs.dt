@@ -1,3 +1,0 @@
-<:foo bar baz fred='foo':>
-<:foo bar "baz" fred='foo':>
-<:foo bar="foo" baz fred:>

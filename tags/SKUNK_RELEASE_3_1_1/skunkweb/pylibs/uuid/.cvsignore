@@ -1,7 +1,0 @@
-Makefile
-Makefile.pre
-Setup
-config.c
-*.o
-sedscript
-uuidmodule.so

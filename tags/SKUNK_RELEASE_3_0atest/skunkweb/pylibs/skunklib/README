@@ -1,4 +1,0 @@
-
-	This is a C module containing various optimizations which we deemed 
-important enough to migrate from Python into C.
-
