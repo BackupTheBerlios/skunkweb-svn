@@ -310,21 +310,21 @@ class ConnectionWrapper(object):
 
 
 class ConnectionPool(object):
-    """ a connection pool """
+    """ a connection pool for a single connection alias."""
     def __init__(self,
                  max_poolsize=0,
                  keep_poolsize=1,
                  delay=0.2,
                  retries=10):
-        # deques of unused connections, keyed by serialized connection args
+        # deque of unused connections
         self._free=deque()
-        # lists of in-use connections, keyed by serialized connection args.
+        # list of in-use connections
         # we need real references to these, not just a count.
         self._busy=[]
-        # maximum number of connections to create per connection args;
+        # maximum number of connections to create
         # 0 or a negative value means no maximum
         self._max_poolsize=max_poolsize
-        # maximum number of connections to keep alive per connection args
+        # maximum number of connections to keep alive
         self._keep_poolsize=keep_poolsize
         # time to sleep in seconds if max_poolsize connections are in
         # use before retrying
