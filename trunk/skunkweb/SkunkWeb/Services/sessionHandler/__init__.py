@@ -15,10 +15,12 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: __init__.py,v 1.1 2001/08/05 15:00:07 drew_csillag Exp $
+# $Id: __init__.py,v 1.2 2001/08/06 17:16:04 smulloni Exp $
 # Time-stamp: <01/05/04 13:25:03 smulloni>
 ########################################################################
 # session handling package
+
+import os
 
 def __initFlag():
     import SkunkWeb.ServiceRegistry as reg
@@ -45,6 +47,9 @@ def __initConfig():
         SessionHandler_MySQLIDColumn='id',
         SessionHandler_MySQLPickleColumn='pickle',
         SessionHandler_MySQLTimestampColumn='accessTime',
+
+        # directory where pickle files are stored (for FSSessionStore)
+        SessionHandler_FSSessionDir=os.path.join(Configuration.SkunkRoot, 'var/run/skunksessions')
         
         # reap interval (in seconds).  A negative value, or zero,
         # will turn off reaping.  it would be reasonable for at most
@@ -76,8 +81,12 @@ __initSession()
 
 ########################################################################
 # $Log: __init__.py,v $
-# Revision 1.1  2001/08/05 15:00:07  drew_csillag
-# Initial revision
+# Revision 1.2  2001/08/06 17:16:04  smulloni
+# adding session store that uses pickle files in the local filesystem.
+#
+# Revision 1.1.1.1  2001/08/05 15:00:07  drew_csillag
+# take 2 of import
+#
 #
 # Revision 1.12  2001/08/02 02:10:37  smulloni
 # minor cleanup.
