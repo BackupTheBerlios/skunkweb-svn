@@ -1,3 +1,13 @@
+2005-02-18  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO/pydo.py (PyDO.delete): was testing class attribute
+	"unique" rather than "_unique", which was a booboo.
+
+2005-02-17  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO/pydo.py (PyDO.copy): removed redundant copy (as
+	dict(self) already makes a dict copy).
+
 2005-02-16  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
 	* src/PyDO/pydo.py (PyDO.project): implemented projections.

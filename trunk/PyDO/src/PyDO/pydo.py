@@ -208,7 +208,7 @@ class PyDO(dict):
         return dict(self)
 
     def copy(self):
-        return self.__class__(dict(self).copy())
+        return self.__class__(dict(self))
 
     def getColumns(cls, qualified=False):
         """Returns a list of all columns in this table, in no particular order.
@@ -434,7 +434,7 @@ class PyDO(dict):
             # this used to be a value error, but there are no parameters,
             # so I'm using PyDOError
             raise PyDOError, "instance isn't mutable!"
-        if not self.unique:
+        if not self._unique:
             raise PyDOError, "cannot delete, no unique index!"
         conn = self.getDBI()
         unique, values = self._uniqueWhere(conn, self)
