@@ -218,12 +218,6 @@ class SocketManager(ProcessManager):
 
         self.socketMap = {}
 
-# NOTES
 
-# Apache handles the case of a single listening socket differently
-# than multiple sockets.  When there are multiple sockets, you need
-# select and you need a mutex; with one socket, you don't need select
-# and you may not need a mutex, depending on the architecture.  This
-# refinement could be added.
 
 

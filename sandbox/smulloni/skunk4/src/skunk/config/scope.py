@@ -1,7 +1,7 @@
 
 
 from bisect import insort_right
-from threading import Lock
+from threading import RLock
 import fnmatch
 import os
 import re
@@ -28,7 +28,7 @@ class ScopeManager(object):
     """
 
     def __init__(self):
-        self._lock=Lock()
+        self._lock=RLock()
         self.defaults={}
         self.matchers=[]
 

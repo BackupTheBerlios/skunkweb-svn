@@ -20,9 +20,14 @@ def test1():
         # read some off the socket
         while 1:
             stuff=socket.recv(1024)
+            stuff=stuff.strip()
             if not stuff:
+                continue
+            if stuff=='quit':
+                socket.send('bye\n')
+                socket.close()
                 break
-            socket.send(stuff.upper())
+            socket.send('%s\n' % stuff.upper())
     mgr.addConnection(('TCP', 'localhost', 8888), handler)
     mgr.mainloop()
         
