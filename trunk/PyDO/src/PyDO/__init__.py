@@ -16,5 +16,6 @@ from PyDO.operators import *
 from PyDO.dbi import *
 from PyDO.dbtypes import *
 from PyDO.log import *
+from PyDO.joins import *
 
 __version__='2.0a0'

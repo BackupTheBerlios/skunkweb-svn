@@ -3,12 +3,20 @@
 The joins module contains a Join class that enables you to get
 multiple PyDO objects in one join operation.
 
-N.B.: this is a sketch -- it doesn't work yet!
+N.B.: this is still experimental!  And in any case, not every database
+system will necessarily support every join, and this won't attempt to
+deal with that, except by documenting what the limits are.
+
+Current limits:
+
+   * does not support nested joins.
+   * does not support self joins.
 
 """
 
 from PyDO.operators import SQLOperator, AND
 from PyDO.utils import every
+from PyDO.log import debug
 
 from itertools import izip
 
@@ -29,8 +37,9 @@ all_jointypes=('LEFT',
                'NATURAL INNER',
                'CROSS')
 
-class Join(object):
+class joinbase(object):
     """
+    a class which joins two tables in a SQL92 join.
     """
 
     def __init__(self,
@@ -40,7 +49,8 @@ class Join(object):
                  on=None,
                  using=None):
         """
-
+        
+        
         """
         
         if jointype is None:
@@ -66,11 +76,15 @@ class Join(object):
             raise ValueError, \
                   "connection aliases must the same for joined PyDO objects!"
 
+        # to support nesting of joins in the future ....
+        self.connectionAlias=objL.connectionAlias
         self.jointype=jointype
         self.objL=objL
         self.objR=objR
         self.on=on
         self.using=using
+        # rather than recalculating this all the time,
+        # do it upon initialization        
         cols=self.objL.getColumns(False)
         self._lenL=len(cols)
         self._allcols=cols+self.objR.getColumns(False)
@@ -120,13 +134,8 @@ class Join(object):
 
         oL=self.objL
         oR=self.objR
-        if oL.table==oR.table:
-            # this won't work with nesting, but then, nothing will
-            t1="%s AS TL" % oL.table
-            t2="%s AS TR" % oR.table
-        else:
-            t1=oL.table
-            t2=oR.table
+        t1=oL.table
+        t2=oR.table
         join='%s %s JOIN %s%s' % (t1,
                                   self.jointype,
                                   t2,
@@ -138,8 +147,10 @@ class Join(object):
         return ' '.join(select)
 
 
-    def getColumns(self, qL=True, qR=True):
-        return self.objL.getColumns(qL) + self.objR.getColumns(qR)
+    def getColumns(self, qualifier=None):
+        # qualifier argument doesn't work or make sense at the moment
+        return self.objL.getColumns(True) \
+               + self.objR.getColumns(True)
 
     def _resolveObjects(self, resultRow):
         pairs=zip(self._allcols, resultRow)
@@ -167,6 +178,9 @@ class Join(object):
         # want a dictionary, we need to know the order of columns in
         # the result set
         cursor=conn.cursor()
+        if conn.verbose:
+            debug("SQL: %s", query)
+            debug("bind variables: %s", values)
         cursor.execute(query, values)
         ret=[]
         while 1:
@@ -181,24 +195,69 @@ class Join(object):
             
 # classes that curry the constructor by jointype....
 
-"""
-column will either be
+class CrossJoin(joinbase):
+    def __init__(self, objL, objR):
+        super(CrossJoin, self).__init__(objL, objR, 'CROSS')
 
-  alias.colname
+class LeftJoin(joinbase):
+    def __init__(self, objL, objR, on=None, using=None):
+        super(LeftJoin, self).__init__(objL, objR, 'LEFT OUTER', on=on, using=using)
 
-or
+class NaturalLeftJoin(joinbase):
+    def __init__(self, objL, objR):
+        super(NaturalLeftJoin, self).__init__(objL, objR, 'NATURAL LEFT OUTER')
 
-  colname
+class RightJoin(joinbase):
+    def __init__(self, objL, objR, on=None, using=None):
+        super(RightJoin, self).__init__(objL, objR, 'RIGHT OUTER', on=on, using=using)
 
-if natural join, colnames will be unique -- I believe the alias will
-go away.  So values could be found by position.  But since we'll be
-explicitly stating all the columns we want, the column labels just
-don't matter; we need to associate column with value by position in
-the result set, not by name.  The same works also for the other joins.
-This means that calling execute() isn't what we need, as it de-orders
-the result.
+class NaturalRightJoin(joinbase):
+    def __init__(self, objL, objR):
+        super(NaturalRightJoin, self).__init__(objL, objR, 'NATURAL RIGHT OUTER')
 
-Getting joins to nest is another problem, and I'll defer dealing with it.
+class FullJoin(joinbase):
+    def __init__(self, objL, objR, on=None, using=None):
+        super(FullJoin, self).__init__(objL, objR, 'FULL OUTER', on=on, using=using)
+
+class NaturalFullJoin(joinbase):
+    def __init__(self, objL, objR):
+        super(NaturalFullJoin, self).__init__(objL, objR, 'NATURAL FULL OUTER')
+
+class InnerJoin(joinbase):
+    def __init__(self, objL, objR, on=None, using=None):
+        super(InnerJoin, self).__init__(objL, objR, 'INNER', on=on, using=using)
+
+class NaturalInnerJoin(joinbase):
+    def __init__(self, objL, objR):
+        super(NaturalInnerJoin, self).__init__(objL, objR, 'NATURAL INNER')        
 
 
-"""
+LeftOuterJoin=LeftJoin
+NaturalLeftOuterJoin=NaturalLeftJoin
+RightOuterJoin=RightJoin
+NaturalRightOuterJoin=NaturalRightJoin
+FullOuterJoin=FullJoin
+NaturalFullOuterJoin=NaturalFullJoin
+NaturalJoin=NaturalInnerJoin
+
+
+__all__=['CrossJoin',
+         'LeftJoin',
+         'NaturalLeftJoin',
+         'RightJoin',
+         'NaturalRightJoin',
+         'FullJoin',
+         'NaturalFullJoin',
+         'InnerJoin',
+         'NaturalInnerJoin',
+         'LeftOuterJoin',
+         'NaturalLeftOuterJoin',
+         'RightOuterJoin',
+         'NaturalRightOuterJoin',
+         'FullOuterJoin',
+         'NaturalFullOuterJoin',
+         'NaturalJoin']
+
+
+
+
