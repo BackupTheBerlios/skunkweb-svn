@@ -1,6 +1,6 @@
 /* 
- * $Id: _scope.c,v 1.10 2001/10/02 02:35:34 smulloni Exp $ 
- * Time-stamp: <01/10/01 22:20:32 smulloni>
+ * $Id: _scope.c,v 1.11 2002/06/28 21:09:00 smulloni Exp $ 
+ * Time-stamp: <02/06/28 16:28:10 smulloni>
  */
 
 /***********************************************************************
@@ -172,7 +172,8 @@ static PyObject *Scopeable_mergeDefaults(PyObject *self,
 
 static void _resetMash(PyObject *self) {
   PyObject *d=PyDict_New();
-  PyObject_SetAttrString(self, MASH, d);
+  PyMapping_SetItemString(((PyInstanceObject *)self)->in_dict, MASH, d);
+  /*  PyObject_SetAttrString(self, MASH, d); */
 }
 
 static PyObject *Scopeable_mash(PyObject *self, PyObject *args) {
@@ -220,7 +221,8 @@ static PyObject *Scopeable_saveMash(PyObject *self, PyObject *args) {
   }
   /* ATC */
   m = Scopeable_mash(self, args);
-  PyObject_SetAttrString(self, MASH, m);
+  /* PyObject_SetAttrString(self, MASH, m); */
+  PyMapping_SetItemString(((PyInstanceObject *)self)->in_dict, MASH, m);
   Py_DECREF(m);
   /* /ATC */
   Py_INCREF(Py_None);
@@ -487,6 +489,9 @@ void init_scope(void) {
 
 /************************************************************************
  * $Log: _scope.c,v $
+ * Revision 1.11  2002/06/28 21:09:00  smulloni
+ * groundwork laid for preventing attribute assignment to Configuration.
+ *
  * Revision 1.10  2001/10/02 02:35:34  smulloni
  * support for scoping on unix socket path; very serious scope bug fixed.
  *
