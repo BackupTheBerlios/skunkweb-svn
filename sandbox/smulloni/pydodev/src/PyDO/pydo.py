@@ -170,7 +170,6 @@ class PyDO(dict):
         if not refetch:
             return cls(fieldData)
         return cls.getUnique(**fieldData)
-    
     new=classmethod(new)
     
     def getUnique(cls, **fieldData):
@@ -193,7 +192,7 @@ class PyDO(dict):
             raise PyDOError, 'got more than one row on unique query!'
         if results:
             return cls(results[0]) 
-       getUnique=classmethod(getUnique)    
+    getUnique=classmethod(getUnique)    
             
     def _orderByString(order_by):
         
@@ -251,7 +250,7 @@ class PyDO(dict):
             andlen=len(andValues)
             converter.reset()            
             if andlen > 1:
-                sql=repr(AND(*andValues, converter=converter))
+                sql=repr(AND(converter=converter, *andValues))
             elif andlen==1:
                 sql=repr(andValues[0])
             else:
