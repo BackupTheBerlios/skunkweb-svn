@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-#$Id: Executables.py,v 1.7 2002/02/05 19:22:24 smulloni Exp $
+#$Id: Executables.py,v 1.8 2002/04/30 12:44:33 smulloni Exp $
 import sys
 import cStringIO
 import copy
@@ -105,7 +105,7 @@ class STMLExecutable:
                 if not argDict.has_key(v) and not auxVars.has_key(v):
                     raise SkunkStandardError, (
                         'component %s: argument %s: expected but not passed' %
-                        self.name, v)
+                        (self.name, v))
                 elif argDict.has_key(v):
                     namespace[v] = argDict[v]
                     del argDict[v]
