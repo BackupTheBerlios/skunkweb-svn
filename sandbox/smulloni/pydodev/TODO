@@ -3,6 +3,7 @@ To catch up with the old PyDO:
   * scatterFetch (but am defering, see below)
   * more drivers
   * docs
+  * connection caching
 
 New features:
   * support for AS in field names (?).  Maybe more trouble
