@@ -1,0 +1,88 @@
+2001-08-12  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* SkunkWeb/Services/sessionHandler/Session.py (untouch): altered session handler
+	so if a session is manually saved, it will not be subsequently touched in the same request.
+
+	* SkunkWeb/SkunkWeb/Hooks.py (KeyedHook.__call__): better fix
+	to DEBUG import problem.
+
+2001-08-12  Drew Csillag  <drew@naxos.starmedia.net>
+
+	* configure, configure.in, SkunkWeb/Makefile.in,
+	SkunkWeb/Services/Makefile.in, SkunkWeb/mod_skunkweb/Makefile.in,
+	pylibs/Makefile.in: Now no longer require GNU install.  Remove all
+	places where it was called with -D
+
+2001-08-12  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* SkunkWeb/Services/sessionHandler/PostgreSQLSessionStore.py, 
+	SkunkWeb/Services/sessionHandler/__init__.py: added a PostgreSQL-
+	based session store, this time using PyDO.
+	
+2001-08-11  Drew Csillag  <drew@naxos.starmedia.net>
+
+	* docs/stmlrefer/stmlrefer.tex: added doc about the new as
+	parameter to the <:import:> tag
+
+	* pylibs/DT/DTTags.py: added the as optional parameter to
+	the <:import:> tag.
+
+	* pylibs/PostgreSql/__init__.py: now catches the right exception
+	and fixed the way it called the pgdb.connect function to just call
+	it directly instead of using apply()
+
+	* docs/PyDO/PyDO.tex: Added 
+
+2001-08-10  Drew Csillag  <drew@starmedia.net>
+
+        * pylibs/PyDO/doc: added info on connect strings
+	 
+	* pylibs/PyDO/postconn.py, pylibs/PyDO/oracleconn.py: added the
+	cache option to the connect strings.
+	
+	* SkunkWeb/Services/templating/HTMLTags.py: fixed redirect tag.  It
+	was totally broken.
+	
+        * Skunkweb 3.0 beta 2 will be recut on Monday
+	
+	* Skunkweb 3.0 beta 2 cut
+	
+	* setup.py: removed.. Way out of date an no longer necessary
+	
+	* FAQ: added
+
+2001-08-10  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* INSTALL, configure, configure.in (ac_help): removed reference to 
+	aed_compat
+
+2001-08-09  Drew Csillag  <drew@starmedia.net>
+
+	* docs/opman/opman.tex: almost done!!!
+
+	* pylibs/PyDO/oracleconn.py: now correctly uses the Oracle module
+	instead of the now-defunct SQL module
+
+	* SkunkWeb/sample_webdocs/index.html, SkunkWeb/sample_webdocs/demo/index.html: 
+	put a link to the demo page and made a demo page.  Hopefully will
+	have more demos soon... hint... hint...
+
+	* pylibs/AE/Component.py: made so you can tell whether the component
+	call a) was rendered or fetched from cache, or b) was expired by
+	adding fullCallComponent.  callComponent now just calls 
+	fullCallComponent and returns the text, not the flags.
+	
+
+2001-08-09  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* pylibs/PyDO/postconn.py (PyDOPostgreSQL._dateConvertFromDB): fixed date 
+	parsing bug and several import problems
+
+2001-08-08  Drew Csillag  <drew@naxos.starmedia.net>
+	
+	* docs/opman/opman.tex: mucho updatos
+
+	* configure, configure.in: no longer "require" GNU make since we
+	don't actually use any GNU specific features (afaik).
+
+

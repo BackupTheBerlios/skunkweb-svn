@@ -1,0 +1,1107 @@
+% change occurances of (hash) to a regular prompt
+
+\documentclass[titlepage]{manual}
+\usepackage{makeidx}
+\usepackage[nottoc]{tocbibind} % make so bib and ind are in toc
+\title{The SkunkWeb Operations Manual}
+\author{Drew Csillag and Robin Thomas}
+\release{3.0}
+\setshortversion{3}
+\makeindex
+
+\begin{document}
+%function argument list environment
+\newcommand{\argdescitem}[1]{\hspace\labelsep
+                                \normalfont\ttfamily #1\ }
+\newenvironment{argdesc}{\begin{list}{}{
+        \renewcommand{\makelabel}{\argdescitem}
+}
+}{\end{list}}
+
+\newcommand{\doref}[1]{(see section \ref{#1}, page \pageref{#1})}
+\newcommand{\nonscope}{[N]}
+\newcommand{\PAR}{\texttt{par}}
+\newcommand{\swpython}{\texttt{swpython}}
+
+%begin titlepage stuff
+\maketitle
+\ 
+\vfill 
+%\noindent
+%This  file documents the SkunkWeb Web Application Framework.
+
+\noindent
+Copyright (C) 2001 Andrew Csillag
+
+\noindent
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+%%end titlepage stuff
+
+%\frontmatter  %basically, roman numeralled unnumbered  chapters
+\tableofcontents
+
+%%%%%%%end of header
+
+\chapter{Introduction}
+   This manual explains the installation and use of the software included
+   in the Skunk software distribution.
+   
+   The Skunk software distribution has one main software tool: the
+   SkunkWeb web application server. SkunkWeb's purpose is to provide a
+   programming environment that makes it easy to build applications
+   that generate "dynamic documents" in response to Web (HTTP)
+   requests. Think of SkunkWeb as doing the same job as Vignette
+   StoryServer, ASP, ColdFusion, or regular CGI applications.
+   
+   The other software tools are utilities to help you use SkunkWeb, or
+   general-purpose software to help in web applications programming. This
+   manual will concentrate almost exclusively on the use of SkunkWeb, with
+   little or no mention of the other software in the distribution.
+     
+
+\chapter{Prerequisites}
+\section{Hardware and Operating System}
+   The SkunkWeb server, and all of the other software in the Skunk
+   distribution, are designed to run on any reasonable Unix system. We
+   have successfully built and installed Skunk software on Solaris 2.6
+   and 2.7, various flavors of Linux 2.x, and recent versions of
+   FreeBSD.
+   
+   A reasonable amount of disk space is obviously required, more may
+   be needed depending on the caching configuration.
+
+\section{Software}
+If you are installing SkunkWeb on a Linux machine, the first three
+items below are already taken care of.
+
+%%ATC FIXME, should provide urls
+\begin{itemize}
+\item An ANSI C compiler
+\item GNU find (part of the GNU findutils package)
+\item GNU or Solaris xargs (part of the GNU fileutils package)
+\item Python 2.1.1 (or later) (optionally) compiled with the crypt
+module installed.  Actually, Python 2.1 works just fine, except that
+the license for 2.1 isn't GPL compatible, thus I don't believe you can
+distribute the whole thing precompiled.
+%\item The MM library. 
+
+\item Optionally, Apache 1.3.x configured with (at least) the switch
+\texttt{--enable-module=so}.  If you run into some weirdness with it
+(specifically with the root \texttt{index.html}), you may want to try
+adding these too: \texttt{--disable-module=dir}
+\texttt{--disable-module=autoindex}.  The SkunkWeb/Apache interface
+will not build unless Apache has been configured for dynamic extension
+modules.
+
+\item Optionally, Sudo if you want users other than that which
+SkunkWeb would normally run as to be allowed to start/stop/restart
+SkunkWeb.
+
+\end{itemize}
+
+\section{Users and Groups}
+It is recommended that the SkunkWeb server run as the same user that
+the Apache server runs as. Historically, we have created a user named
+\texttt{apache}, with a home group named \texttt{http}, for both
+Apache and SkunkWeb to run under. The Skunk software installation will
+create many directories and files owned by the user/group you choose
+during the installation; we recommend that you create the user apache
+and group http before starting the Skunk installation, so that the
+Skunk installer can use apache:http to set ownership of the files it
+installs.
+     
+
+\chapter{Build and Install}
+For the most part, SkunkWeb will successfully install by just typing:
+\begin{verbatim}
+# configure; make; make install
+\end{verbatim}
+But of course, you may want to customize the installation.
+
+\section{Configure Script Options}
+Outside of the normal \texttt{configure} options, SkunkWeb provides
+the following:
+
+\begin{argdesc}
+\item[--with-skunkweb]       Install SkunkWeb as part of this installation (default yes)
+\item[--with-python=/path/python]   Specify path to python executable
+\item[--with-user=user]        Make Skunk installation owned by user
+\item[--with-group=group]      Make Skunk installation owned by group
+%\item[--with-mm=DIR]           Location of mm library
+\end{argdesc}
+
+Additional options if building SkunkWeb (which will be built by default):
+\begin{argdesc}
+\item[--with-webdoc] Install some sample content (default yes)
+\item[--with-services=svcs] Specify the list of services to
+install space delimited list of personas to install, valid names are:
+
+%ATC FIXME
+\texttt{sessionHandler}, \texttt{requestHandler}, \texttt{remote},
+\texttt{ae_component}, \texttt{remote_client}
+\texttt{aecgi}, \texttt{httpd}, \texttt{basicauth}, \texttt{oracle},
+\texttt{pars}, \texttt{templating}, \texttt{web}
+
+default is to include everything.
+
+\item[--with-sudo=/path/sudo]  Specify path to sudo
+\item[--without-mod_skunkweb]  Don't build mod_skunkweb
+\item[--with-apxs=/path/apxs]  Specify path to the apxs program
+\end{argdesc}
+
+\textbf{N.B.}: SkunkWeb, by default installs itself in
+  \texttt{/usr/local/skunk}, but may be overridden by the standard
+  \texttt{configure} option \texttt{--prefix}.  The rest of this manual assumes
+that SkunkWeb was installed in   \texttt{/usr/local/skunk}.
+
+\section{Installation of the Cache Reaper}
+If you are going to use component caching (you probably should), you
+probably want something to delete expired cached components
+periodically as they tend to build up over time.  If you add the
+following line (editing if necessary):
+\begin{verbatim}
+0 0 * * *  /usr/local/skunk/util/cache_reaper.py -c /usr/local/skunk/cache
+\end{verbatim}
+to the crontab of the user that
+SkunkWeb runs as, it will go about finding dead items and removing
+them from the cache.  
+
+You may want to wrap the script with a shell script to \texttt{nice}
+the process (such that it runs with lower priority).
+
+\section{Apache Configuration}
+If you are going to have Apache fronting SkunkWeb (the default
+configuration), for the most part, just appending the contents of
+\texttt{SkunkWeb/mod_skunkweb/httpd_conf.stub} to your existing
+\texttt{httpd.conf} file (editing as required) will often suffice, but
+if you are doing virtual hosting, obviously things get a bit more
+complex.
+
+\chapter{Starting/Stopping}
+Starting and stopping SkunkWeb is a relatively simple matter using 
+the \texttt{swmgr} script in \texttt{/usr/local/skunk/bin}.
+
+The \texttt{swmgr} takes one argument that has one of three different values:
+
+\begin{argdesc}
+\item[start] Start the SkunkWeb server if it is not already running.
+If it is already running, you will usually see an error message that
+says something like ``Address already in use''.
+
+\item[restart] Restart a running SkunkWeb server.  If the SkunkWeb
+server is not already running, you will see the message ``SkunkWeb
+pidfile missing. Aborting...''
+
+\item[stop] Stops the running SkunkWeb server.  If the SkunkWeb
+server is not already running, you will see the message ``SkunkWeb
+pidfile missing. Aborting...''
+
+\end{argdesc}
+
+\chapter{Configuring the SkunkWeb Server}
+
+\section{Services}
+There are a plethora of services available that....
+%DREW -- what do you want to say here as a general introduction, given 
+% that this is an operations manual and not a developers' manual?
+\begin{argdesc}
+\item[ae_component] A service used by \texttt{remote} and \texttt{templating} that
+initializes the AE component facilities.  This service, coupled with
+the \texttt{web}, \texttt{requestHandler} and \texttt{templating}
+services is what really makes the server tick.
+
+\item[aecgi] The service that handles the SkunkWeb server side of the
+Apache (or actually anything that speaks the aecgi protocol) to
+SkunkWeb connectivity.
+
+\item[basicauth]  Allows for doing HTTP basic authentication \doref{swpasswd}.
+
+\item[httpd] Makes it so SkunkWeb can handle HTTP requests directly,
+without the use of Apache.  Requires the \texttt{web} service.
+
+\item[mysql] Service to cache MySQL connections
+\doref{databaseservices}.
+
+\item[oracle] Service to cache Oracle connections and stored procedure
+definitions \doref{databaseservices}.
+
+\item[pars]  Allows the packaging of stuff that would normally be found in
+the docroot to be stored in parfile archives \doref{pardotpy}.
+
+\item[postgresql] Service to cache PostgreSQL connections
+\doref{databaseservices}.
+
+\item[remote] Allows SkunkWeb to serve remote component requests
+\doref{remotecomponents}; requires the \texttt{requestHandler} 
+and \texttt{ae_component} services.
+
+\item[remote_client] Allows SkunkWeb to make remote component requests
+\doref{remotecomponents}; requires the \texttt{templating} service.
+
+\item[requestHandler]  Adds a request handling framework, built on top
+of by some of the other services.
+
+\item[sessionHandler]  Handles the persistence of user session data in
+a MySQL database, the local filesystem, or other user-defined data store; 
+requires the \texttt{web} service.
+
+\item[templating] Hooks together the \texttt{web} and \texttt{ae_component}
+services, in addition to adding a few tags.
+
+%\item[vhost] Simplifies virtual hosting with SkunkWeb.
+
+\item[web] Service to manage web requests and setup the
+\texttt{CONNECTION} object; requires the \texttt{requestHandler} service.
+\end{argdesc}
+
+\section{Configuration Options}
+
+\subsection{Scoping}
+
+Global configuration information is accessed throughout SkunkWeb as attributes of the 
+\texttt{SkunkWeb.Configuration} pseudo-module, which, although accessed like a Python module,
+is actually a subclass of \texttt{scope.Scopeable}, a chameleon object the values of whose attributes can be 
+made to vary depending on the environment to which it has been told to adapt.
+In SkunkWeb's requestHandler and web services, scoping is used to (potentially) modify the Configuration
+object on the basis of values in the request per se or the request environment, thereby making possible
+direct support for configurable virtual hosts (based on host name, port, and/or IP address), 
+location directives, and other more exotic options.
+
+Scoping is configured in the sw.conf file by the use of the \texttt{Scope}, \texttt{Location}, \texttt{Host}, 
+\texttt{Port} and \texttt{IP} configuration directives, which look like (and are) Python method calls.  The 
+\texttt{Scope} directive 
+is always the outer container of the other directives, taking their return values (\texttt{scope.ScopeMatcher}
+instances) as its arguments; it applies the ScopeMatchers passed to it to the Configuration object.  
+The first argument of the other directives is a value which is matched against a value 
+in the request; in the case of \texttt{Port}, for instance, it should be an integer which will be 
+compared with the 
+port on which the request came.  \texttt{Host}, \texttt{Port} and \texttt{IP} then take an arbitrary 
+number of unnamed \texttt{ScopeMatcher}
+arguments, which are applied only in the case that they and all their parents match the request; 
+\texttt{Location} is excluded from this recursive bonanza.  
+\texttt{Host}, \texttt{Port}, \texttt{IP} and \texttt{Location} all then take an arbitrary 
+number of named arguments, which should be configuration options and their desired values.
+
+Take, for example, the following possible \texttt{Scope} directive:
+
+\begin{verbatim}
+
+Scope(IP('192.168.65.12', Port(9887, job=REMOTE_JOB)))
+job=TEMPLATING_JOB
+
+\end{verbatim}
+This causes \texttt{Configuration.job} to return the value REMOTE_JOB for the case that the ip address of the 
+request is 192.168.65.12 and the request port is 9887, and TEMPLATING_JOB otherwise.
+ 
+To turn on basic authentication for the directory '/private' for host 'www.foo.com', you could
+use the following:
+\begin{verbatim}
+
+Scope(Host(`www.foo.com', 
+           Location(`/private',
+                    basicAuthName='privileged zone',
+                    basicAuthFile='/usr/local/skunk/var/AUTHDB')))
+
+\end{verbatim}	
+
+\subsection{The Options}
+\textbf{Note:} Arguments that are not \emph{scopable} are denoted with a 
+\nonscope\ in their description.
+
+Core Parameters:
+\begin{argdesc}
+\item[services] \nonscope A list of services you want to load
+\item[accessLog] File path where the access log will be written.
+Defaults to \texttt{'/usr/local/skunk/var/log/access.log'}.
+\item[errorLog] File path where the error log will be written.
+Defaults to \texttt{'/usr/local/skunk/var/log/error.log'}.
+\item[regularLog] File path where the regular log will be written.
+Defaults to \texttt{'/usr/local/skunk/var/log/sw.log'}.
+\item[debugLog] File path where the debug log will be written.
+Defaults to \texttt{'/usr/local/skunk/var/log/debug.log'}.
+\item[pidFile] \nonscope File path where a file will be written whose sole contents is the parend process id.  Defaults to \texttt{'/usr/local/skunk/var/run/sw.pid'}.
+\item[stampEveryLine] If you don't want every line of a multiline log entry
+to be prefixed with a logstamp (the default behavior), set this to a
+false value.  Default is 0.
+\item[initialDebugServices] \nonscope List of services that are INITIALLY set to
+be debugged.  To determine what services are being debugged at
+runtime, use SkunkWeb.ServiceRegistry.getDebugServices().  Default is the empty list.
+\item[numProcs] \nonscope
+The number of child processes to be started.  This is the max number
+of concurrent page views (although if Apache sits in front, it may
+look like quite a few more).
+Default is 15.
+
+\item[maxKillTime] \nonscope
+The number of seconds that the parent will wait after having sent
+SIGTERM to the children before killing the children off with SIGKILL
+during a shutdown or restart.  Default is 5.
+\item[pollPeriod] \nonscope
+You probably don't need to change this, but it's the interval at which
+the parent looks for corpses that need to be buried and replaced with
+new, living kids.
+Default is 5.
+\item[maxRequests] \nonscope
+The number of requests that a child server process will handle before
+committing suicide and having the parent respawn.  This is mainly to
+make sure we aren't leaking memory, but you can probably set it to
+something a bit higher.
+Default is 256.
+\item[userModuleCleanup] \nonscope
+For development, this will cause changes to sitelibs to be reflected
+on the next request, without a bounce of the server.  Turn it off
+for production environments.
+Default is 0.
+\end{argdesc}
+
+
+
+Parameters for the \texttt{ae_component} service:
+\begin{argdesc}
+\item[documentRoot]
+The directory that is used to hold templates, images, msgcats, comps,
+etc.
+Default is \texttt{'/usr/local/skunk/docroot'}.
+\item[compileCacheRoot] 
+The location on disk of where the compile cache should reside.  This
+should be a local filesystem.
+Default is \texttt{'/usr/local/skunk/cache'}.
+\item[useCompileMemoryCache] Store compiled templates and Python code
+in memory.  Increases the memory footprint a bit, but reduces I/O a
+bit and CPU utilization a bit as it doesn't have to load and
+deserialize the compiled images from disk.
+\item[componentCacheRoot] 
+The location of the component cache on disk.  Can be the same as the
+compileCacheRoot.
+Default is \texttt{'/usr/local/skunk/cache'}.
+\item[failoverComponentCacheRoot, numServers, failoverRetry] If using
+NFS (or other shared filesystem) for the component cache, set
+\texttt{numServers} to the number of shared filesystems that the
+component cache will be on, \texttt{failoverRetry} to the number of
+seconds to wait before trying the shared filesystem again (it should
+be soft mounted!!!), and \texttt{failoverComponentCacheRoot} to an
+area on local disk to use as a temporary replacement for the server
+that failed in the meantime.  If \texttt{numServers} is 0, the
+\texttt{failover*} options are ignored.  Default for
+\texttt{numServers} is 0, the default for
+\texttt{failoverComponentCacheRoot} is
+\texttt{'/usr/local/skunk/failoverCache'} and the default for
+\texttt{'failoverRetry'} is 30.
+\item[mimeTypesFile] \nonscope
+The location of your mimetypes file.  Default is \texttt{'/usr/local/skunk/etc/mime.types'}
+\item[componentCommentLevel] 
+Level of commenting to be inserted in HTML documents when components
+are entered/exited.
+\begin{description}
+\item[0] no commenting (default)
+\item[1] only show component name in comments
+\item[2] show component name and argument names
+\item[3] show component name, argument names and values
+\end{description}
+Default is 0
+\end{argdesc}
+
+
+
+Parameters for the \texttt{aecgi} service:
+\begin{argdesc}
+\item[AecgiListenPorts] \nonscope
+List of ports (specified as string(s) of either
+\texttt{TCP:}\emph{hostname}\texttt{:}\emph{portnumber} or
+\texttt{UNIX:}\emph{filepath}\texttt{:}\emph{octal_socket_permissions})
+that the SkunkWeb server will listen for AECGI protocol (the protocol used
+by \texttt{mod\_skunkweb}) connections .
+Default is \texttt{['TCP:localhost:9888']}.
+\end{argdesc}
+
+
+
+Parameters for the \texttt{pars} service:
+\begin{argdesc}
+\item[parFiles] List of par files that should be used in lieu of the
+docroot.  Defaults to \texttt{[]}.
+\item[parFallthrough] Boolean specifying that we should fall through
+to the \texttt{documentRoot} if a file we're looking for doesn't exist
+in the current list of parfiles.  Default is 1.
+\end{argdesc}
+
+
+
+Parameters for the \texttt{basicauth} service:
+\begin{argdesc}
+\item[basicAuthName] The name showed in the popup box where the user is asked to authenticate themselves.  Default is \texttt{None}.
+\item[basicAuthFile] The file (created using the \texttt{swpasswd} tool) that is used to validate the authentication credentials given by the user.  Default is \texttt{None}.
+\end{argdesc}
+If both of these are \texttt{None}, no authentication is done.
+
+
+
+Parameters for the \texttt{httpd} service:
+\begin{argdesc}
+\item[lookupHTTPRemoteHost] \nonscope
+If you set this to a true value, the CGI environmental variable
+HTTP_REMOTE_HOST will always be set, involving a potentially costly DNS
+lookup.  If you don't want it, you can still use HTTP_REMOTE_ADDR and
+perform the lookup on demand.  Default is 0 (no lookup and no HTTP_REMOTE_HOST
+variable in the environment).
+N.B. This only affects the httpd service, and has no bearing on environmental
+variables SkunkWeb receives from Apache or elsewhere.
+Default is 0.
+\item[HTTPKeepAliveTimeout] \nonscope
+How long (in seconds) the http keepalive timeout should be between
+HTTP requests.
+Default is 15.
+\item[HTTPListenPorts] \nonscope
+List of port(s) for the httpd service to listen on (specified in the same
+way as the \texttt{AecgiListenPorts} socket is).
+Default is \texttt{['TCP::8080']}.
+\end{argdesc}
+
+
+
+Parameters for the \texttt{requestHandler} service.
+\begin{argdesc}
+\item[DocumentTimeout]
+The time (in seconds) allowed for a request to complete before timing
+it out (by raising an exception).
+Default is 30.
+\item[PostResponseTimeout]
+The amount of time (in seconds) allowed for the PostRequest hooks to
+execute before timing them out.
+Default is 20.
+\item[job] 
+The job that the server should perform.  TEMPLATING_JOB and REMOTE_JOB 
+are likely to the only ones you need to specify among those available in
+the core services, and they are pre-imported into the namespace in which
+the sw.conf file is executed.  It is essential that the sw.conf file
+specify this constant, as no default is specified anywhere else.
+For more information about job strings, see the developer's manual.
+\end{argdesc}
+
+
+
+Parameters for the \texttt{mysql} service:
+\begin{argdesc}
+\item[MySQLConnectParams] \nonscope
+To use cached connections with the pylibs/MySQL module set this to
+a dictionary of 'name': 'connection\_string' pairs.
+Default is \texttt{\{\}}.
+\end{argdesc}
+
+
+Parameters for the \texttt{oracle} service.
+\begin{argdesc}
+\item[OracleConnectStrings]  \nonscope
+To use cached connections with the pylibs/Oracle module set this to
+a dictionary of 'name': 'connection\_string' pairs
+Default is \texttt{\{\}}.
+\item[OracleProcedurePackageLists] \nonscope
+To speed up the use of stored procedures (saves one query per sp fetch)
+we can preload the procedure signatures ahead of time.
+Set to a dictionary of 'name': ['list', 'of', 'packagenames'] where name
+matches that used in OracleConnectStrings.
+Default is \texttt{\{\}}.
+\end{argdesc}
+
+Parameters for the \texttt{postgresql} service.
+\begin{argdesc}
+\item[PostgreSQLConnectParams] \nonscope
+To use cached connections with the pylibs/PostgreSql module set this to
+a dictionary of 'name': 'connection\_string' pairs.
+Default is \texttt{\{\}}.
+\end{argdesc}
+
+
+
+Parameter for the \texttt{remote} service.
+\begin{argdesc}
+\item[RemoteListenPorts] \nonscope
+List of port(s) for the remote service to listen on (specified in the same
+way as the \texttt{AecgiListenPorts} socket is).  
+Default is \texttt{['TCP:localhost:9887']}.
+\end{argdesc}
+
+
+
+Parameters for the \texttt{sessionHandler} service.
+\begin{argdesc}
+\item[SessionTimeout] 
+The session timeout, in seconds.  Sessions which have seen no action
+for this period of time are ripe for reaping.
+Default is 1800 (30 minutes).
+\item[SessionReapInterval] \nonscope
+Session reap interval, in seconds.  When the reap interval has elapsed,
+the server may reap old sessions in the aftermath of its next
+request handling cycle.  To turn off reaping (if more than one
+server is using the same session store, or if another process
+is performing reaping separately), set this to zero or a negative
+value.
+Default is 300 (5 minutes).
+\item[SessionStore] 
+The session store implementation class (full package name). This
+defaults to None, which, if the sessionHandler service is imported,
+will cause an error.  To use sessionHandler, you must specify a session
+store implementation; e.g.:
+\begin{verbatim} 
+SessionStore='sessionHandler.MySQLSessionStore.MySQLSessionStoreImpl'
+\end{verbatim}
+Default is \texttt{None}; two SessionStore implementations are currently 
+available, \texttt{MySQLSessionStore.MySQLSessionStoreImpl} and 
+\texttt{FSSessionStore.FSSessionStoreImpl}.  SessionStore can be scoped 
+by host, port, or ip; it should not be scoped by location.
+\item[SessionIDKey] \nonscope
+The key under which the session is kept (in a cookie or in URL rewriting).
+Default is \texttt{'sessionID'}.
+\end{argdesc}
+The following \texttt{sessionHandler} config variables specify names
+of the session table and its columns and the MySQL host, user and password.
+\begin{argdesc}
+\item[SessionHandler_MySQLHost]='localhost' \nonscope
+\item[SessionHandler_MySQLUser]='sessionHandler' \nonscope
+\item[SessionHandler_MySQLPass]='sessionPass' \nonscope
+\item[SessionHandler_MySQLDB]='sessionStore' \nonscope
+\item[SessionHandler_MySQLTable]='Sessions' \nonscope
+\item[SessionHandler_MySQLIDColumn]='id' \nonscope
+\item[SessionHandler_MySQLPickleColumn]='pickle' \nonscope
+\item[SessionHandler_MySQLTimestampColumn]='accessTime' \nonscope
+\end{argdesc}
+
+
+
+
+Parameters for the \texttt{templating} service.
+\begin{argdesc}
+\item[errorTemplate] \nonscope
+path to a template in the docroot (or parfile), dependent on scope
+that should be shown if the we send back an error (500) page
+The exception text will show up in an additional template variable
+ERROR_TEXT.
+Default is \texttt{None}.
+\item[notFoundTemplate] \nonscope
+Path to a template in the docroot (or parfile), dependent on scope
+that should be shown if the we send back a 404 Not Found response.
+Default is \texttt{None}.
+\item[indexDocuments]
+List of document names that will be recognized as index documents;
+Default is \texttt{['index.html']}
+\item[hideMimeTypes]
+A list of mime types that should not be accessible via web request.
+Default is 
+\begin{verbatim}
+[
+    "text/x-stml-component",
+    "text/x-stml-python-component",
+    "text/x-stml-data-component",
+    "text/x-stml-python-data-component",
+]
+\end{verbatim}
+\item[interpretMimeTypes]
+Mime types of things that should be rendered as templates when called
+via web request.
+Default is \texttt{["text/html", "application/x-python"]}.
+\end{argdesc}
+
+For the sendmail tag, how to actually send it.
+If MailMethod == 'sendmail', it will call the sendmail program to do
+it (this is the default).  If you set it to 'relay', it will send the
+mail via SMTP to the host specified by the MailHost config variable
+(which defaults to localhost).  If using the 'sendmail' MailMethod,
+the pragram that is run comes from SendmailCommand.  When no from
+address is specified in the call to the sendmail tag (or it's
+corresponding function), the address FromAddress is used.
+\begin{argdesc}
+\item[MailMethod] = 'sendmail',
+\item[MailHost] = 'localhost',
+\item[SendmailCommand] = 'sendmail -t',
+\item[FromAddress] = "root@localhost"
+\end{argdesc}
+
+
+
+\chapter{Service Details}
+
+\section{Remote Components}
+\label{remotecomponents}
+%%%FIXME
+
+
+\section{\texttt{pars}}
+
+The \texttt{pars} service is present to allow you to maintain the
+docroot \'al\`a java-style/\texttt{CLASSPATH}, sorta.  It allows you
+to store items that would normally be required to be in the docroot,
+in special archive files called par files.  So instead of just looking
+in the docroot for docroot items, it first looks in the par files
+specified in th \texttt{parFiles} configuration variable and only
+then, if \texttt{parFallthrough} is specified, look in the docroot.
+
+\section{\texttt{sessionHandler}}
+%%%FIXME
+The \texttt{sessionHandler} service adds to the \texttt{web}
+service's \texttt{CONNECTION} object the ability to create a session object,
+which can contain and automatically persist pickleable Python data for the 
+duration of a web session, maintained and tracked by a session id placed 
+in a cookie.  For sessionHandler to work, it is necessary to specify a 
+\texttt{SessionStore} implementation by setting the configuration variable of
+the same name in \texttt{sw.conf}.
+
+\section{Database Services}
+\label{databaseservices}
+%%%FIXME
+
+\chapter{Miscellaneous SkunkWeb Utilities}
+\section{\texttt{vicache.py}}
+The \texttt{vicache.py} utility is for use mainly by the SkunkWeb maintainers
+and anyone doing STML hacking, but sometimes can be useful for the general
+user when they are getting an error that they can not explain without
+seeing exactly what is going on.
+
+To invoke \texttt{vicache.py}, go into your compile cache directory
+and then:
+\begin{verbatim}
+# python /usr/local/skunk/util/vicache.py name_of_cachefile.htmlc
+\end{verbatim}
+The file (in this case \texttt{name\_of\_cachefile.htmlc}) is the name
+of the original STML component/template/etc. with a `c' appended onto
+the name.  
+
+What then will happen is that either \texttt{vi} or whatever editor you
+have in you EDITOR shell environment variable will be started with the
+contents of the Python source that is generated by the STML compiler.
+
+At this point, you can edit the source text, save it (or not) and exit your
+editor.  \texttt{vicache.py} will then ask you if you wish to save your
+changes into the cache file.
+
+
+\section{The \texttt{par} Archive Tool}
+\label{pardotpy}
+The \texttt{par.py} program is used to create and extract files from
+\PAR\ files.  It has three modes of operation: create, list and
+extract.
+
+To create \PAR\ files, type:
+\begin{verbatim}
+par c parfile_to_create.par file_or_dir1 file_or_dir2 ...
+\end{verbatim}
+
+To list the contents of \PAR\ files, type:
+\begin{verbatim}
+par t parfile_to_list.par
+\end{verbatim}
+
+To extract tho contents of \PAR\ files, you can either extract
+everything or extract only certain files.  To extract everything,
+type:
+\begin{verbatim}
+par x parfile_to_extract.par
+\end{verbatim}
+
+Otherwise,
+\begin{verbatim}
+par x parfile_to_extract.par file_or_dir1 file_or_dir2 ...
+\end{verbatim}
+
+
+\section{The \texttt{swpasswd} Utility}
+\label{swpasswd}
+The \texttt{swpasswd} utility is a simple program to maintain
+password files.  
+
+Its general form is:
+\begin{verbatim}
+swpasswd [-cb] password_file username [password]
+\end{verbatim}
+
+The two options are:
+\begin{argdesc}
+\item[-c] Create a new password file
+\item[-b] Specify the password on the command line as opposed to being
+asked for it interactively.
+\end{argdesc}
+
+
+\section{\swpython}
+\label{swpython}
+\index{\swpython}
+\swpython is basically the SkunkWeb server without the server part.  It
+loads the environment just as running \texttt{skunkweb} does, but instead
+of opening ports and forking, it (by default) drops you at a Python prompt.
+
+\begin{verbatim}
+Usage: swpython [-ih] [-c configfilelist] [-e script] [scriptname]
+
+  -c,--config-files=configfilelist   list of config files to load delimited
+                                     by colons
+  -h,--help                          show help screen
+  -i                                 if scriptname is provided, run script
+                                     and then start interactive interpreter
+  -e,--execute=script                Execute script then exit
+  -r,--redir-logs                    Redirect logs to stderr
+\end{verbatim}
+
+
+\chapter{Virtual Hosting}
+Virtual Hosting with SkunkWeb is a relatively simple matter.  Mostly
+what you do is use \texttt{Scope} statements in the configuration file
+to affect the \texttt{documentRoot} and the \texttt{compileCacheRoot}.
+Good practice dictates that you should probably change the
+\texttt{componentCacheRoot} also.  If you have \texttt{numServers} set
+to something other than zero, you should change
+\texttt{failoverComponentCacheRoot} and \texttt{failoverRetry} in the
+\texttt{Scope} statement.
+
+For example:  you want to serve both \texttt{foo.com} and {bar.com} sites.
+First you choose which is the ``default'' server, i.e. if you were to hit
+the server with just the IP address and no name, which you would get.
+
+\begin{verbatim}
+documentRoot = '/usr/local/skunk/docroot/foo.com'
+compileCacheRoot = '/usr/local/skunk/cache/foo.com'
+
+Scope(Host('bar.com',
+    documentRoot = '/usr/local/skunk/docroot/bar.com',
+    compileCacheRoot = '/usr/local/skunk/cache/bar.com',
+))    
+\end{verbatim}
+
+Or alternatively, you could set the ``global'' \texttt{documentRoot}
+and \texttt{compilecacheRoot} to something entirely different and have
+an additional \texttt{Scope} statement to handle foo.com.
+
+All of this applies regardless of whether you are using
+Apache/\texttt{mod\_skunkweb} or the \texttt{httpd} service.
+
+\chapter{Care and feeding}
+Luckily, there isn't much to do in terms of care and feeding if you've
+set up the cache reaper in cron to do it's job.  The one main thing
+that you will probably want to do is to roll the logfiles.
+
+With SkunkWeb, this is relatively simple.  First you rename the existing
+log files, then restart SkunkWeb.  That's it.
+
+\chapter{Tuning}
+There are a few things in SkunkWeb that you can tune for better
+performance.  
+
+The first is the number of processes that the SkunkWeb
+server spawns.  If you are running into a performance plateau and your
+CPU utliization is less than 100\%, try increasing the number of SkunkWeb
+servers (by changing the \texttt{numProcs} config variable).
+
+Another is the memory compile cache (activated by the
+\texttt{useCompileMemoryCache} option).  What this does is keep memory
+images of the on-disk compile cache so that it can reduce I/O and CPU
+utilization that would normally be used loading and deserializing the
+compiled forms of compiled things (template, python code, etc.).
+
+The big tuning parameter is by far:  the cache.
+
+\section{Caching}
+Many common web tasks can be sped up by caching.  Caching is activated
+by calling a component (data or regular) with the cache parameter set.
+What this does is say ``If I call this component with the same arguments
+again before the cache expires, don't actually execute the component, but
+just return what's in the cache''.  
+
+The obvious question to ask is ``when does the cached version
+expire?''  Luckily, this has a simple answer.  If you set the cache
+expiration in a component (either via the \texttt{cache} tag in an
+STML component, or by setting \texttt{__expiration} otherwise), it
+will expire according to that.  If you don't say when the cache
+expires, it defaults to the value of the
+\texttt{defaultExpiryDuration} configuration variable (which defaults
+to 30 seconds).  If you use the force or old component evaluation
+modes, it will follow those rules instead (see the STML Reference or
+the Developers Manual for details).
+
+\subsection{Caching Architecture}
+The caching architecture of SkunkWeb is fundamentally rather simple
+from the OS's point of view and luckily doesn't get that much more
+complicated when you get to the upper level details.
+
+For component output caching, which makes up the majority of the
+number of files in the cache directory, we take the output of the
+component and a hex string representation of the MD5 hash of the
+component arguments and write it to a temp file. We then rename it
+to the real file name. This is done so we don't have to worry about
+write atomicity and having the SkunkWeb load a half-written file,
+not to mention that this scheme works properly over NFS!
+
+An example: say we have a component whose path is
+\texttt{/foo/bar/baz.comp} and the argument hash is
+\texttt{0123456789ABCDEFFEDCBA9876543210}. The temp file will be
+written into a file named
+\texttt{/foo/bar/baz.comp/01/23/}\emph{hostname}\texttt{\_}\emph{pid}\texttt{.}\emph{countervalue}.tmp
+and subsequently renamed (when writing is complete) to
+\texttt{/foo/bar/baz.comp/01/23/0123456789ABCDEFFEDCBA9876543210.cache}
+in the appropriate component cache directory. There is another file
+written for component output with the same name as the cache file, but
+replacing \texttt{.cache} with \texttt{.key} which contains a somewhat
+textual form of the component arguments suitable for use when doing
+cache clears \doref{clearCache}.
+
+For compiled templates and compiled python code, there is no hash (and
+thus, no \texttt{.key} file), so the cache filename is
+\texttt{path\_to/templatenamec} and the rest of the process is the
+same.
+
+\subsection{Sharing the Cache}
+Often, it is very desirable to share the component cache across
+application servers for performance, managability and synchronicity
+issues. 
+
+The location of the component cache is a separate configuration
+variable (the \texttt{componentCacheRoot} configuration variable). The
+component cache can be segmented easily among multiple fileservers and
+the SkunkWeb will now fail over to a local cache if the file server
+goes away unexpectedly.
+   
+The component cache segmentation is done as follows. If the \texttt{numServers}
+configuration variable is set to something other than zero, a number
+of options are now effective. At the top of the component cache root
+(CCR), there will be N directories, where N is the number of servers,
+numbered 0..N-1. You can either mount your remote volumes there or
+have symbolic links to where they are actually mounted, or any number
+of similar options.
+   
+When SkunkWeb goes to operate on a cached form of component output, it
+takes the last 16 bits of the MD5 hash that it computed, mods it by
+the number of file servers and operates on the cache entry under the
+directory numbered by the result of the mod operation. If an operation
+fails when operating on the component cache (other than the usual
+errors of files existing already or files not existing), SkunkWeb will
+fail over that servers portion of the component cache to the
+(presumably) local failover cache (specified by the
+\texttt{failoverComponentCacheRoot} configuration variable) for
+\texttt{failoverRetry} seconds. After \texttt{failoverRetry} seconds,
+it will again attempt to go back to using that servers' directory
+under the CCR.
+   
+   NOTE:The \texttt{failoverComponentCacheRoot} and
+   \texttt{failoverRetry} options are ineffective if
+   \texttt{numServers} is zero.
+
+To make this work over NFS, the filesystems \emph{must} be soft mounted!
+
+\subsection{\texttt{clearCache}}
+\label{clearCache}
+One word: don't use \texttt{clearCache} if you can avoid it, or at
+least don't come complaining to me that it's slow.  Because of the way
+\texttt{clearCache} is implemented, what it has to do is examine
+\emph{every} cached version of a component to see if it matches the
+arguments you passed (unless you set \texttt{matchExact}, in which
+case, don't worry, you won't have any problems), which if you have a
+large number of cached versions of a component can be exceedingly
+slow, in some cases I've seen, exceeding the \texttt{documentTimeout}.
+
+If anyone can provide a version of \texttt{clearCache} that is fast
+and doesn't overly affect normal usage of the cache (read as: read
+operations), I would be greatly appreciative.
+
+\subsection{Filesystem Tuning}
+Filesystem performance can play a dramatic role in the performance of
+the SkunkWeb server.  If filesystem performance is slow, cache operations
+will be slow also.
+
+On Linux, the default filesystem settings seem to be just fine for the
+ext2 filesystem, but on other operating systems, the situation is a
+bit different.
+
+If you are using a UFS filesystem (which is typical on BSD and Solaris),
+you want to set the \texttt{async} and \texttt{noatime} options or cache
+write operations will be \emph{really} slow (70ms vs $<$.01ms).  At first,
+some may be uneasy about setting the \texttt{async} flag on a filesystem
+being wary of system crashes and filesystem corruption, but worry not.
+Because this is a \emph{cache}, running \texttt{mkfs} at boot time on the
+cache filesystem should be an entirely satisfactory solution.  Given the
+system will be a little sluggish at first, but as the cache fills up, speed
+will improve.  Alternatively, if you are on Solaris (at least), you can 
+turn on the logging option and that helps (cache writes go to about 20ms),
+but not quite as good as full \texttt{async} mode.
+
+Another option is to allocate a \emph{whole} lot of swap and put the
+cache in a \texttt{tempfs} filesystem.
+ 
+\subsection{Flushing the Cache}
+Flushing the cache is usually a pretty simple matter.  What you do is
+make a directory in the cache that won't be stepped on and move the
+other directories in the cache into the newly created directory.  Then
+remove the new directory (which may take a bit of time depending on
+the size of the cache).
+
+\section{apache}
+%%%FIXME
+    buffering for slow clients
+    configurability
+
+
+\subsection{What Happens}
+\begin{enumerate}
+\item The client connects to the Apache web server and makes an HTTP
+request. Apache receives the request and prepares to handle it; that
+is, it begins to determine how it will send back a response to the
+request.
+
+\item Apache goes through several request handling phases which
+handle different parts of the response. When configured for use with
+SkunkWeb, Apache will do nothing for most of these request handling
+phases.  When Apache reaches the main request handling phase, it
+uses a extension module from the Skunk software to handle the request.
+This extension module is called \texttt{mod\_skunkweb}.  This means
+that the request will be passed back to SkunkWeb, and that all the
+needed information about the request will be passed to SkunkWeb in the
+same general way that Apache would pass request information to CGI
+programs.
+
+\item The \texttt{mod\_skunkweb} module then handles the request. The
+first thing it does is to take all of the environment variables
+available, including the variables set by Apache to include request
+information. (For instance, the environment variable REMOTE\_ADDR will
+contain the IP address of the client making the request.  There are
+many other environment variables that contain request information, and
+\texttt{mod\_skunkweb} gathers them all together.  At this point it
+also gathers the HTTP request body also.
+
+\item \texttt{mod\_skunkweb} then encodes all of the environment
+variables and request body into a special format that the SkunkWeb
+server will understand (see the Developers Manual for details).
+
+\item \texttt{mod\_skunkweb} then opens a connection to the SkunkWeb
+server. The Apache configuration will tell \texttt{mod\_skunkweb} on
+which host and on which port number the SkunkWeb server is
+running. The typical configuration has the SkunkWeb listening on 
+the localhost port 9888.
+
+\item If the connection succeeds, \texttt{mod\_skunkweb} then sends
+the encoded environment variables over the connection, and waits for
+SkunkWeb to return a response that can be sent back to the Web
+client. If the connection fails, \texttt{mod\_skunkweb} will retry the
+connection a few times (utilizing the socket addresses listed in the
+\texttt{SkunkWebFailoverHosts} configuration variable). If the retries
+also fail, \texttt{mod\_skunkweb} will return a customizable error
+page, with a 500 Server Error status, as the response to the client.
+
+\item SkunkWeb, like Apache version 1, runs as a pool of
+processes. The SkunkWeb parent process does not listen for
+connections from \texttt{mod\_skunkweb}; its only job is to create
+child processes that will do all the listening and request
+handling. (The amount of child processes it creates, as well as other
+important things, are configurable in SkunkWeb's configuration files.)
+Thus when we say that ``SkunkWeb is running'', we mean that the SkunkWeb
+parent process is running and has created one or more child processes
+that are listening for connections from \texttt{mod\_skunkweb}.
+
+\item An SkunkWeb child process, then, accepts the connection from
+\texttt{mod\_skunkweb} and receives the encoded environment variables
+containing all of the request information. It then decodes the
+variables and checks that they are OK.
+
+\item SkunkWeb then builds a \texttt{CONNECTION} object. It fills the
+\texttt{CONNECTION} object with request information from the environment
+variables, including an entire copy of the environment variables.  The
+\texttt{CONNECTION} object also provides data and operations for the subsequent
+web application to create a well-formed HTTP response to be sent back
+to the client.
+
+\item SkunkWeb then does request pre-processing. Depending on its
+configuration, SkunkWeb can run one or more customized functions to do
+common things with the request, such as authentication, rewriting of
+URLs, and other modifications of information in the
+\texttt{CONNECTION} object.
+
+\item SkunkWeb then looks at the URI of the document requested by the
+client, for example \texttt{/index.html}. SkunkWeb tries to find this
+document in its \texttt{documentRoot}, that is, its document
+filesystem. If SkunkWeb cannot find the document, it generates a
+customizable 404 Not Found response, returns it to
+\texttt{mod\_skunkweb}, and closes the connection.  
+
+\item If SkunkWeb does find the requested document, SkunkWeb then
+looks at the MIME type of the document to determine if the document
+is static, and should be sent as-is with no modification. If the
+document is static, SkunkWeb reads the contents of the document file,
+makes an HTTP response out of it, and sends it back to
+\texttt{mod\_skunkweb}.
+
+\item If the requested document is not static, it is considered
+dynamic, which means that the document contains programming code
+that should be executed to generate the HTTP response. There are two
+kinds of dynamic programming languages supported: the Python
+programming language, and a tag-based programming language called
+STML, or Skunk Template Markup Language. As a rule, files ending in
+.py can contain Python code, and files ending in .html, .txt, and
+other common text formats can contain STML tag code.
+
+\item SkunkWeb then runs the dynamic documents contents through a
+compiler, which will turn the document and its programmming
+instructions into executable code. The resulting code is executable
+Python code; SkunkWeb is written in the Python language. SkunkWeb
+keeps a cache of compiled Python code for each dynamic document so
+that it does not have to compile the same documents repeatedly.
+
+\item Now that SkunkWeb has executable code for the dynamic document,
+it sets up a special execution environment for the code. It includes
+the \texttt{CONNECTION} object, helpful utility functions and modules, and
+special objects that monitor the executable code and capture the
+response output that the code generates. SkunkWeb then executes the
+code.
+
+\item Dynamic documents often make use of a powerful feature in
+SkunkWeb: they can use other special dynamic documents to help
+generate the needed output. These special documents are called
+components: they cannot be requested by \texttt{mod\_skunkweb}, but
+they can be used as building blocks by dynamic documents and
+assembled together on the fly. Components can be programmed in
+straight Python or as text with STML tag code embedded in the
+text. Components also can accept arguments from the dynamic
+documents, just as a function can receive arguments from the code that
+calls the function.
+
+\item SkunkWeb keeps track of all the components that a dynamic
+document tries to use. If an error occurs in any code, or if a
+component is asked for by a dynamic document but does not exist,
+SkunkWeb will catch the error, generate a customizable error page,
+and return a 500 Server Error response to \texttt{mod\_skunkweb}.
+
+\item SkunkWeb also offers a powerful feature for components: caching
+of component output. Components may indicate in their program code
+whether their output should be cached by SkunkWeb, and for how long.
+When a component whose output is cached is called, SkunkWeb does not
+even bother executing the component's code; SkunkWeb simply retrieves
+the component's output from the cache and proceeds. The component
+output cache is one of SkunkWeb's most important features, and it also
+has the most impact of server administration and performance.
+
+\item Once all of the dynamic document's code has executed (as well as
+all of the components the document used) and no errors have occurred,
+SkunkWeb gathers all of the response output generated by the
+document's code, puts it in the \texttt{CONNECTION} object, and
+prepares to send the response back to \texttt{mod\_skunkweb}.
+
+\item SkunkWeb examines the \texttt{CONNECTION} object, extracting the
+needed information and creating a well-formed HTTP response, with
+headers and everything. SkunkWeb then sends the HTTP response over the
+connection to \texttt{mod\_skunkweb}, and then closes the connection.
+
+\item \texttt{mod\_skunkweb} receives the HTTP response, tells Apache
+about the response, and finishes its job.
+
+\item Apache, which now has the response generated by SkunkWeb,
+performs any post-processing on the response that it feels is
+necessary, and returns the response to the client that requested it.
+\end{enumerate}
+
+\section{Squid}
+%%%FIXME
+  use of Squid as accelerator cache 
+    buffering for slow clients
+
+
+%%%standard footer
+\cleardoublepage %not sure if this will always work
+\printindex
+\end{document}
