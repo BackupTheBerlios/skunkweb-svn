@@ -15,8 +15,6 @@ say, "I want X number of bytes in N seconds or bust."
 
 """
 
-import socket
-
 class ShortReadError(Exception): pass
 class ShortWriteError(Exception): pass
 
