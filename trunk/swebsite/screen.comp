@@ -1,6 +1,7 @@
 <HTML>
 <HEAD>
 <:default subj "":>
+<link rel="SHORTCUT ICON" href="/favicon.ico">
 <:if `subj`:>
 <TITLE>SkunkWEB | <:val `subj`:></TITLE>
 <:else:>
@@ -103,6 +104,19 @@ function preloadImages() {
 						<tr>
 							<td><a href="who.html" onmouseover="changeImages('selecto_33', 'images/selecto_33-selecto_37_over.gif', 'selecto_37', 'images/selecto_37-over.gif'); return true;" onmouseout="changeImages('selecto_33', 'images/selecto_33.gif', 'selecto_37', 'images/selecto_37.gif'); return true;"><img name="selecto_37" src="images/selecto_37.gif" width=100 height=27 border=0 alt="who"></a></td>
 						</tr>
+<tr>
+<td> 
+Search (Google):<BR>
+<form action="http://www.google.com/search">
+<input type=text name=q size=10>
+<input type=hidden name=domains value="skunkweb.sourceforge.net">
+<input type=hidden name=hl value=en>
+<input type=hidden name=sitesearch value="skunkweb.sourceforge.net">
+<input type="submit" name=btnG value="Search">
+</form>
+</td>
+</tr>
+
 					</table>
 					<table border="0" cellpadding="0" cellspacing="0" width="100">
 						<tr>
@@ -115,11 +129,13 @@ function preloadImages() {
 							<td><A href="http://sourceforge.net"> <IMG src="http://sourceforge.net/sflogo.php?group_id=32756" width="88" height="31" border="0" alt="many thanks to SourceForge"></A></td>
 							<td><img src="styles/pixie.gif" width="6" height="6" border="0" alt="|"></td>
 						</tr>
+
 						<tr>
 							<td><img src="styles/pixie.gif" width="6" height="6" border="0" alt="+"></td>
 							<td><img src="styles/pixie.gif" width="11" height="6" border="0" alt="--------------------------"></td>
 							<td><img src="styles/pixie.gif" width="6" height="6" border="0" alt="+"></td>
 						</tr>
+
 					</table>
 				</td>
 				<td bgcolor="white" valign="top">
@@ -128,6 +144,7 @@ function preloadImages() {
 							<td width="4%"><img src="styles/pixie.gif" width="28" height="1" border="0"></td>
 							<td><img src="styles/pixie.gif" width="350" height="1" border="0"></td>
 						</tr>
+
 						<tr>
 							<td width="4%"><img src="styles/pixie.gif" width="28" height="1" border="0"></td>
 							<td>
@@ -140,6 +157,7 @@ function preloadImages() {
 					</table>
 				</td>
 			</tr>
+
 			<tr>
 				<td colspan="2" bgcolor="WHITE" align="center"><img src="images/smell_white.gif" width="267" height="51" border="0" alt="(smell the power!)"><br><br></td>
 			</tr>
