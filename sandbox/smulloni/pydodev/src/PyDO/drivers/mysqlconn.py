@@ -5,10 +5,10 @@ import MySQLdb
 
 class MysqlDBI(DBIBase):
     def _connect(self):
-        self.conn=MySQLdb.connect(**self.connectArgs)
+        return MySQLdb.connect(**self.connectArgs)
 
     def getAutoIncrement(self, name):
         try:
-            return self.conn.insert_id
+            return self.conn.insert_id()
         except AttributeError:
             raise PyDOError, "could not get insert id!"

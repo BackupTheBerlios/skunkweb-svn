@@ -7,17 +7,16 @@ import sys
 sys.path.append('../src')
 from PyDO import *
 
-POSTGRES_DB="pydotest"
 
 class base(PyDO):
-    connectionAlias="postgrestest"
+    connectionAlias="mysqltest"
 
 commit=base.commit
 rollback=base.rollback
 
 class PyDOGroup(base):
     table="pydogroup"
-    sequenced={'id' : 'pydogroup_id_seq'}
+    auto_increment={'id' : 1}
     unique=['id', 'groupname']
     fields=(('id', 'int'),
             ('groupname', 'text'))
@@ -39,7 +38,7 @@ class user_group(base):
 class PyDOUser(base):
 
     table='pydouser'
-    sequenced={'id' : 'pydouser_id_seq'}
+    auto_increment={'id' : 1}
     unique=['id']
     fields=('id',
             'firstname',
@@ -59,7 +58,7 @@ class PyDOUser(base):
 
 class Article(base):
     table="article"
-    sequenced={'id': 'article_id_seq'}
+    auto_increment={'id': 1}
     unique=['id']
     fields=(('id', 'int'),
             ('title', 'text'),
@@ -72,9 +71,9 @@ logging.basicConfig()
 setLogLevel(logging.DEBUG)
 
 def _initDB():
-    script=os.path.join(os.path.dirname(__file__), 'postgres_init.sh')
+    script=os.path.join(os.path.dirname(__file__), 'mysql_init.sh')
     p=subprocess.Popen(['/bin/bash', script], stdout=subprocess.PIPE)
-    p.communicate()
+    p.communicate()    
 
 
 WORDS=('ingot',
@@ -150,7 +149,11 @@ def _init_data():
     commit()
 
 
-class PostgresTest(unittest.TestCase):
+class MysqlTest(unittest.TestCase):
+
+    def setUp(self):
+        _initDB()
+        _init_data()
 
     def test_getSome(self):
         a=Article.getSome(order=['creator', 'id'])
@@ -164,24 +167,21 @@ class PostgresTest(unittest.TestCase):
         for article in Article.getSome():
             article.delete()
         self.assertEqual(len(Article.getSome()), 0)
-        rollback()
+
 
     def test_update(self):
         for a in Article.getSome(creator=1):
             a.title="Blah Blah"
         self.assertEqual(len(Article.getSome(title='Blah Blah')),
                          len(Article.getSome(creator=1)))
-        rollback()
 
     def test_join(self):
         groups=PyDOGroup.getSome()
         for u in PyDOUser.getSome():
             u.getGroups()
 
-initAlias('postgrestest', 'psycopg', "dbname=pydotest user=pydotest", verbose=True)        
+initAlias('mysqltest', 'mysql', dict(db='pydotest', user='pydotest', host='localhost', passwd='pydotest'), verbose=True)        
 
 if __name__=='__main__':
-    _initDB()
-    _init_data()
     unittest.main()
                         
