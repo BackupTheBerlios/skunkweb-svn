@@ -332,9 +332,9 @@ class PyDO(dict):
         # this will have to delegate to the driver,
         # to deal with mysql....
         if limit:
-            query.append(' LIMIT %d' % limit)
+            query.append('LIMIT %d' % limit)
         if offset:
-            query.append(' OFFSET %d' % offset)
+            query.append('OFFSET %d' % offset)
         query=' '.join(query)
         conn = cls.getDBI()
         ## XXXX
