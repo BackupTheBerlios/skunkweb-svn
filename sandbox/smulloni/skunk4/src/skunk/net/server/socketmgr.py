@@ -29,7 +29,9 @@ class SocketManager(ProcessManager):
                  pollPeriod=5,
                  logger=None,
                  foreground=False,
-                 maxRequests=None):
+                 maxRequests=None,
+                 run_user=None,
+                 run_group=None):
         self.maxRequests = maxRequests
         self.socketMap = {}
         ProcessManager.__init__(self,
@@ -38,7 +40,9 @@ class SocketManager(ProcessManager):
                                 maxKillTime=maxKillTime,
                                 pollPeriod=pollPeriod,
                                 logger=logger,
-                                foreground=foreground)
+                                foreground=foreground,
+                                run_user=run_user,
+                                run_group=run_group)
 
     def preHandle(self):
         pass
@@ -50,11 +54,12 @@ class SocketManager(ProcessManager):
         connectionCount = 0
         info=self.info
         exception=self.exception
-
+        
         # this shouldn't change in the child process!
         socks=self.socketMap.keys()
         lensocks=len(socks)
         if not lensocks:
+            info("returning due to have no sockets!")
             return
         # no need to select if there is only one, just block on accept
         doselect=lensocks>1
@@ -134,12 +139,17 @@ class SocketManager(ProcessManager):
         try:
             self._run()
         except:
-            self.exception("BUG!")
+            self.exception("bug in run()!")
             raise
         
     def reload(self):
         super(SocketManager, self).reload()
-        self._reset()
+        # problem here -- in this version, where configuration is
+        # doesn't yet play a role, reset() doesn't work, because
+        # the server isn't being created during the bootloading
+        # process and its connections aren't being added.
+
+        #self._reset()
 
     def retrying_bind(self, sock, addr, retries):
         # mayhap it's not quite dead, so retry a few times
@@ -154,11 +164,25 @@ class SocketManager(ProcessManager):
                 time.sleep(1)
             else:
                 break
-        
+
     def addConnection(self, addrspec, handler_func):
+        euid=None
+        if hasattr(os, 'geteuid') and os.getuid() != os.geteuid():
+            # uid to switch back to
+            euid = os.geteuid() 
+            if hasattr(os, 'seteuid'):
+                os.seteuid(0)
+        try:
+            self._addConnection(addrspec, handler_func)
+        finally:
+            # make sure we go back to the initial user
+            if euid is not None and hasattr(os, 'seteuid'):
+                os.seteuid(euid)
+        
+        
+    def _addConnection(self, addrspec, handler_func):
         if addrspec[0] == 'TCP':
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            #s.setblocking(0)
             s.setsockopt (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             # Make sure the socket will be closed on exec
             fcntl.fcntl (s.fileno(), fcntl.F_SETFD, 1)
@@ -183,7 +207,6 @@ class SocketManager(ProcessManager):
                           "socket is to be created: %s" % addrspec[1]
                     
             s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            #s.setblocking(0)
             # Make sure the socket will be closed on exec
             fcntl.fcntl(s.fileno(), fcntl.F_SETFD, 1)
             self.retrying_bind(s, addrspec[1], 5)

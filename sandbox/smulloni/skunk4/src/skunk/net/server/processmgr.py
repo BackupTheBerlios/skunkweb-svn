@@ -10,9 +10,6 @@ If you want to write a multi-process, static number of kids (until
 reload anyway) server, this is for you.
 
 TODO:
-   * numProcs=1 is broken (at least for socket manager, which expects
-     a pid file at the moment, for file locking.  I could use a temporary
-     file, I suppose.)
    * review reload
    * optionally permit grow/shrink, IPC, so that this is a general
      purpose pre-forking manager (??)
@@ -45,7 +42,9 @@ class ProcessManager(object):
                  maxKillTime=5,
                  pollPeriod=5,
                  logger=None,
-                 foreground=False):
+                 foreground=False,
+                 run_user=None,
+                 run_group=None):
         
         self.numProcs=numProcs
         self.pidFile=pidFile
@@ -55,6 +54,8 @@ class ProcessManager(object):
         if logger is None:
             logger=logging.getLogger('skunk.net.server')
         self._logger=logger
+        self.run_user=run_user
+        self.run_group=run_group
 
         self._modules = None
         self._children = {}
@@ -128,12 +129,26 @@ class ProcessManager(object):
         """
         raise NotImplementedError, 'run method not overridden'
 
+    def _run_as(self):
+        if self.run_group:
+            gid=grp.getgrnam(self.run_group)[2]
+            os.setgid(gid)
+        if self.run_user:
+            uid=pwd.getpwnam(self.run_user)[2]
+            euid=os.getuid()
+            try:
+                os.seteuid(euid)
+            except AttributeError:
+                pass
+            os.setuid(uid)
+        self.run()
+
     def mainloop(self):
         """the method used to actually fire off the server"""
         self.init()
         if self.numProcs == 1:
             self.info('running in non-daemon mode with single process')
-            self.run()
+            self._run_as()
             sys.exit()
 
         # suppress going to background (for running under daemontools)
@@ -221,7 +236,7 @@ class ProcessManager(object):
                 signal.signal(signal.SIGCHLD, signal.SIG_DFL)
                 signal.signal(signal.SIGHUP, signal.SIG_DFL)
                 signal.signal(signal.SIGTERM, signal.SIG_DFL)
-                self.run()
+                self._run_as()
                 sys.exit()
             self._children[kidPid] = 1
 

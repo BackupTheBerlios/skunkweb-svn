@@ -1,0 +1,6 @@
+Reload is broken for socketmgr, because the connection list is lost.
+This can be made a constructor argument, but generally configuration
+needs to be integrated now so that it can be re-read on HUP.  Then
+reset() can really reset, rather than just clearing connections out
+and leaving some other module with the job of fixing them up again.
+
