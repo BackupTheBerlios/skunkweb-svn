@@ -5,7 +5,7 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: __init__.py,v 1.4 2003/05/01 20:45:54 drew_csillag Exp $
+# $Id: __init__.py,v 1.5 2003/07/07 21:09:37 smulloni Exp $
 # Time-stamp: <01/05/04 13:07:01 smulloni>
 ########################################################################
 
@@ -30,6 +30,9 @@ def __initTags():
     import HTMLTags
     for i in ['UrlTag', 'ImageTag', 'FormTag', 'HiddenTag', 'RedirectTag']:
         tagRegistry.addTag(getattr(HTMLTags, i)())
+    import SafeSpoolTag
+    tagRegistry.removeTag('spool')
+    tagRegistry.addTag(SafeSpoolTag.SafeSpoolTag())
     
 def _formatException(exc_text, sessionDict):
     return exc_text
@@ -58,6 +61,9 @@ SkunkWeb.LogObj.LOG("templating service loaded")
 
 ########################################################################
 # $Log: __init__.py,v $
+# Revision 1.5  2003/07/07 21:09:37  smulloni
+# preliminary
+#
 # Revision 1.4  2003/05/01 20:45:54  drew_csillag
 # Changed license text
 #
