@@ -1,15 +1,14 @@
 Needed now:
 
   * mysql needs type wrapper converters, test improvements
-  * docs -- discuss type wrappers, arrayfetch (when it is ready).
+  * docs -- discuss type wrappers, joins and arrayfetch (when it is ready).
   * tests: many more.  creating PyDO classes within the test might
        be a good idea in many cases.
 
 2nd priority:
 
-  * array fetch (preliminary version done, needs some way of
-    specifying joins other than literal sql, and dealing with all-null
-    objects).
+  * fix array fetch and add it to joins module.
+  * make joins work with self-joins and nested joins.
 
 Other databases to support (eventually):
   * firebird
