@@ -1,0 +1,66 @@
+<:spool contents:> SkunkWeb, invented by Drew Csillag and now also
+hacked on by Jacob Smullyan is an extensible, scalable and easy to use
+application server written in Python.
+
+<H2>The Pitch</h2>
+
+Uses Python
+<ul>
+<li>	  Python is easy to learn for both new programmers and experts alike
+</li><li>	  senior programmer types like it too (vs. say tcl)
+</li><li>	  extensible with C/C++ for speed and/or linkage to C/C++ libraries
+          via static *or* dynamic linking
+</li></ul>
+Extensible
+<ul>
+<li>	  Relatively simple extension API
+</li><li>	  can easily handle authentication, url building/parsing and custom
+	  tags
+</li></ul>
+Encourages component based design
+<ul>
+<li>	  more than just "include"
+</li><li>	  not just another ASP/JSP like thing
+</li><li>	  a powerful templating language 
+</li><li>	  encouraged by caching options (see below)
+</li><li>	  component output can be either HTML or Python objects
+</li><li>	  can write components in either STML or Python
+</li><li>	  can also call components on other skunk servers
+</li></ul>
+	
+Message Catalogs
+<ul>
+<li>	 makes multi-lingual sites much easier
+</li><li>	 support variable substitution in messages
+<li>
+</ul>
+
+Speed
+<ul>
+<li>	  templates are compiled to Python bytecode
+</li><li>	  extensive caching (to disk and optionally memory) of:
+<ul>
+<li>		  compiled forms of templates
+</li><li>		  digested message catalogs
+</li><li>		  output of components
+</li><li>		  python modules and python components
+<li></ul>
+</li><li>	  cache *is* sharable between machines if using a
+	  shared filesystem! (can be more than one shared filesystem
+          for speed, redundancy and flexibility)
+</li><li>	  caching is flexible and as finite as your disk space
+</li><li>	  components can be rendered after the response is sent if 
+	  a slightly stale version is available --- resulting in
+	  better response times
+</ul>
+Documentation
+<ul>
+<li>	 extensive documentation available in HTML, PostScript, PDF & text
+          (ok, not yet, but getting there fast)
+</li><li>	  have automatic documentation tools to generate documentation for 
+	  STML templates and python modules (python components coming soon)
+	  as well as tools for writing manuals.
+</li></ul>
+
+<:/spool:>
+<:component screen.comp mainframe=`contents`:>

@@ -1,0 +1,47 @@
+<HTML>
+<HEAD>
+<TITLE>SkunkWeb</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="white">
+
+<TABLE align=left BGCOLOR="#008800" width=100% cellspacing="0" cellpadding="0" border=0 cols=*,100,*>
+<TR>
+    <TD colSPAN=2 bgcolor="#008800">
+        <A HREF="/index.html"><IMG SRC=skunk.jpg height=60 
+                              width=400 ALT="SkunkWeb   Smell the Power!" 
+                              BORDER=0></A>
+    </TD>
+</TR>
+<TR>
+    <TD width=100 bgcolor="#008800" valign=top><:component navbar.comp:></TD> 
+    <TD bgcolor=white valign=top>
+        <TABLE cellspacing=0 cellpadding=0 border=0>
+            <TR>
+            	<TD COLSPAN=2>
+            	    <IMG height=16 width=15 alt="" SRC="maincurve.jpg" border=0>
+            	</TD>
+            <TR>
+            <TR>
+            	<TD>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+            	<TD>
+<:val `mainframe`:>
+<BR><font color=white>---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- </font></TD>
+            </TR>
+        </TABLE>
+    </TD>
+</TR>
+<TR>
+<TD COLSPAN=2 BGCOLOR=WHITE>
+<center>
+Hosted at <A href="http://sourceforge.net"> <IMG src="http://sourceforge.net/sflogo.php?group_id=32756" width="88" height="31" border="0" alt="SourceForge Logo"></A>
+</center>
+</TD>
+</TR>
+
+</TABLE>
+<P>
+<HR>
+
+</BODY>
+</HTML>

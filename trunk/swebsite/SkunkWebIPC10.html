@@ -1,0 +1,654 @@
+<:spool contents:>
+<H1 ALIGN="CENTER">The SkunkWeb<A NAME="tex2html2"
+  HREF="#foot91"><SUP>2</SUP></A>  Web Application Server</H1>
+<P ALIGN="CENTER"><STRONG>Drew Csillag<A NAME="tex2html1"
+  HREF="#foot90"><SUP>1</SUP></A></STRONG></P>
+
+<P>
+
+<H1><A NAME="SECTION00010000000000000000">
+Abstract</A>
+</H1>
+This paper describes SkunkWeb, a web application server tool box
+written in Python[<A
+ HREF="SkunkWebIPC10.html#python">12</A>].  In essence, it's merely a
+multi-process socket server.  However when all glued together,
+SkunkWeb forms a robust, scalable, extendible and easy to use
+application server.  The caching abilities make it an ideal
+application server for high volume websites as well as small websites
+on more meager hardware.
+
+<P>
+
+<H1><A NAME="SECTION00020000000000000000">
+Why We Did It</A>
+</H1>
+Before I started writing SkunkWeb, I obviously examined the
+available open and non-open source application servers.  I was
+generally dissatisfied, as the templating languages
+were either too constraining for the experts in the shop, too
+complicated for the non-experts, or the overall performance
+characteristics of the server were unacceptable.
+
+<P>
+Being a large web shop, we needed two major things from a web
+application server: a good templating language, and true enterprise
+abilities (vertical as well as horizontal scalability, reliability
+and robustness).
+
+<P>
+Since we couldn't find what we needed, we did what every other web
+shop on the planet would do... we did it ourselves.
+
+<P>
+
+<H1><A NAME="SECTION00030000000000000000">
+Philosophy</A>
+</H1>
+The main Skunk philosophies are:
+<DL>
+<DT><STRONG>loose coupling</STRONG></DT>
+<DD>We should never force anyone (specifically
+ourselves) to take it all, but should allow people to take only the
+pieces they need to get their jobs done.
+</DD>
+<DT><STRONG>simplicity</STRONG></DT>
+<DD>Unnecessary complexity leads down the road to
+insanity.  Do the simple thing unless you can truly justify a need to
+the contrary.
+</DD>
+</DL>
+
+<P>
+
+<H1><A NAME="SECTION00040000000000000000">
+Goals</A>
+</H1>
+Being in the enterprise class, we needed four main things:
+
+<OL>
+<LI>speed
+</LI>
+<LI>speed
+</LI>
+<LI>speed
+</LI>
+<LI>usability
+</LI>
+</OL>
+
+<P>
+
+<H1><A NAME="SECTION00050000000000000000">
+Process Model</A>
+</H1>
+Unlike the bulk of Python application servers (e.g. [<A
+ HREF="SkunkWebIPC10.html#zope">14</A>], [<A
+ HREF="SkunkWebIPC10.html#webware">13</A>] and
+[<A
+ HREF="SkunkWebIPC10.html#pywx">11</A>]), we fork processes, not threads<A NAME="tex2html3"
+  HREF="#foot92"><SUP>3</SUP></A>.
+Application servers normally tend to be I/O bound, but if we can (and
+we can) reduce the I/O constraints (by caching and pushing client I/O
+into Apache), we'll be CPU bound (and we are).  Being CPU bound,
+Python's threading model kills us since unless we write a pile of C
+code (which we wanted to avoid as much as possible) the Python
+interpreter will really only use one processor, not all of them due to
+Python's global interpreter lock<A NAME="tex2html4"
+  HREF="#foot93"><SUP>4</SUP></A>.  By forking, SkunkWeb will utilize all processors it can get
+it's hands on.
+
+<P>
+Forking processes instead of threads makes a number of things simpler.
+Reliability is simplified because if a child dies (due to core dump or
+other abnormal exit), the parent will just spawn another.  If it leaks
+resources (memory, file descriptors, etc.) there is a maximum request
+count so that the child will eventually commit suicide and release the
+resources.  The kids can pretty much do whatever they
+want<A NAME="tex2html5"
+  HREF="#foot22"><SUP>5</SUP></A> and the parent is
+the only thing able to crash the whole server.  Since the parent is
+easy to take care of (it's mainloop is simple) the server will rarely
+go down, if ever<A NAME="tex2html6"
+  HREF="#foot23"><SUP>6</SUP></A>.
+
+<P>
+Fortunately or not, being a forking server means it doesn't run on
+Windoze (AFAIK).  
+
+<P>
+The main things threading allows is general process resource pooling.
+Specifically cache and database connections, which can be had without
+threading.  SkunkWeb caches many things to disk. In any decent
+read-as-Unix-like operating system, the OS disk cache should keep
+the real I/O to a minimum, effectively caching in
+memory<A NAME="tex2html7"
+  HREF="#foot24"><SUP>7</SUP></A>.  The OS will also handle any locking issues
+involved<A NAME="tex2html8"
+  HREF="#foot94"><SUP>8</SUP></A> normally requiring mutexes in a
+threaded environment.
+
+<P>
+The database connection pooling can be mitigated in a few ways.
+SkunkWeb can cache the database connection on a per process basis
+which is often enough.  In the event you cannot afford one connection
+per process, you can use remote components to a dedicated ``database
+server'' servicing all of the database queries via remote component
+calls.  It's a bit more work to do it that way, but it's likely to pay
+off.  As it turns out, since you can cache database results using data
+components (see section <A HREF="SkunkWebIPC10.html#components">9</A>) in the ``database server'',
+the database issue becomes less of an issue you may have originally
+thought it would.  More on remote components later.
+
+<P>
+
+<H1><A NAME="SECTION00060000000000000000">
+Communication</A>
+</H1>
+SkunkWeb can use either TCP or UNIX domain sockets for the
+Apache[<A
+ HREF="SkunkWebIPC10.html#apache">1</A>] to SkunkWeb communication.  If you are going to run
+Apache on the same host that SkunkWeb will run, UNIX domain
+sockets have a number of advantages:
+
+<OL>
+<LI>They're faster than TCP connections.
+</LI>
+<LI>They're not accessible from outside the box, making security
+simpler.
+</LI>
+<LI>You don't have to worry about exhausting the ephemeral TCP port
+range on your box.
+</LI>
+</OL>
+Given that (3) only happens in the largest of installations, (1) and
+(2) are good enough reasons for using UNIX sockets.  If you are going
+to run Apache on other boxes, TCP is really the only choice, but
+<TT>mod_skunkweb</TT> can be told to fail over to another host if
+SkunkWeb becomes unavailable for some reason.  This rarely happens, if
+ever.  Really.  Except when the whole machine goes away.
+
+<P>
+We presume Apache is the web server front-ending SkunkWeb, but as the
+Skunk philosophy would indicate, anything speaking the SkunkWeb
+protocol (it's quite easy) can be used as a front end.  In fact,
+SkunkWeb includes an HTTP service (see section <A HREF="SkunkWebIPC10.html#services">10</A>) that
+can be used in lieu of Apache when you don't need the speed or
+configurability an Apache installation provides.
+
+<P>
+
+<H1><A NAME="SECTION00070000000000000000">
+Caching, Caching, Caching</A>
+</H1>
+A relatively easy way to speed up an application server is by
+caching  In SkunkWeb, just about everything is
+cached.  We cache the compiled forms of STML templates, python code
+and message catalogs to both memory and disk, and we cache the output
+of components to disk.
+
+<P>
+The component output cache can get quite large since the size of the
+component output cache is proportional to the cross product of the
+number of cachable components and the number of different argument
+sets passed to them. One would ideally like to share the cache between
+application servers serving the same content.  It is a relatively
+simple matter to put it on one or a number of NFS (or any other shared
+filesystem) and have SkunkWeb take care of it, and do the right thing
+if one of the NFS servers die.
+
+<P>
+
+<H1><A NAME="SECTION00080000000000000000">
+Templating Language</A>
+</H1>
+Any serious web application server needs a templating
+language<A NAME="tex2html9"
+  HREF="#foot35"><SUP>9</SUP></A>.
+After shopping around a bit, I found something all of them had in
+common was... they stank.  All of the ones I saw were either some
+variant of ASP[<A
+ HREF="SkunkWebIPC10.html#asp">2</A>] (e.g. JSP[<A
+ HREF="SkunkWebIPC10.html#jsp">5</A>], PSP[<A
+ HREF="SkunkWebIPC10.html#psp">10</A>], etc.), or
+an emasculated tag-based language (e.g. DTML[<A
+ HREF="SkunkWebIPC10.html#dtml">8</A>],
+CFML[<A
+ HREF="SkunkWebIPC10.html#cfml">3</A>], etc.).  The ASP variants have the problem of
+nonprogrammer HTML people doing bad things to the
+code<A NAME="tex2html10"
+  HREF="#foot41"><SUP>10</SUP></A>,
+or it gets hard to mentally separate the code from the markup.
+The existing tag based languages have the problem of not 
+letting you do what you want, or having to do a lot of work to get it
+done.
+
+<P>
+My solution was this: write an extendable tag-based language that let
+you use strings and Python expressions as tag arguments
+<I>anywhere</I> (with a few exceptions).  This insulates you from the
+amateurs, and still allows you to have ultimate power.
+
+<P>
+Since the language, STML, was tag based, all we really needed to do
+was:
+
+<UL>
+<LI>Make regular Python code easy to load from STML, so you didn't
+have to do <I>everything</I> in STML.
+</LI>
+<LI>Write an STML to Python byte-code compiler.
+</LI>
+</UL>
+
+<P>
+The first item was easy, add an import tag.  This way you put your
+business logic in regular Python modules, and put the rendering logic
+in STML components.  Doing it this way produced many more advantages
+than I expected.
+
+<UL>
+<LI>HTML coders don't necessarily have to know all that much Python.
+STML is easy to learn, especially for people that haven't
+done much programming before.
+</LI>
+<LI>If a more advanced HTML coder needs something built and doesn't want
+to wait for a Python module to be written by somebody else, they can
+do it themselves in either Python or STML.
+</LI>
+<LI>If you are doing a lot of tag stuff in an STML, there is a
+``calculated inefficiency'', pushing you to use Python modules to do
+some of the work.
+</LI>
+</UL>
+
+<P>
+The STML to Python byte-code compiler turned out to be a big win concerning 
+ performance.  Before the compiler, STML was
+interpreted, which had these problems:
+
+<UL>
+<LI>The parser was slow.
+</LI>
+<LI>The interpreter was slow.
+</LI>
+<LI>Using <TT>cPickle</TT> to cache the parse tree was only
+marginally faster than starting from scratch.
+</LI>
+</UL>
+
+<P>
+While compilation is slower than parsing, loading the compiled code
+from cache is roughly two orders of magnitude faster<A NAME="tex2html11"
+  HREF="#foot51"><SUP>11</SUP></A> since the
+<TT>marshal</TT> module loads code objects <I>really</I> well.  The
+fact we compile to Python byte code meant there was no
+separate STML interpreter anymore (just the regular Python VM) which
+sped things up even more.
+
+<P>
+Another important thing was to make STML extendable.  I knew I didn't
+know all the tags we'd need and would have to add some.  Creating a
+new tag is not too hard.  It involves writing a class to handle the
+tag and inserting an instance of the class into a tag registry.  Not
+needing to know how all of the compiler works to write a tag
+made it really cool.
+
+<P>
+
+<H1><A NAME="SECTION00090000000000000000">
+Internationalization</A>
+</H1>
+Given that we are a tri-lingual content shop<A NAME="tex2html12"
+  HREF="#foot55"><SUP>12</SUP></A>, having to create a template for each language, or having
+a slew of ``if language is...'' statements was just dumb.  We added
+message catalogs to SkunkWeb for this reason.  This way one can write
+language independent templates.  Message catalogs can also handle
+argument substitution.  This was needed because the grammars of the
+three languages we use don't always put things you'd substitute in a
+message in the same relative locations (so normal string substitution
+was out).
+
+<P>
+Message catalogs (really just dictionaries of language to message
+name to message mappings) were probably the simplest thing 
+added to SkunkWeb, but save a tremendous amount of work.
+
+<P>
+
+<H1><A NAME="SECTION000100000000000000000"></A>
+<A NAME="components"></A><BR>
+Components
+</H1>
+Components in SkunkWeb are a distinct unit of work, similar to a
+function call in many regards.  There are three kinds<A NAME="tex2html13"
+  HREF="#foot58"><SUP>13</SUP></A> of components:
+<DL>
+<DT><STRONG>include</STRONG></DT>
+<DD>these take no arguments, run in the namespace of the
+calling component, are not cachable, and produce output
+</DD>
+<DT><STRONG>regular</STRONG></DT>
+<DD>these take arguments, can be cachable, run in their own
+namespace and produce output.
+</DD>
+<DT><STRONG>data</STRONG></DT>
+<DD>these take arguments, can be cachable, run in their own
+namespace and can return an <I>arbitrary object</I>.
+</DD>
+</DL>
+
+<P>
+Components can be written in either STML or Python.  If you want a
+component call to be cachable, you call it with <TT>cache=yes</TT><A NAME="tex2html14"
+  HREF="#foot95"><SUP>14</SUP></A> and
+inside the component, you specify a cache lifetime by saying one of
+the following:
+
+<UL>
+<LI>cache for some duration (e.g. 10 minutes, 3 hours, etc.)
+</LI>
+<LI>cache until some time (e.g. quarter past the hour, every other
+Tuesday at 5pm, and anything you can express with one or more
+<TT>RelativeDateTime</TT> objects)
+</LI>
+</UL>
+
+<P>
+If you are wondering what you do with data components, try thinking of them
+as memoized function calls.  If you call them with <TT>cache=yes</TT>
+and the same arguments before the cache expires, they return
+whatever they returned on a prior call.  Thus, you can cache commonly used
+things, such as stock-tickers, database rows, latest news from
+<TT>slashdot.org</TT>, and anything else that <TT>cPickle</TT> can
+serialize.
+
+<P>
+You can also tell SkunkWeb to defer component execution and say,
+``give me whatever is in the cache, even if it's expired (but not too
+old). If it is expired, evaluate the component after the response
+is sent back to the client''.  You can even set up SkunkWeb so if
+component evaluation fails, it falls back to whatever is in the cache,
+even if expired.
+
+<P>
+SkunkWeb also has the ability to call components on other SkunkWeb
+servers (a.k.a. remote component calls).  In truth, they're just
+remote procedure calls that happen to be cachable.
+
+<P>
+
+<H1><A NAME="SECTION000110000000000000000"></A>
+<A NAME="services"></A><BR>
+Extendibility
+</H1>
+Extendibility in SkunkWeb is done by what we call ``Services''.
+Services are just plain Python modules which generally assume that the
+SkunkWeb framework is there and hook into it using, well,
+<TT>Hooks</TT>.  A number of people have asked me why I went with
+hooks over doing some kind of subclassing OOP-y kind of thing.  My
+answers are these:
+
+<OL>
+<LI>When hook calling order is important, it is much easier to
+manipulate a list than to get the subclass hierarchy correct.  There
+is a reason the Apache people went the same way with Apache&nbsp;2.
+</LI>
+<LI>Services may add hooks to the server other services want to
+use, making services compatible only with some set of hooks.
+</LI>
+<LI>Because I said so.  I'm not big on class hierarchies when
+they'd just be single instances.  Plus, simpler hook mechanisms are so
+much easier to trace (e.g. you can print the hook and see what
+functions it calls).
+</LI>
+</OL>
+
+<P>
+
+<H1><A NAME="SECTION000120000000000000000">
+Database Connectivity</A>
+</H1>
+Database connectivity in SkunkWeb is really simple.  All you really
+have to do is write a service<A NAME="tex2html15"
+  HREF="#foot96"><SUP>15</SUP></A> that makes
+the connection to the database and stows it somewhere convenient for
+template and module authors.  Since SkunkWeb itself doesn't use
+threads, writing these modules is incredibly simple, and they are
+often less than 50 lines (assuming of course that Python bindings for
+the database already exist).
+
+<P>
+
+<H1><A NAME="SECTION000130000000000000000">
+Content Management</A>
+</H1>
+Content management on large web sites can be exceedingly difficult.
+Especially when you want to push the changes more or less atomically
+to the live servers.  SkunkWeb includes par files to make this
+easier.  Par files are similar in purpose to Java[<A
+ HREF="SkunkWebIPC10.html#java">4</A>] jar
+files.  Pushing is done by packaging  up your components into a par file and
+instructing SkunkWeb to use the par files instead of (or before) the
+normal document root when fetching components.  This way, you push all
+of your par files, restart the servers (there is a soft restart
+available by sending SIGHUP to the parent process)
+and the new content shows up all at once.  No worrying about a ``half
+push''.
+
+<P>
+Using par files turned out to have an additional benefit I hadn't
+thought of when I first added the feature.  Par files are loaded at
+server start.  When we go searching for templates, we just scan
+dictionaries in memory instead of using <TT>open</TT> and
+<TT>os.stat</TT> to retrieve the necessary info about the templates.
+Thus the system call load is significantly reduced.
+
+<P>
+
+<H1><A NAME="SECTION000140000000000000000">
+Conclusion</A>
+</H1>
+SkunkWeb and its predecessors have been used in continuous production 
+at StarMedia since 1998 and has proven over and over again to
+be a scalable, robust<A NAME="tex2html16"
+  HREF="#foot86"><SUP>16</SUP></A> application
+server which its users have found better than the
+alternatives<A NAME="tex2html17"
+  HREF="#foot87"><SUP>17</SUP></A>.
+
+<P>
+
+<H2><A NAME="SECTION000150000000000000000">
+Bibliography</A>
+</H2><DL COMPACT><DD><P></P><DT><A NAME="apache">1</A>
+<DD>
+<EM>Apache</EM>.
+<BR>http://www.apache.org
+
+<P></P><DT><A NAME="asp">2</A>
+<DD>
+<EM>Active Server Pages</EM>.
+<BR>http://msdn.microsoft.com/workshop/server
+
+<P></P><DT><A NAME="cfml">3</A>
+<DD>
+<EM>CFML Language Reference</EM>.
+<BR>
+  http://www.allaire.com/documents/cf45docs/acrobatdocs/45langref.pdf
+
+<P></P><DT><A NAME="java">4</A>
+<DD>
+<EM>Java</EM>.
+<BR>http://www.javasoft.com
+
+<P></P><DT><A NAME="jsp">5</A>
+<DD>
+<EM>JavaServer Pages</EM>.
+<BR>http://java.sun.com/products/jsp
+
+<P></P><DT><A NAME="mysql">6</A>
+<DD>
+<EM>MySQL</EM>.
+<BR>http://www.mysql.org
+
+<P></P><DT><A NAME="oracle">7</A>
+<DD>
+<EM>Oracle</EM>.
+<BR>http://www.oracle.com
+
+<P></P><DT><A NAME="dtml">8</A>
+<DD>
+Michel Pelletier and Amos Latteier.
+<BR><EM>Zope DTML Reference</EM>.
+<BR>http://www.zope.org/Members/michel/ZB/AppendixA.dtml
+
+<P></P><DT><A NAME="postgres">9</A>
+<DD>
+<EM>PostgreSQL</EM>.
+<BR>http://www.postgresql.org
+
+<P></P><DT><A NAME="psp">10</A>
+<DD>
+<EM>Python Server Pages</EM>.
+<BR>http://www.ciobriefings.com/psp/
+
+<P></P><DT><A NAME="pywx">11</A>
+<DD>
+<EM>PyWX - Python for AOLserver</EM>.
+<BR>http://pywx.idyll.org
+
+<P></P><DT><A NAME="python">12</A>
+<DD>
+Guido van Rossum.
+<BR><EM>Python</EM>.
+<BR>http://www.python.org
+
+<P></P><DT><A NAME="webware">13</A>
+<DD>
+<EM>Webware</EM>.
+<BR>http://webware.sourceforge.net
+
+<P></P><DT><A NAME="zope">14</A>
+<DD>
+<EM>Zope</EM>.
+<BR>http://www.zope.org
+</DL>
+
+<P>
+
+<H1><A NAME="SECTION000160000000000000000">
+About this document ...</A>
+</H1>
+ <STRONG>The SkunkWeb<A NAME="tex2html2"
+  HREF="#foot91"><SUP>2</SUP></A>  Web Application Server</STRONG><P>
+This document was generated using the
+<A HREF="http://www-dsed.llnl.gov/files/programs/unix/latex2html/manual/"><STRONG>LaTeX</STRONG>2<tt>HTML</tt></A> translator Version 2K.1beta (1.47)
+<P>
+Copyright &#169; 1993, 1994, 1995, 1996,
+<A HREF="http://cbl.leeds.ac.uk/nikos/personal.html">Nikos Drakos</A>, 
+Computer Based Learning Unit, University of Leeds.
+<BR>Copyright &#169; 1997, 1998, 1999,
+<A HREF="http://www.maths.mq.edu.au/~ross/">Ross Moore</A>, 
+Mathematics Department, Macquarie University, Sydney.
+<P>
+The command line arguments were: <BR>
+ <STRONG>latex2html</STRONG> <TT>-split 0 SkunkWebIPC10</TT>
+<P>
+The translation was initiated by Drew Csillag on 2001-08-10<BR><HR><H4>Footnotes</H4>
+<DL>
+<DT><A NAME="foot90">... Csillag</A><A NAME="foot90"
+ HREF="SkunkWebIPC10.html#tex2html1"><SUP>1</SUP></A>
+<DD><TT>drew_csillag@geocities.com</TT>
+
+<DT><A NAME="foot91">... SkunkWeb</A><A NAME="foot91"
+ HREF="SkunkWebIPC10.html#tex2html2"><SUP>2</SUP></A>
+<DD><TT>http://skunkweb.sourceforge.net</TT>
+
+<DT><A NAME="foot92">... threads</A><A NAME="foot92"
+ HREF="SkunkWebIPC10.html#tex2html3"><SUP>3</SUP></A>
+<DD>though your
+modules can use threads with the caveat of many SkunkWeb API
+functions (notably <TT>callComponent</TT>) are not reentrant
+
+<DT><A NAME="foot93">... lock</A><A NAME="foot93"
+ HREF="SkunkWebIPC10.html#tex2html4"><SUP>4</SUP></A>
+<DD>Using a Python interpreter
+not built with threading support <I>will</I> speed up SkunkWeb
+a bit
+
+<DT><A NAME="foot22">...
+want</A><A NAME="foot22"
+ HREF="SkunkWebIPC10.html#tex2html5"><SUP>5</SUP></A>
+<DD>kids have it so easy these days... :)
+
+<DT><A NAME="foot23">... ever</A><A NAME="foot23"
+ HREF="SkunkWebIPC10.html#tex2html6"><SUP>6</SUP></A>
+<DD>assuming the machine stays up, anyway
+
+<DT><A NAME="foot24">...
+memory</A><A NAME="foot24"
+ HREF="SkunkWebIPC10.html#tex2html7"><SUP>7</SUP></A>
+<DD>although it's not as efficient as shared memory would
+be
+
+<DT><A NAME="foot94">...
+involved</A><A NAME="foot94"
+ HREF="SkunkWebIPC10.html#tex2html8"><SUP>8</SUP></A>
+<DD>though SkunkWeb does not use locking of <I>any</I>
+kind (this includes file locking)
+
+<DT><A NAME="foot35">...
+language</A><A NAME="foot35"
+ HREF="SkunkWebIPC10.html#tex2html9"><SUP>9</SUP></A>
+<DD>a programmer can't live on servlets alone :)
+
+<DT><A NAME="foot41">...
+code</A><A NAME="foot41"
+ HREF="SkunkWebIPC10.html#tex2html10"><SUP>10</SUP></A>
+<DD>it was translated into Spanish on one notable occasion
+
+<DT><A NAME="foot51">... faster</A><A NAME="foot51"
+ HREF="SkunkWebIPC10.html#tex2html11"><SUP>11</SUP></A>
+<DD>my
+torture test document went from 100ms/load to 4ms/load
+
+<DT><A NAME="foot55">... shop</A><A NAME="foot55"
+ HREF="SkunkWebIPC10.html#tex2html12"><SUP>12</SUP></A>
+<DD>we'll try
+anything :)
+
+<DT><A NAME="foot58">... kinds</A><A NAME="foot58"
+ HREF="SkunkWebIPC10.html#tex2html13"><SUP>13</SUP></A>
+<DD>well, mainly three, there are remote components also :)
+
+<DT><A NAME="foot95">...cache=yes</A><A NAME="foot95"
+ HREF="SkunkWebIPC10.html#tex2html14"><SUP>14</SUP></A>
+<DD>or <TT>cache=force</TT> or <TT>cache=old</TT> or <TT>cache=defer</TT>
+
+<DT><A NAME="foot96">... service</A><A NAME="foot96"
+ HREF="SkunkWebIPC10.html#tex2html15"><SUP>15</SUP></A>
+<DD>services for
+Oracle[<A
+ HREF="SkunkWebIPC10.html#oracle">7</A>], PostgreSQL[<A
+ HREF="SkunkWebIPC10.html#postgres">9</A>], and MySQL[<A
+ HREF="SkunkWebIPC10.html#mysql">6</A>]
+are already available as part of the standard distribution
+
+<DT><A NAME="foot86">... robust</A><A NAME="foot86"
+ HREF="SkunkWebIPC10.html#tex2html16"><SUP>16</SUP></A>
+<DD>and many other buzzwords
+
+<DT><A NAME="foot87">...
+alternatives</A><A NAME="foot87"
+ HREF="SkunkWebIPC10.html#tex2html17"><SUP>17</SUP></A>
+<DD>``All app servers suck, SkunkWeb just sucks
+less''
+
+</DL><HR>
+<ADDRESS>
+Drew Csillag
+2001-08-10
+</ADDRESS>
+<:/spool:>
+<:component screen.comp mainframe=`contents`:>
