@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: DTTags.py,v 1.5 2001/09/21 20:16:31 drew_csillag Exp $
+# $Id: DTTags.py,v 1.6 2001/09/21 21:07:14 drew_csillag Exp $
 # Time-stamp: <2001-04-24 17:11:43 drew>
 ########################################################################
 
@@ -201,6 +201,7 @@ class CallTag(DTTag):
         DTCompilerUtil.tagDebug ( indent, codeout, tag )
         pargs = args = DTUtil.tagCall(tag, [('expr', 'None')])
         args = DTCompilerUtil.pyifyArgs(tag, args)
+
         try:
             DTCompilerUtil.checkName(tag, 'expr', args['expr'], pargs['expr'])
         except:
@@ -208,7 +209,7 @@ class CallTag(DTTag):
         else:
             raise DTExcept.DTCompileError( tag, 'cannot call a string')
 
-        stmt = args['expr']
+        stmt = args['expr'] + '\n'
 
         try:
             compile(stmt, stmt, 'exec')
@@ -679,6 +680,11 @@ class DocTag ( GenericCommentTag ):
 
 ########################################################################
 # $Log: DTTags.py,v $
+# Revision 1.6  2001/09/21 21:07:14  drew_csillag
+# now made
+# it so that if you have a multi-line <:call:> tag, you don't have
+# to have the ':> on it's own line for it to work.
+#
 # Revision 1.5  2001/09/21 20:16:31  drew_csillag
 # added userdir service (and subsidiary changes to other services) and multi-line ability for <:call:> tag
 #
