@@ -1,7 +1,0 @@
-# Time-stamp: <02/10/07 23:17:20 smulloni>
-# $Id: colors.pydcmp,v 1.1 2002/11/07 19:34:17 smulloni Exp $
-
-sectionMap={'home': '8ba4d1'}
-
-
-raise ReturnValue, sectionMap

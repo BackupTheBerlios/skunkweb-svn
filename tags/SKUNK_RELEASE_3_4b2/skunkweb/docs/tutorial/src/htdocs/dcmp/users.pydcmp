@@ -1,5 +1,0 @@
-import hoptime.hopapi as H
-
-decorated=[(x['username'], x) for x in H.Users.getSome()]
-decorated.sort()
-raise ReturnValue, [x[1] for x in decorated]
