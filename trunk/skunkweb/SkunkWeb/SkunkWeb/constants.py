@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: constants.py,v 1.3 2002/07/11 19:21:55 drew_csillag Exp $
+# $Id: constants.py,v 1.4 2002/07/24 01:57:57 smulloni Exp $
 # Time-stamp: <01/05/04 13:31:34 smulloni>
 ########################################################################
 
@@ -37,16 +37,19 @@ LOCATION='location'
 HTTP_VERSION='httpVersion'
 CONNECTION_CLOSE='connectionClose'
 
-# Job names.  These shouldn't be  defined here, but
-# I haven't figured out a better way, yet -- FIX ME ***
+# Job names for standard services.
 
 WEB_JOB="/web/"
 AE_COMPONENT_JOB='/ae_component/'
 REMOTE_JOB=AE_COMPONENT_JOB + "/remote/"
 TEMPLATING_JOB= WEB_JOB + AE_COMPONENT_JOB + '/templating/'
 CGI_JOB = WEB_JOB + '/cgi/'
+PYCGI_JOB = WEB_JOB + '/pycgi/'
 ########################################################################
 # $Log: constants.py,v $
+# Revision 1.4  2002/07/24 01:57:57  smulloni
+# experimental, not to be much recommended pycgi service.
+#
 # Revision 1.3  2002/07/11 19:21:55  drew_csillag
 # added CGI_JOB
 #
