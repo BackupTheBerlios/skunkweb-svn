@@ -15,7 +15,7 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 #   
-# $Id: protocol.py,v 1.3 2001/09/07 16:40:44 smulloni Exp $
+# $Id: protocol.py,v 1.4 2002/02/14 14:57:06 smulloni Exp $
 # Time-stamp: <01/05/04 13:27:08 smulloni>
 ########################################################################
 
@@ -479,6 +479,9 @@ class HTTPProtocol(Protocol):
         newRes=''
         reslen=0
         DEBUG(HTTPD, "in marshalResponse with response %s" % response)
+        
+        if response==None:
+            response=''
         for line in response.split('\r\n'):
             reslen+=2+len(line)
             if line=='':
@@ -520,6 +523,9 @@ HaveConnection.addFunction(_seekTerminus, jobGlob)
 
 ########################################################################
 # $Log: protocol.py,v $
+# Revision 1.4  2002/02/14 14:57:06  smulloni
+# fix for 404 logging and basic authentication
+#
 # Revision 1.3  2001/09/07 16:40:44  smulloni
 # improved handling of SERVER_NAME
 #
