@@ -1,17 +1,29 @@
 <OL>
-<LI><A HREF="#sec1"> Marcos Sánchez Provencio <rapto@arrakis.es> asked:  
+<LI><A HREF="#sec1"> Marcos Sánchez Provencio &lt;rapto@arrakis.es> asked:  
   I think that the closest project to skunkweb is webware. They seem to
   share objectives. Is it not possible to join them? What are the
   important differences between them?</A></li>
 
 <LI><A HREF="#sec2"> What's the difference between SkunkWeb and Zope?</A></li>
 
-<LI><A HREF="#sec3"> Paul Rubin <phr-n2001@nightsong.com> Asks:
+<LI><A HREF="#sec3"> Paul Rubin &lt;phr-n2001@nightsong.com> Asks:
 How does it compare to Mason?</A></li>
 
-<LI><A HREF="#sec4"> Paul Rubin <phr-n2001@nightsong.com> asks:
+<LI><A HREF="#sec4"> Paul Rubin &lt;phr-n2001@nightsong.com> asks:
 Can you add a SkunkWeb-PHP comparison to your FAQ?</A></li>
 
+<LI><A HREF="#sec5"> Dave Swegen asks:
+Is there any way of allowing [some] files to be passed straight through, 
+without compiling them?</A></li>
+<LI><A HREF="#sec6">Dave Swegen asks:
+Is there any way for a pydcmp to get hold of the value of docroot? At
+the moment I'm having to hardcode the value in, which is somewhat ugly.</A></li>
+<LI><A HREF="#sec7">How do you run CGIs and SkunkWeb with mod_skunkweb
+in the same server or virtual host? SkunkWebExclude doesn't work!</A></li>
+<LI><A HREF="#sec8">My sw.conf file is unmanageable!  Can I break it up into several files?</A></li>
+<LI><A HREF="#sec9">How do I get at what in CGI land would be PATH_INFO?</A></li>
+<LI><A HREF="#sec10">Why did you license SkunkWeb under the GPL?</A></li>
+<LI><A HREF="#sec11">How does the fact that SkunkWeb is under the GPL affect it's users?</A></li>
 </ol>
 <HR>1) <A NAME="sec1"> Marcos Sánchez Provencio <rapto@arrakis.es> asked:  
   I think that the closest project to skunkweb is webware. They seem to
@@ -137,7 +149,9 @@ to attack the web serving problem in similar ways<P> <ul><li> Mason and SkunkWeb
 
 </ul>
 <HR>4) <A NAME="sec4"> Paul Rubin <phr-n2001@nightsong.com> asks:
-Can you add a SkunkWeb-PHP comparison to your FAQ?<P> <ul><li> PHP has it's own language, whereby SkunkWeb uses Python
+Can you add a SkunkWeb-PHP comparison to your FAQ?<P> 
+
+<ul><li> PHP has it's own language, whereby SkunkWeb uses Python
 
  <li> PHP runs under mod_php (see the 5th bullet point for Mason).
 
@@ -148,9 +162,10 @@ Can you add a SkunkWeb-PHP comparison to your FAQ?<P> <ul><li> PHP has it's own 
    user sessions.
 
  <li> It doesn't appear that you can make custom url schemes with PHP
-   without writing an Apache module to do it.  In SkunkWeb, you can
-   write a Service which does it.  As an example, for my current
-   employer, we have a url translation scheme which translates urls to
+   without writing an Apache module (or mod_rewrite) to do it.  In
+   SkunkWeb, you can
+   write a Service which does it.  As an example, for one of my previous
+   employers, we have a url translation scheme which translates urls to
    and from Spanish and Portugese.
 
  <li> Internationalization.  PHP appears not to have any builtin
@@ -159,5 +174,127 @@ Can you add a SkunkWeb-PHP comparison to your FAQ?<P> <ul><li> PHP has it's own 
  <li> PHP only supports one kind of page language whereby SkunkWeb currently
    supports two (Python and STML) and could support more (an ASP-style
    templating language comes to mind).
+
+ <li> PHP, the language has general issues.  Specifically, variable
+scope.  There is no concept of modules.  Everything at the top level
+in files is shared for all things you <code>include</code>.  Python
+also has a much larger selection of modules either from the standard
+distribution, or available on the Internet than PHP, so you're less
+likely to have to write many things yourself.
  
 </ul>
+
+<HR>5) <A NAME="sec5">Dave Swegen asks:
+Is there any way of allowing [some] files to be passed straight through, 
+without compiling them?<P>
+
+One solution is a scoping directive in <code>sw.conf</code> (or in
+another file which you include into sw.conf through
+<code>sw.conf</code>'s <code>Include</code> directive):
+
+<PRE>
+Scope(Location("/nointerp.html", interpretMimeTypes=[]))
+</PRE>
+
+Where <code>/nointerp.html</code> is a document (or a directory name,
+whatever) you don't want interpreted.  You could do this for an entire
+tree if you wanted also.  If you are using Apache, the
+SkunkWebExcludeDocs directive can also be used to make Apache serve a
+tree of documents with its default handler.
+
+<HR>6) <A NAME="sec6"> Dave Swegen wrote:
+Is there any way for a pydcmp to get hold of the value of docroot? At
+the moment I'm having to hardcode the value in, which is somewhat ugly.<P>
+
+Sure.
+
+from SkunkWeb import Configuration
+doSomethingWith(Configuration.documentRoot) 
+
+The Configuration object is generally speaking a treasure trove of
+such information.  Be aware that it is a "scopeable" object, meaning
+that it can be configured to return different values for different
+variables depending on the request; the documentRoot, for instance,
+may not always be the same, so you wouldn't want to cache any
+component whose output is dependent on an internally-accessed
+Configuration variable that may be scoped.  It is safer, therefore, to
+pass in the value of a Configuration variable as an argument to the
+component.
+
+<HR> 7)<A NAME="sec7">How do you run CGIs and SkunkWeb with mod_skunkweb
+in the same server or virtual host? SkunkWebExclude doesn't work!<P>
+
+
+If you set the skunkweb-handler for the root directory / and want
+<code>/cgi-bin/</code> to serve cgi's as normal (meaning most likely
+that you have the directive
+
+<pre>ScriptAlias /cgi-bin/ /usr/local/apache/cgi-bin/
+</pre>
+
+or something like it, in httpd.conf), one might think that using
+mod_skunkweb's <code>SkunkWebExclude</code> directive (thus:
+SkunkWebExclude /cgi-bin/) might work. Unfortunately, this
+configuration results in the cgis being handled by the default
+handler, which is nasty. This, however, does the trick:
+
+<pre>
+&lt;Location />
+SetHandler skunkweb-handler
+&lt;/Location>
+&lt;Location /cgi-bin/>
+SetHandler cgi-script
+&lt;/Location>
+</pre>
+
+<HR> 8)<A NAME="sec8">My sw.conf file is unmanageable!  Can I break it up into several files?
+<P>
+Use the <code>Include</code> directive:
+
+<PRE>
+# in sw.conf
+Include("/usr/local/skunk/etc/vhosts.conf")
+Include("/usr/local/skunk/etc/rewrite.conf") # etc.
+</PRE>
+
+<HR> 9)<A NAME="sec9">How do I get at what in CGI land would be PATH_INFO?
+<P>
+Add the rewrite service to your sw.conf services listing and 
+add this:
+<PRE>
+rewriteRules=(r'(.*\..*?)(?P&lt;pathinfo>/.*)', r'\1')
+</PRE>
+and a cgi argument (accessed via CONNECTION.args or &lt;:args:>) named
+pathinfo will contain what you want.
+
+<HR> 10)<A NAME="sec10">Why did you license SkunkWeb under the GPL?<P>
+
+Originally, SkunkWeb was written as work for hire while I (Drew
+Csillag) was working for StarMedia Network.  When they closed down
+technology development in New York (where I was), they layed off all
+the developers there (myself included).  As a consolation prize, I got
+to keep SkunkWeb, but only if it were licensed under the GPL.  Had I
+had my druthers, I would've preferred a BSD-style license instead.  If
+people would like to help (mostly legal fees) me try to get SkunkWeb
+relicensed (or dual licensed) under a BSD-style (or at least LGPL)
+license, I'll be more than willing to go for it, as the paperwork I
+have looks like it may have holes that can be exploited (but IANAL),
+or failing that, we may be able to convince StarMedia that it's not a
+bad idea.
+
+<HR>11)<A NAME="sec11">How does the fact that SkunkWeb is under the GPL
+affect it's users?  <P>
+
+In short, very likely not at all.  Much like using GCC doesn't make
+your code covered by GPL, neither does using STML.  The only legally
+murky area would be that of services you write.  If you never
+distribute them, then there definitely is no problem, since the
+applicable provisions in the GPL don't apply if you never distribute
+them.
+<P>
+The only time you may have issues is if you distribute (outside of a
+closed user group) SkunkWeb services under a non-GPL license.  
+<P>
+Given that I would've rather used a BSD-like license, I'm not going to
+challenge anybody on this (although RMS just might if it were high
+enough visibility).  See <A HREF="#sec10">question 10</A>.
