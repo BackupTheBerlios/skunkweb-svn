@@ -6,7 +6,7 @@ and attempts to support both.
 
 """
 
-from PyDO.dbi import DBIBase, ConnectionCache
+from PyDO.dbi import DBIBase, ConnectionPool
 from PyDO.exceptions import PyDOError
 from PyDO.log import debug
 from PyDO.operators import BindingConverter
@@ -105,18 +105,15 @@ class PsycopgDBI(DBIBase):
     
     auto_increment=False
 
-    def __init__(self, connectArgs, cache=False, verbose=False):
-       if cache and not hasattr(cache, 'connect'):
-          cache=PsycopgCache()
-       super(PsycopgDBI, self).__init__(connectArgs, cache, verbose)
+    def __init__(self, connectArgs, pool=None, verbose=False):
+       if pool and not hasattr(pool, 'connect'):
+          pool=ConnectionPool()
+       super(PsycopgDBI, self).__init__(connectArgs, psycopg.connect, pool, verbose)
     
-    def _connect(self):
-        return psycopg.connect(self.connectArgs)
-
     def getConverter(self):
         return PsycopgConverter(self.paramstyle)
     
-    def execute(self, sql, values=(), fields=(), qualified=False):
+    def execute(self, sql, values=(), qualified=False):
         """Executes the statement with the values and does conversion
         of the return result as necessary.
         result is list of dictionaries, or number of rows affected"""
@@ -153,6 +150,4 @@ class PsycopgDBI(DBIBase):
         return res[0]
 
     
-class PsycopgCache(ConnectionCache):
-   def real_connect(self, connectArgs):
-      return psycopg.connect(**connectArgs)
+
