@@ -1,0 +1,4 @@
+2005-03-15  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/PyDO/__init__.py (__version__): cutting first alpha release.
+
