@@ -144,7 +144,7 @@ def initAlias(alias, driver, connectArgs, cache=False, verbose=False):
     initialized elsewhere differently.  Therefore, this raises a
     ValueError if the alias is already initialized with different
     data.  Multiple initializations with the same data (such as
-    happens when a module called InitAlias is reloaded) are permitted.
+    happens when a module calling initAlias is reloaded) are permitted.
 
     If you need to change the connect values at runtime, call delAlias
     before initAlias.
