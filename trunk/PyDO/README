@@ -1,3 +1,5 @@
+.. -*-rst-*-
+
 PyDO is a ORM (Object-Relational Mapper) database access tool for
 Python that facilitates writing a Python database access layer.  PyDO
 attempts to be simple, flexible, extensible, and unconstraining.
@@ -15,5 +17,20 @@ database adapters, Mysql, SapDB, Firebird, Sqlite, and Oracle.  The
 driver), Mysql, and Sqlite, but support for other database systems is
 planned.  
 
+PyDO 2 has several enhancements:
+
+   * PyDO can now be used in multi-threaded or twisted-style
+     asynchronous sitations, with or without a customizable connection
+     pool.
+
+   * PyDO objects are now dict subclasses, but also support attribute
+     access to fields.
+
+   * Projections -- subsets of the field list of a super-class -- are
+     now supported by the PyDO.project() method.
+
+   * Overall, the API has been tightened and the code restructured.
+
+PyDO 2 requires Python 2.4 for full functionality. 
 
  
