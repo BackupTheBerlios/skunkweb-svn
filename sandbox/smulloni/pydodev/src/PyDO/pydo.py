@@ -194,22 +194,6 @@ class PyDO(dict):
             return cls(results[0]) 
     getUnique=classmethod(getUnique)    
             
-    def _orderByString(order_by):
-        
-        order_list = []
-        
-        for item in order_by:
-            if type(item) == types.StringType:
-                order_list.append(item)
-            else:
-                order_list.append(' '.join(item))
-                    
-        sql = ' ORDER BY %s' % ', '.join(order_list)
-        
-        return sql
-    _orderByString=staticmethod(_orderByString)
-
-
     def _baseSelect(cls, qualified=False):
         """returns the beginning of a select statement for this object's table."""
         return 'SELECT %s FROM %s' % (', '.join(cls.getColumns(qualified)),

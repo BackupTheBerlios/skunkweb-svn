@@ -60,6 +60,28 @@ class DBIBase(object):
         return [dict(izip(fldnames, row)) for row in resultset]
     _convertResultSet=staticmethod(_convertResultSet)
 
+    def orderByString(order, limit, offset):
+        def do_order(o):
+            if isinstance(o, str):
+                return o
+            return ' '.join(o)
+        if not order:
+            order=""
+        elif not isinstance(order, str):
+            order= ', '.join(map(do_order, order))
+        if order:
+            order="ORDER BY %s" % order
+        if limit is not in ("", None):
+            limit="LIMIT %s" % limit
+        else:
+            limit=""
+        if offset is not in ("", None):
+            offset="OFFSET %s" % offset
+        else:
+            offset=""
+        return " ".join(filter(None, (order, limit, offset)))
+    orderByString=staticmethod(orderByString)
+
     def getSequence(self, name):
         """If db has sequences, this should return the sequence named name"""
         pass
