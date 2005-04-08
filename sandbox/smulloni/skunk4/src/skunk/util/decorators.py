@@ -5,15 +5,6 @@ def _share_metadata(fn, dec):
     dec.__dict__.update(fn.__dict__)
 
 
-def call_super(fn):
-    """decorator that calls the super of an instance method"""
-    def newfunc(self, *args, **kwargs):
-        smeth=getattr(super(self.__class__, self), fn.__name__)
-        return smeth(*args, **kwargs)
-    _share_metadata(fn, newfunc)
-    return newfunc
-
-
 def with_lock(lock):
     """decorator that synchronizes on the given lock"""
     def wrapper(fn):
@@ -34,3 +25,4 @@ def with_lock(lock):
     return wrapper
 
     
+__all__=['with_lock']
