@@ -142,17 +142,25 @@ class ProcessManager(object):
         raise NotImplementedError, 'run method not overridden'
 
     def _run_as(self):
-        if self.run_group:
-            gid=grp.getgrnam(self.run_group)[2]
-            os.setgid(gid)
-        if self.run_user:
-            uid=pwd.getpwnam(self.run_user)[2]
-            euid=os.getuid()
+        if self.run_group or self.run_user:
+            # in case we are seteuid something else, which would
+            # cause setuid or getuid to fail, undo any existing
+            # seteuid. (The only reason to do this is for the case
+            # os.getuid()==0, AFAIK).
             try:
-                os.seteuid(euid)
+                seteuid=os.seteuid
             except AttributeError:
+                # the OS may not support seteuid, in which
+                # case everything is hotsy-totsy.
                 pass
-            os.setuid(uid)
+            else:
+                seteuid(os.getuid())
+            if self.run_group:
+                gid=grp.getgrnam(self.run_group)[2]
+                os.setgid(gid)
+            if self.run_user:
+                uid=pwd.getpwnam(self.run_user)[2]
+                os.setuid(uid)
         self.run()
 
     def mainloop(self):
@@ -174,6 +182,8 @@ class ProcessManager(object):
            os.setsid()
         else:
            self.info('not going to background')
+
+        # optional chdir? umask? XXX
 
         #write the pid file
         open(self.pidFile,'w').write('%s' % os.getpid())

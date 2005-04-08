@@ -38,7 +38,7 @@ class SocketManager(ProcessManager):
                                             config=config,
                                             **kw)
         self.socketMap = {}
-        self _initConnections()
+        self._initConnections()
 
     def _initConnections(self):
         for addr, func in self.connections.iteritems():
