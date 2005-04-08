@@ -1,3 +1,10 @@
+2005-04-07  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* SkunkWeb/SkunkWeb/Server.py (SkunkWebServer.run): fix for
+	seteuid and setgid.  There was previously a guard in place to undo
+	any seteuid before calling setuid, but not before calling
+	setgid. (Backport from skunk4.)
+
 2005-01-31  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
 	* pylibs/AE/mime.types: adding mime type for XUL documents.
