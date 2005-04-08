@@ -76,7 +76,12 @@ def read_this_many(sock, length, timeout=_default):
 def send_it_all(sock, s):
     """Promises to write all of s to the sock, or bust.  If we for some reason
     write 0 bytes at any time, we raise ShortWriteError because this usually
-    indicates that the connection has died."""
+    indicates that the connection has died.
+
+    Because sockets now have a sendall() method, this method is no longer needed
+    and may be removed.
+    """
+
     sentlen=0
     len_s=len(s)
     while sentlen < len_s:
