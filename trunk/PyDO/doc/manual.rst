@@ -228,7 +228,7 @@ There are two class methods provided for performing SELECTs.
 
    >>> myFungi.getSome()
   [{'id' : 1, 'species' : 'Agaricus lilaceps', 'comment' : 'nice shroom!'}, 
-   {'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' : None}]
+   {'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' : ''}]
 
 ``getUnique`` returns a single instance.  You must provide enough
 information to ``getUnique`` to satisfy one declared uniqueness
@@ -238,7 +238,7 @@ uniqueness constraint declared for the object, and the values are what
 you are asserting those columns equal for the unique row::
 
   >>> myFungi.getUnique(id=2)
-  {'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' : None}
+  {'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' : ''}
   >>> myFungi.getUnique(id=55) is None
   True 
   
@@ -249,7 +249,7 @@ criteria based on ``comment`` to ``getUnique()``, but could to
 ``getSome``::
 
  >>> myFungi.getSome(comment=None)
- [{'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' :  None}]
+ [{'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' :  ''}]
  >>> myFungi.getSome(comment='better than asparagus', id=55)
  []
                 
@@ -265,7 +265,7 @@ gives you three other ways:
    arguments will be taken to be values for bind variables in the
    string::
 
-       >>> myFungi.getSome("comment != %s", None)
+       >>> myFungi.getSome("comment != %s", 'favorite of frogs')
 
    If you use bind variables, the paramstyle you use must be the
    same as that of the underlying Python DBAPI driver.  To support
@@ -279,7 +279,7 @@ gives you three other ways:
      >>> myFungi.getSome(OR(EQ(FIELD('comment'), 'has pincers'),
      ...                    LT(FIELD('id'), 40),
      ...                    LIKE(FIELD('species'), '%micromega%')))
-     [{'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' :  None}]
+     [{'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' :  ''}]
 
 3. You can use tuples that are turned into ``SQLOperator`` instances
    for you; this is equivalent to the above::
@@ -288,7 +288,7 @@ gives you three other ways:
      ...                  ('=', FIELD('comment'), 'has pincers'),
      ...                  ('<', FIELD('id'), 40),
      ...                  ('LIKE', FIELD('species', '%micromega%'))))
-     [{'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' :  None}]
+     [{'id' : 2, 'species' :  'Agaricus micromegathus', 'comment' :  ''}]
 
 Either operator syntax can be mixed freely with each other and with
 keyword arguments to express column equivalence.

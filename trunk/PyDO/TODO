@@ -8,6 +8,8 @@ Needed now:
 
   * fix array fetch and add it to joins module.
   * make joins work with self-joins and nested joins.
+  * set a default field class, so custom field classes can be
+    specified with tuple notation if desired.
 
 Other databases to support (eventually):
   * firebird

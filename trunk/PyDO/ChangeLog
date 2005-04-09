@@ -1,3 +1,9 @@
+2005-04-08  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
+
+	* doc/manual.rst: an example used "!=%s" with a bind variable of
+	None; but that is bad sql ("!=NULL" rather than "IS NOT NULL").
+	So I changed None to an empty string.
+
 2005-03-21  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
 
 	* doc/manual.rst: fixed inaccuracy in describing what input
