@@ -177,11 +177,6 @@ class RegexMatcher(ScopeMatcher):
                and self._compiledRegex.match(other)
 
 
-def _createMatcher(matcherClass, paramName, paramVal, kids, kw):
-    m=matcherClass(paramName, paramVal, kw)
-    if kids:
-        m.addChildren(*kids)
-    return m
 
         
     

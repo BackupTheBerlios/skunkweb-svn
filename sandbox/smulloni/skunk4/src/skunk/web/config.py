@@ -3,69 +3,72 @@ from threading import local
 import skunk.config.scope as S
 from skunk.util.decorators import with_lock
 
-Configuration=local()
 _scopeman=S.ScopeManager()
 
+Configuration=local()
 mergeDefaults=_scopeman.mergeDefaults
 scope=_scopeman.scope
 
+def _createMatcher(matcherClass, paramName, paramVal, kids, kw):
+    m=matcherClass(paramName, paramVal, kw)
+    if kids:
+        m.addChildren(*kids)
+    return m
 
 def Location(path, **kw):
-    return S._createMatcher(S.SimpleStringMatcher,
-                            'location',
-                            path,
-                            None,
-                            kw)
+    return _createMatcher(S.SimpleStringMatcher,
+                          'LOCATION',
+                          path,
+                          None,
+                          kw)
 
 def File(path, **kw):
-    return S._createMatcher(S.RegexMatcher,
-                            'location',
-                            path,
-                            None,
-                            kw)
+    return _createMatcher(S.RegexMatcher,
+                          'LOCATION',
+                          path,
+                          None,
+                          kw)
 
 def Host(hostname, *kids, **kw):
-    return S._createMatcher(S.GlobMatcher,
-                            'host',
-                            hostname,
-                            kids,
-                            kw)
+    return _createMatcher(S.GlobMatcher,
+                          'HOST',
+                          hostname,
+                          kids,
+                          kw)
 
 def Port(port, *kids, **kw):
-    return S._createMatcher(S.StrictMatcher,
-                            'port',
-                            port,
-                            kids,
-                            kw)
+    return _createMatcher(S.StrictMatcher,
+                          'PORT',
+                          port,
+                          kids,
+                          kw)
 
 def ServerPort(port, *kids, **kw):
-    return S._createMatcher(S.StrictMatcher,
-                            'server_port',
-                            port,
-                            kids,
-                            kw)
+    return _createMatcher(S.StrictMatcher,
+                          'SERVER_PORT',
+                          port,
+                          kids,
+                          kw)
 
 def IP(ip, *kids, **kw):
-    return _createMatcher(scope.StrictMatcher,
-                          'ip',
+    return _createMatcher(S.StrictMatcher,
+                          'IP',
                           ip,
                           kids,
                           kw)
 
-def UNIXPath(path, *kids, **kw):
-    return S._createMatcher(S.GlobMatcher,
-                            'unixpath',
-                            path,
-                            kids,
-                            kw)                       
-
+def UnixSocketPath(path, *kids, **kw):
+    return _createMatcher(S.GlobMatcher,
+                          'UNIX_SOCKET_PATH',
+                          path,
+                          kids,
+                          kw)                       
 
 @with_lock(_scopeman._lock)
-def load(*configfiles):
+def loadConfig(*configfiles):
     g=_config_globals
     for c in configfiles:
         _scopeman.load(c, g)
-
 
 _config_globals=dict(Scope=scope,
                      Include=load,
@@ -74,15 +77,16 @@ _config_globals=dict(Scope=scope,
                      Port=Port,
                      ServerPort=ServerPort,
                      IP=IP,
-                     UNIXPath=UNIXPath)
+                     UnixSocketPath=UnixSocketPath)
                  
-                                             
-
 def updateConfig(ctxt=None):
     Configuration.__dict__=_scopeman.getConfig(ctxt)
 
-
-                
+__all__=['Configuration',
+         'mergeDefaults',
+         'scope',
+         'loadConfig',
+         'updateConfig']
 
 
 	

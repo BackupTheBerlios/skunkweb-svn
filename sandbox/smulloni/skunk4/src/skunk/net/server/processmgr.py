@@ -161,7 +161,11 @@ class ProcessManager(object):
             if self.run_user:
                 uid=pwd.getpwnam(self.run_user)[2]
                 os.setuid(uid)
-        self.run()
+        try:
+            self.run()
+        except:
+            self.exception("bug in run()!")
+            raise
 
     def mainloop(self):
         """the method used to actually fire off the server"""

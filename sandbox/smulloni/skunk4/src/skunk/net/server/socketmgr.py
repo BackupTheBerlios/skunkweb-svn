@@ -50,7 +50,7 @@ class SocketManager(ProcessManager):
     def postHandle(self):
         pass
     
-    def _run(self):
+    def run(self):
         connectionCount = 0
         info=self.info
         exception=self.exception
@@ -135,13 +135,6 @@ class SocketManager(ProcessManager):
                 info('socket manager exiting due to return value from handler being true') 
                 break
                 
-    def run(self):
-        try:
-            self._run()
-        except:
-            self.exception("bug in run()!")
-            raise
-        
     def reload(self):
         super(SocketManager, self).reload()
         self._reset()
