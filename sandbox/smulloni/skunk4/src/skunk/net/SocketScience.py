@@ -78,8 +78,7 @@ def send_it_all(sock, s):
     write 0 bytes at any time, we raise ShortWriteError because this usually
     indicates that the connection has died.
 
-    Because sockets now have a sendall() method, this method is no longer needed
-    and may be removed.
+    Because sockets now have a sendall() method, this method is now deprecated.
     """
 
     sentlen=0

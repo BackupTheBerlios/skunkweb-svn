@@ -46,7 +46,6 @@ class ProcessManager(object):
     _defaults=dict(numProcs=5,
                    maxKillTime=5,
                    pollPeriod=5,
-                   logger=logging.getLogger('skunk.net.server'),
                    foreground=False,
                    run_user=None,
                    run_group=None)
@@ -54,6 +53,7 @@ class ProcessManager(object):
     def __init__(self,
                  pidFile,
                  config=None,
+                 logger=None,
                  **kw):
         """create a ProcessManager with the given pidFile path and config object.
         The config object must be something with the attributes given in _defaults.
@@ -62,6 +62,9 @@ class ProcessManager(object):
         if config is None:
             config=bag(**kw)
         self.config=config
+        if logger is None:
+            logger=logging.getLogger('skunk.net.server')
+        self._logger=logger
         self._initAttrs()
         self._children = {}
 
@@ -86,25 +89,25 @@ class ProcessManager(object):
 
     # logging methods
     def log(self, level, *args, **kwargs):
-        self.logger.log(level, *args, **kwargs)
+        self._logger.log(level, *args, **kwargs)
 
     def debug(self, *args, **kwargs):
-        self.logger.debug(*args, **kwargs)
+        self._logger.debug(*args, **kwargs)
 
     def info(self, *args, **kwargs):
-        self.logger.info(*args, **kwargs)
+        self._logger.info(*args, **kwargs)
 
     def warn(self, *args, **kwargs):
-        self.logger.warn(*args, **kwargs)
+        self._logger.warn(*args, **kwargs)
 
     def critical(self, *args, **kwargs):
-        self.logger.critical(*args, **kwargs)
+        self._logger.critical(*args, **kwargs)
 
     def error(self, *args, **kwargs):
-        self.logger.error(*args, **kwargs)
+        self._logger.error(*args, **kwargs)
 
     def exception(self, *args, **kwargs):
-        self.logger.exception(*args, **kwargs)
+        self._logger.exception(*args, **kwargs)
 
 
     def _SIGCHLDHandler(self, *args):

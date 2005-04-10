@@ -82,6 +82,7 @@ _config_globals=dict(Scope=scope,
 def updateConfig(ctxt=None):
     Configuration.__dict__=_scopeman.getConfig(ctxt)
 
+
 __all__=['Configuration',
          'mergeDefaults',
          'scope',
