@@ -10,25 +10,29 @@ from skunk.web.config import Configuration, loadConfig, updateConfig, mergeDefau
 
 """
 
-Actually, ServerStart happens early, when the services are loaded.
-For that reason I don't think it is necessary.  Services will have
-another service initialization hook.  (If so -- we must call it again
-when the server is HUPed., which suggests that it should be
-implemented as part of the Server class, not outside it.)
-
 Bootstrap does need a spot to configure the logging.  A separate conf
-file, I suppose.
+file, I suppose; at least until I figure out a better way of dealing
+with configuration.
 
 """
 
 class Server(SocketManager):
     """ the skunkweb server itself."""
-    def __init__(self):
+    def __init__(self, *configFiles):
         super(Server, self).__init__(Configuration.pidFile,
                                      Configuration)
+        self.configFiles=configFiles
+        
     def run(self):
         ChildStart()
         super(Server, self).run()
+
+    def reload(self):
+        super(Server, self).reload()
+        configLogging()
+        loadServices()
+        loadConfig(*self.configFiles)
+        configDefaults()
 
 def configDefaults():
     Configuration.mergeDefaults(run_group=None,
@@ -36,14 +40,28 @@ def configDefaults():
                                 services=(),
                                 jobs=())
 
-    
 _svr=None
+
+
+def loadServices():
+    for servicename in Configuration.services:
+        __import__(servicename)
+        mod=sys.modules[servicename]
+        if hasattr(mod, 'serviceInit'):
+            mod.serviceInit()
+
+
+def configLogging():
+    # TO BE DONE
+    pass
 
 def init(*configFiles):
     global _svr
     if _svr:
         raise RuntimeError, "already initialized"
+
     # configure logging -- TBD
+    configLogging()
     
     # load configuration
     loadConfig(*configFiles)
@@ -65,15 +83,11 @@ def init(*configFiles):
         if hasattr(os, 'seteuid'):
             os.seteuid(uid)
         #else?
-    # load services
-    for servicename in Configuration.services:
-        __import__(servicename)
-        mod=sys.modules[servicename]
-        if hasattr(mod, 'serviceInit'):
-            mod.serviceInit()
 
+    loadServices()
+    
     # revv 'er up
-    _svr=Server()
+    _svr=Server(configFiles)
     _svr.mainloop()
     
 __all__=['Server']    
