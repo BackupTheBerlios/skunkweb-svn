@@ -14,5 +14,17 @@ def matchJobs(*jobs):
         return newfunc
     return wrapper
 
+def loginit():
+    g=globals()
+    l=logger.getLogger(__name__)
+    for x in ('critical',
+              'debug',
+              'error',
+              'exception',
+              'info',
+              'log',
+              'warn',):
+        g[x]=getattr(l,x)
+
 
 __all__=['matchJobs']    

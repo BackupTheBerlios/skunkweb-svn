@@ -32,12 +32,12 @@ class SocketManager(ProcessManager):
     def __init__(self,
                  pidFile,
                  config=None,
-                 logger=None,
+#                 logger=None,
                  **kw):
 
         super(SocketManager, self).__init__(pidFile=pidFile,
                                             config=config,
-                                            logger=logger,
+#                                            logger=logger,
                                             **kw)
         self.socketMap = {}
         self._initConnections()

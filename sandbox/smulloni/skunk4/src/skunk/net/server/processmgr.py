@@ -25,6 +25,8 @@ import signal
 import sys
 import time
 
+import skunk.net.server.log as _log
+
 class SignalException(Exception):
     def __init__(self, *msg):
         Exception.__init__(self, 'signal caught: %s' \
@@ -53,7 +55,6 @@ class ProcessManager(object):
     def __init__(self,
                  pidFile,
                  config=None,
-                 logger=None,
                  **kw):
         """create a ProcessManager with the given pidFile path and config object.
         The config object must be something with the attributes given in _defaults.
@@ -62,9 +63,7 @@ class ProcessManager(object):
         if config is None:
             config=bag(**kw)
         self.config=config
-        if logger is None:
-            logger=logging.getLogger('skunk.net.server')
-        self._logger=logger
+        self._initLogging()
         self._initAttrs()
         self._children = {}
 
@@ -80,35 +79,17 @@ class ProcessManager(object):
         # get a module snapshot.
         self.moduleSnapshot()
 
+    def _initLogging(self):
+        for x in _log.__all__:
+            setattr(self, x, getattr(_log, x))
+        
+
     def _initAttrs(self):
         # sync instance attributes with config object and defaults
         for k, v in self._defaults.iteritems():
             # some values in the defaults may be mutable, so use
             # copy.copy
             setattr(self, k, getattr(self.config, k, copy.copy(v)))
-
-    # logging methods
-    def log(self, level, *args, **kwargs):
-        self._logger.log(level, *args, **kwargs)
-
-    def debug(self, *args, **kwargs):
-        self._logger.debug(*args, **kwargs)
-
-    def info(self, *args, **kwargs):
-        self._logger.info(*args, **kwargs)
-
-    def warn(self, *args, **kwargs):
-        self._logger.warn(*args, **kwargs)
-
-    def critical(self, *args, **kwargs):
-        self._logger.critical(*args, **kwargs)
-
-    def error(self, *args, **kwargs):
-        self._logger.error(*args, **kwargs)
-
-    def exception(self, *args, **kwargs):
-        self._logger.exception(*args, **kwargs)
-
 
     def _SIGCHLDHandler(self, *args):
         pass
@@ -190,8 +171,9 @@ class ProcessManager(object):
         else:
            self.info('not going to background')
 
-        # optional chdir? umask? XXX
-
+        os.chdir('/')
+        # optional umask? XXX
+        
         #write the pid file
         open(self.pidFile,'w').write('%s' % os.getpid())
 

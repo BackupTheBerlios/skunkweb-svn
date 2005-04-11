@@ -1,8 +1,10 @@
 from skunk.util.hooks import Hook
-from skunk.web.config import Configuration, scope, updateConfig
+from skunk.util.signal_plus import blockTERM, unblockTERM
+from skunk.web.config import Configuration, updateConfig
+
 
 import select
-from skunk.util.signal_plus import blockTERM, unblockTERM
+
 import signal
 import socket
 import types
