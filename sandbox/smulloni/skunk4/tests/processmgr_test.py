@@ -17,11 +17,11 @@ class TestProcessManager(ProcessManager):
 
 
 def test1():
-    logger=logging.getLogger()
+    logger=logging.getLogger('skunk.net.server')
     logging.basicConfig()
     logger.setLevel(logging.INFO)
     tempname='/tmp/processmgr_test_%d.pid' % os.getpid()
-    mgr=TestProcessManager(numProcs=3, pidFile=tempname, logger=logger)
+    mgr=TestProcessManager(numProcs=3, pidFile=tempname)
     kid=os.fork()
     if kid:
         mgr.mainloop()
