@@ -1,12 +1,13 @@
 
 import grp
+import logging
 import os
 import pwd
 import sys
 
 from skunk.net.server.socketmgr import SocketManager
 from skunk.web.config import Configuration, loadConfig, updateConfig, mergeDefaults
-
+from skunk.util.hooks import Hook
 
 """
 
@@ -15,6 +16,7 @@ file, I suppose; at least until I figure out a better way of dealing
 with configuration.
 
 """
+ChildStart=Hook()
 
 class Server(SocketManager):
     """ the skunkweb server itself."""
@@ -35,10 +37,11 @@ class Server(SocketManager):
         configDefaults()
 
 def configDefaults():
-    Configuration.mergeDefaults(run_group=None,
-                                run_user=None,
-                                services=(),
-                                jobs=())
+    mergeDefaults(pidFile='/tmp/skunk_server.pid',
+                  run_group=None,
+                  run_user=None,
+                  services=(),
+                  jobs=())
 
 _svr=None
 
@@ -52,20 +55,25 @@ def loadServices():
 
 
 def configLogging():
-    # TO BE DONE
+    
+    # a placeholder; this should have better defaults and also look
+    # for a logging config file.  because of the latter, which is
+    # probably configuration dependent, perhaps this should happen
+    # after the configuration is loaded
+    # TO BE DONE    
+    #logging.basicConfig()
     pass
+
 
 def init(*configFiles):
     global _svr
     if _svr:
         raise RuntimeError, "already initialized"
 
-    # configure logging -- TBD
     configLogging()
-    
-    # load configuration
     loadConfig(*configFiles)
     configDefaults()
+    updateConfig()
 
     # set effective user/group, if necessary
     isroot=os.getuid()==0

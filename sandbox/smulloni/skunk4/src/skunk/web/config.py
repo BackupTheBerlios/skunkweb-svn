@@ -71,16 +71,18 @@ def loadConfig(*configfiles):
         _scopeman.load(c, g)
 
 _config_globals=dict(Scope=scope,
-                     Include=load,
+                     Include=loadConfig,
                      Location=Location,
                      Host=Host,
                      Port=Port,
                      ServerPort=ServerPort,
                      IP=IP,
                      UnixSocketPath=UnixSocketPath)
-                 
+
+@with_lock(_scopeman._lock)                 
 def updateConfig(ctxt=None):
-    Configuration.__dict__=_scopeman.getConfig(ctxt)
+    Configuration.__dict__.clear()
+    Configuration.__dict__.update(_scopeman.getConfig(ctxt))
 
 
 __all__=['Configuration',
