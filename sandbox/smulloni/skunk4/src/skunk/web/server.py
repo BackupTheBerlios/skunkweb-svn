@@ -6,7 +6,10 @@ import pwd
 import sys
 
 from skunk.net.server.socketmgr import SocketManager
-from skunk.web.config import Configuration, loadConfig, updateConfig, mergeDefaults
+from skunk.web.config import (Configuration,
+                              loadConfig,
+                              updateConfig,
+                              mergeDefaults)
 from skunk.util.hooks import Hook
 
 """
@@ -16,6 +19,7 @@ file, I suppose; at least until I figure out a better way of dealing
 with configuration.
 
 """
+
 ChildStart=Hook()
 
 class Server(SocketManager):
@@ -31,10 +35,11 @@ class Server(SocketManager):
 
     def reload(self):
         super(Server, self).reload()
-        configLogging()
         loadServices()
         loadConfig(*self.configFiles)
         configDefaults()
+        updateConfig()
+        configLogging()        
 
 def configDefaults():
     mergeDefaults(pidFile='/tmp/skunk_server.pid',
@@ -45,14 +50,16 @@ def configDefaults():
 
 _svr=None
 
-
 def loadServices():
     for servicename in Configuration.services:
-        __import__(servicename)
+        try:
+            __import__(servicename)
+        except ImportError:
+            servicename='skunk.web.services.%s' % servicename
+            __import__(servicename)
         mod=sys.modules[servicename]
         if hasattr(mod, 'serviceInit'):
             mod.serviceInit()
-
 
 def configLogging():
     
@@ -70,10 +77,10 @@ def init(*configFiles):
     if _svr:
         raise RuntimeError, "already initialized"
 
-    configLogging()
     loadConfig(*configFiles)
     configDefaults()
     updateConfig()
+    configLogging()    
 
     # set effective user/group, if necessary
     isroot=os.getuid()==0
