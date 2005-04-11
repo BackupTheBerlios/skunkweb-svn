@@ -58,6 +58,7 @@ class ScopeManager(object):
     def load(self, filename, globals=None):
         """loads configuration from a file."""
         filename=os.path.abspath(filename)
+        s=open(filename).read()
         codeObj=compile(s, filename, 'exec')
         if globals is None:
             globals={}
