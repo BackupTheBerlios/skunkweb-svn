@@ -1,21 +1,88 @@
 from skunk.util.hooks import Hook
+from skunk.util.logutil import loginit
 from skunk.util.signal_plus import blockTERM, unblockTERM
-from skunk.web.config import Configuration, updateConfig
+from skunk.web.config import (Configuration, updateConfig,
+                              _scopeman, mergeDefaults)
 
 import select
 import signal
 import socket
-import types
 import errno
 
+# create standard logging methods
+loginit(make_all=False)
+
+__all__=['BeginSession',
+         'InitRequest',
+         'HandleRequest',
+         'PostRequest',
+         'CleanupRequest',
+         'EndSession',
+         'RequestFailed',
+         'addRequestHandler',
+         'PreemptiveResponse',
+         'DocumentTimeout',
+         'Protocol']
+
+mergeDefaults(DocumentTimeout=30,
+              PostResponseTimeout=20,
+              jobs=())
+
+# hooks
 BeginSession=Hook()
 InitRequest=Hook()
 HandleRequest=Hook()
 PostRequest=Hook()
 CleanupRequest=Hook()
 EndSession=Hook()
-
 RequestFailed=Hook()
+
+def processRequest(sock, addr, protocol):
+    """ the actual handler for requestHandler-managed requests."""
+    requestData, responseData, ctxt=None, None, {}
+    _beginSession(sock, ctxt)
+    
+    # loop until connection is closed
+    while 1:
+        try:
+            blockTERM()
+            signal.signal(signal.SIGALRM, SIGALRMHandler)
+            signal.alarm(Configuration.DocumentTimeout)
+            try:
+                try:
+                    requestData = protocol.marshalRequest(sock, ctxt)
+                    InitRequest(requestData, ctxt)
+                    
+                except PreemptiveResponse, pr:
+                    responseData=protocol.marshalResponse(pr.responseData, ctxt)
+                else:
+                    rawResponse=HandleRequest(requestData, ctxt)
+                    responseData=protocol.marshalResponse(rawResponse, ctxt)
+            except:
+                try:
+                    responseData=protocol.marshalException(ctxt)
+                except:
+                    exception("exception in marshalling exception!") 
+            try:
+                _sendResponse(sock, responseData, requestData, ctxt)
+            except:
+                exception('error sending response')
+        finally:
+            signal.alarm(0)
+            unblockTERM()
+
+        # the protocol can close the connection by return a negative timeout;
+        # ctxt allows it to reference state that has been stored there.
+        timeout=protocol.keepAliveTimeout(ctxt)
+        try:
+            if (timeout<0) or not _canRead(sock, timeout):
+                _endSession(ctxt)
+                return
+        except socket.error, v:
+            if v != errno.ECONNRESET: #ignore conn reset exceptions
+                raise
+            _endSession(ctxt)
+            return
 
 def _beginSession(sock, ctxt):
     # capture the ip & port (or path, for a unix socket)
@@ -40,63 +107,10 @@ def _beginSession(sock, ctxt):
     
     # get configuration data for the job
     updateConfig(ctxt)
-    
-#    # job must be defined, or else die here
-#    if not Configuration.jobs:
-#        message="No job specified for service on %s:%d, "\
-#                 "request cannot be processed!" % (ip, port)
-#        error(message)
-#        raise RuntimeError, message
     BeginSession(sock, ctxt)
 
-
-def _processRequest(sock, addr, protocolImpl):
-    requestData, responseData, ctxt=None, None, {}
-    _beginSession(sock, ctxt)
-    
-    # loop until connection is closed
-    while 1:
-        try:
-            blockTERM()
-            signal.signal(signal.SIGALRM, SIGALRMHandler)
-            signal.alarm(Configuration.DocumentTimeout)
-            try:
-                try:
-                    requestData = protocolImpl.marshalRequest(sock, ctxt)
-                    InitRequest(requestData, ctxt)
-                    
-                except PreemptiveResponse, pr:
-                    responseData=protocolImpl.marshalResponse(pr.responseData, ctxt)
-                else:
-                    rawResponse=HandleRequest(requestData, ctxt)
-                    responseData=protocolImpl.marshalResponse(rawResponse, ctxt)
-            except:
-                try:
-                    responseData=protocolImpl.marshalException(ctxt)
-                except:
-                    exception("exception in marshalling exception!") 
-            try:
-                _sendResponse(sock, responseData, requestData, ctxt)
-            except:
-                exception('error sending response')
-        finally:
-            signal.alarm(0)
-            unblockTERM()
-
-        # the protocol can close the connection by return a negative timeout;
-        # ctxt allows it to reference state that has been stored there.
-        timeout=protocolImpl.keepAliveTimeout(ctxt)
-        try:
-            if (timeout<0) or not _canRead(sock, timeout):
-                _endSession(ctxt)
-                return
-        except socket.error, v:
-            if v != errno.ECONNRESET: #ignore conn reset exceptions
-                raise
-            _endSession(ctxt)
-            return
-
 def _canRead(sock, timeout):
+    """peeks at the socket to see if it can actually be read."""
     sock.setblocking(1)
     input, output, exc=select.select([sock],
                                      [],
@@ -111,9 +125,6 @@ def _canRead(sock, timeout):
 
     return len(input)
 
-class DocumentTimeout(Exception):
-    pass                
-        
 def SIGALRMHandler(*args):
     updateConfig()
     error('Throwing timeout exception')
@@ -153,8 +164,6 @@ def _endSession(ctxt):
         exception("error in EndSession")
     updateConfig()
 
-    
-
 class RequestHandler(object):
     """
     an object, the creation of which adds a service
@@ -164,28 +173,68 @@ class RequestHandler(object):
     def __init__(self, protocol, ports):
         self.protocol=protocol
         self.ports=ports
-        self._initPorts()
-
-    def _initPorts(self):
-        from SkunkWeb import Server
         info('initializing ports')
-        for port in self.ports:
+        conns=[]
+        for port in ports:
             bits = port.split(':')
             if bits[0] == 'TCP':
                 bits[2] = int(bits[2])
             elif bits[0] == 'UNIX':
                 if len(bits)>=3:
                     bits[2] = int(bits[2], 8)
-            else: raise "unrecognized socket specifier: %s" % port
-            Server.addService(tuple(bits), self)
-            
-    def __call__(self, sock, addr):
-        _processRequest(sock, addr, self.protocol)
- 
-def addRequestHandler(protocol, ports):
-    RequestHandler(protocol, ports)
+            else: raise ValueError, "unrecognized socket specifier: %s" % port
+            conns.append(tuple(bits))
+        _scopeman.lock.acquire()
+        try:
+            _scopeman.defaults.setdefault('connections', {})
+            curconns=_scopeman.defaults['connections']
+            for c in conns:
+                curconns[c]=self
+        finally:
+            _scopeman.lock.release()
 
+    def __call__(self, sock, addr):
+        processRequest(sock, addr, self.protocol)
+ 
+addRequestHandler=RequestHandler
 
 class PreemptiveResponse(Exception):
     def __init__(self, marshalledResponse=None):
         self.responseData=marshalledResponse
+
+class DocumentTimeout(Exception):
+    pass                
+
+
+class Protocol(object):
+    """
+    interface for protocols used in handling request and response.
+    """
+
+    def marshalRequest(self, socket, ctxt):
+        '''
+        should return the marshalled request data
+        '''
+        raise NotImplementedError
+
+    def marshalResponse(self, response, ctxt):
+        '''
+        should return response data
+        '''
+        raise NotImplementedError
+
+    def marshalException(self, ctxt, exc_info=None):
+        '''
+        should return response data appropriate for the current exception.
+        '''
+        raise NotImplementedError
+
+    def keepAliveTimeout(self, ctxt):
+        '''
+        how long to keep alive a session.  A negative number will terminate the
+        session.
+        '''
+        return -1
+
+        
+
