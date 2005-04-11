@@ -1,6 +1,6 @@
 
 from skunk.util.hooks import Hook
-RequestFailed=Hook()
+
 
 
 # abstract class for protocols used in handling request and response
@@ -22,7 +22,7 @@ class Protocol(object):
         '''
         raise NotImplementedError
 
-    def marshalException(self, exc_text, ctxt):
+    def marshalException(self, ctxt, exc_info=None):
         '''
         should return response data appropriate for the current exception.
         '''

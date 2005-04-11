@@ -2,9 +2,7 @@ from skunk.util.hooks import Hook
 from skunk.util.signal_plus import blockTERM, unblockTERM
 from skunk.web.config import Configuration, updateConfig
 
-
 import select
-
 import signal
 import socket
 import types
@@ -16,6 +14,8 @@ HandleRequest=Hook()
 PostRequest=Hook()
 CleanupRequest=Hook()
 EndSession=Hook()
+
+RequestFailed=Hook()
 
 def _beginSession(sock, ctxt):
     # capture the ip & port (or path, for a unix socket)
@@ -41,12 +41,12 @@ def _beginSession(sock, ctxt):
     # get configuration data for the job
     updateConfig(ctxt)
     
-    # job must be defined, or else die here
-    if not Configuration.jobs:
-        message="No job specified for service on %s:%d, "\
-                 "request cannot be processed!" % (ip, port)
-        error(message)
-        raise RuntimeError, message
+#    # job must be defined, or else die here
+#    if not Configuration.jobs:
+#        message="No job specified for service on %s:%d, "\
+#                 "request cannot be processed!" % (ip, port)
+#        error(message)
+#        raise RuntimeError, message
     BeginSession(sock, ctxt)
 
 
@@ -72,7 +72,7 @@ def _processRequest(sock, addr, protocolImpl):
                     responseData=protocolImpl.marshalResponse(rawResponse, ctxt)
             except:
                 try:
-                    responseData=protocolImpl.marshalException(logException(), ctxt)
+                    responseData=protocolImpl.marshalException(ctxt)
                 except:
                     exception("exception in marshalling exception!") 
             try:
@@ -111,11 +111,12 @@ def _canRead(sock, timeout):
 
     return len(input)
 
-class DocumentTimeout(Exception): pass                
+class DocumentTimeout(Exception):
+    pass                
         
 def SIGALRMHandler(*args):
     updateConfig()
-    ERROR('Throwing timeout exception')
+    error('Throwing timeout exception')
     signal.alarm(1) # in case they catch this exception
     raise DocumentTimeout, "timeout reached"
 
@@ -124,32 +125,33 @@ def _sendResponse(sock,
                   requestData,
                   ctxt):
     try:
-        SocketScience.send_it_all(sock, responseData)
-    except IOError, en:  #ignore broken pipes
+        sock.sendall(responseData)
+    except IOError, en:
+        # ignore broken pipes
         if en != errno.EPIPE:
-            logException()
+            exception("IO error")
     except:
-        logException()
+        exception("error sending response")
  
     # reset alarm
     signal.alarm(Configuration.PostResponseTimeout)
     
     try:
-        PostRequest(Configuration.job, requestData, ctxt)
+        PostRequest(requestData, ctxt)
     except:
-        logException()                
+        exception("error in PostRequest")
     try:
-        CleanupRequest(Configuration.job, requestData, ctxt)
+        CleanupRequest(requestData, ctxt)
     except:
-        logException()
+        exception("error in CleanupRequest")
 
 
 def _endSession(ctxt):
     try:
-        EndSession(Configuration.job, ctxt)
+        EndSession(ctxt)
     except:
-        logException()
-    Configuration.trim()
+        exception("error in EndSession")
+    updateConfig()
 
     
 
@@ -162,11 +164,11 @@ class RequestHandler(object):
     def __init__(self, protocol, ports):
         self.protocol=protocol
         self.ports=ports
-        self.__initPorts()
+        self._initPorts()
 
-    def __initPorts(self):
+    def _initPorts(self):
         from SkunkWeb import Server
-        LOG('initializing ports')
+        info('initializing ports')
         for port in self.ports:
             bits = port.split(':')
             if bits[0] == 'TCP':
@@ -182,8 +184,6 @@ class RequestHandler(object):
  
 def addRequestHandler(protocol, ports):
     RequestHandler(protocol, ports)
-
-
 
 
 class PreemptiveResponse(Exception):
