@@ -1,3 +1,4 @@
+
 2005-04-07  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
 	* SkunkWeb/SkunkWeb/Server.py (SkunkWebServer.run): fix for
@@ -5,6 +6,17 @@
 	any seteuid before calling setuid, but not before calling
 	setgid. (Backport from skunk4.)
 
+2005-04-13  Andrew Csillag  <drew@localhost.localdomain>
+
+	* SkunkWeb/util/precompile.py.in: now sets runOutOfCache to 0.
+	Obviously, if you are precompiling, running out of the cache makes
+	absolutely zero sense.
+
+2005-03-08  Andrew Csillag  <drew@localhost.localdomain>
+
+	* pylibs/DT/DTLexer.py: fix so that when encountering <<:, the
+	lexer would still find the begin tag.
+	
 2005-01-31  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
 	* pylibs/AE/mime.types: adding mime type for XUL documents.
