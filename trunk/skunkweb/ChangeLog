@@ -1,3 +1,7 @@
+2005-04-17  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* SkunkWeb/Services/requestHandler/requestHandler.py
+	(_processRequest): typo in error handling (backport from skunk4).
 
 2005-04-07  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 

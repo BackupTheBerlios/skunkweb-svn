@@ -5,7 +5,7 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: requestHandler.py,v 1.10 2003/07/18 18:25:51 smulloni Exp $
+# $Id$
 # Time-stamp: <01/05/09 17:48:12 smulloni>
 ########################################################################
 
@@ -98,7 +98,8 @@ def _processRequest(sock, addr, protocolImpl):
                 _endSession(sessionDict)
                 return
         except socket.error, v:
-            if v != errno.ECONNRESET: #ignore conn reset exceptions
+            assert v.args
+            if v.args[0] != errno.ECONNRESET: #ignore conn reset exceptions
                 raise
             _endSession(sessionDict)
             return
