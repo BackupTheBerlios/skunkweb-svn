@@ -1,10 +1,22 @@
+"""
+
+This service splits request handling into two parts:
+
+  1. a client protocol.  This is a translation layer responsible for
+     performing actual communication with the client, and also control
+     whether connections should be kept alive.
+  2. a hook for jobs to handle requests.
+
+
+"""
+
+from skunk.net.SocketScience import can_read
 from skunk.util.hooks import Hook
 from skunk.util.logutil import loginit
 from skunk.util.signal_plus import blockTERM, unblockTERM
 from skunk.web.config import (Configuration, updateConfig,
                               _scopeman, mergeDefaults)
 
-import select
 import signal
 import socket
 import errno
@@ -12,81 +24,27 @@ import errno
 # create standard logging methods
 loginit(make_all=False)
 
-__all__=['BeginSession',
-         'InitRequest',
-         'HandleRequest',
-         'PostRequest',
-         'CleanupRequest',
-         'EndSession',
+__all__=['HandleRequest',
+         'PostResponse',
          'RequestFailed',
          'addRequestHandler',
-         'PreemptiveResponse',
          'DocumentTimeout',
-         'Protocol']
+         'ClientProtocol']
 
 mergeDefaults(DocumentTimeout=30,
               PostResponseTimeout=20,
               jobs=())
 
 # hooks
-BeginSession=Hook()
-InitRequest=Hook()
 HandleRequest=Hook()
-PostRequest=Hook()
-CleanupRequest=Hook()
-EndSession=Hook()
-RequestFailed=Hook()
+PostResponse=Hook()
+
 
 def processRequest(sock, addr, protocol):
     """ the actual handler for requestHandler-managed requests."""
     requestData, responseData, ctxt=None, None, {}
-    _beginSession(sock, ctxt)
-    
-    # loop until connection is closed
-    while 1:
-        try:
-            blockTERM()
-            signal.signal(signal.SIGALRM, SIGALRMHandler)
-            signal.alarm(Configuration.DocumentTimeout)
-            try:
-                try:
-                    requestData = protocol.marshalRequest(sock, ctxt)
-                    InitRequest(requestData, ctxt)
-                    
-                except PreemptiveResponse, pr:
-                    responseData=protocol.marshalResponse(pr.responseData, ctxt)
-                else:
-                    rawResponse=HandleRequest(requestData, ctxt)
-                    responseData=protocol.marshalResponse(rawResponse, ctxt)
-            except:
-                try:
-                    responseData=protocol.marshalException(ctxt)
-                except:
-                    exception("exception in marshalling exception!") 
-            try:
-                _sendResponse(sock, responseData, requestData, ctxt)
-            except:
-                exception('error sending response')
-        finally:
-            signal.alarm(0)
-            unblockTERM()
-
-        # the protocol can close the connection by return a negative timeout;
-        # ctxt allows it to reference state that has been stored there.
-        timeout=protocol.keepAliveTimeout(ctxt)
-        try:
-            if (timeout<0) or not _canRead(sock, timeout):
-                _endSession(ctxt)
-                return
-        except socket.error, v:
-            if v != errno.ECONNRESET: #ignore conn reset exceptions
-                raise
-            _endSession(ctxt)
-            return
-
-def _beginSession(sock, ctxt):
-    # capture the ip & port (or path, for a unix socket)
-    # on which the request came, for scoping of configuration
+    # capture the socket address (ip & port, or path, for a unix
+    # socket) on which the request came, for scoping of configuration
     # data on their basis
     ip, port, unixpath=None, None, None
     try:      
@@ -105,64 +63,71 @@ def _beginSession(sock, ctxt):
     else:
         ctxt['UNIX_SOCKET_PATH']=unixpath
     
-    # get configuration data for the job
+    # load configuration data for the job
     updateConfig(ctxt)
-    BeginSession(sock, ctxt)
+    
+    # loop until connection is closed
+    while 1:
+        try:
+            blockTERM()
+            signal.signal(signal.SIGALRM, SIGALRMHandler)
+            signal.alarm(Configuration.DocumentTimeout)
+            try:
+                rawResponse=HandleRequest(requestData, ctxt)
+                responseData=protocol.marshalResponse(rawResponse, ctxt)
+            except:
+                try:
+                    responseData=protocol.marshalException(ctxt)
+                except:
+                    exception("ironic exception in marshalling exception!")
+                    raise
+            try:
+                sock.sendall(responseData)
+            except IOError, en:
+                # ignore broken pipes
+                if en != errno.EPIPE:
+                    exception("IO error")
+            except:
+                exception("error sending response")
+ 
+            # reset alarm
+            signal.alarm(Configuration.PostResponseTimeout)
+    
+            try:
+                PostResponse(requestData, ctxt)
+            except:
+                exception("error in PostResponse")
 
-def _canRead(sock, timeout):
-    """peeks at the socket to see if it can actually be read."""
-    sock.setblocking(1)
-    input, output, exc=select.select([sock],
-                                     [],
-                                     [],
-                                     timeout)
-    # sanity check
-    try:
-        if input and not input[0].recv(1, socket.MSG_PEEK):
-            return 0
-    except socket.error:
-        return 0
+        finally:
+            signal.alarm(0)
+            unblockTERM()
+            
+        timeout=protocol.keepAliveTimeout(ctxt)
+        ending=timeout<0
+        if not ending:
+            try:
+                ending=not can_read(sock, timeout)
+            except socket.error, e:
+                ending=1
+                if not e.args or e.args[0] != errno.ECONNRESET:
+                    exception('problem with socket, ending connection')
+            except:
+                ending=1
+                exception("problem testing socket")
 
-    return len(input)
+        if ending:
+            updateConfig()
+            return
+
+
 
 def SIGALRMHandler(*args):
     updateConfig()
     error('Throwing timeout exception')
-    signal.alarm(1) # in case they catch this exception
+    # in case this exception is caught, raise another in one second
+    signal.alarm(1) 
     raise DocumentTimeout, "timeout reached"
 
-def _sendResponse(sock,
-                  responseData,                 
-                  requestData,
-                  ctxt):
-    try:
-        sock.sendall(responseData)
-    except IOError, en:
-        # ignore broken pipes
-        if en != errno.EPIPE:
-            exception("IO error")
-    except:
-        exception("error sending response")
- 
-    # reset alarm
-    signal.alarm(Configuration.PostResponseTimeout)
-    
-    try:
-        PostRequest(requestData, ctxt)
-    except:
-        exception("error in PostRequest")
-    try:
-        CleanupRequest(requestData, ctxt)
-    except:
-        exception("error in CleanupRequest")
-
-
-def _endSession(ctxt):
-    try:
-        EndSession(ctxt)
-    except:
-        exception("error in EndSession")
-    updateConfig()
 
 class RequestHandler(object):
     """
@@ -198,17 +163,20 @@ class RequestHandler(object):
  
 addRequestHandler=RequestHandler
 
-class PreemptiveResponse(Exception):
-    def __init__(self, marshalledResponse=None):
-        self.responseData=marshalledResponse
-
 class DocumentTimeout(Exception):
     pass                
 
+RequestFailed=Hook()
+RequestFailed.__doc__="""\
+A hook function that may be used by ClientProtocol implementations in marshalException().
+"""
 
-class Protocol(object):
+
+class ClientProtocol(object):
     """
     interface for protocols used in handling request and response.
+    This is the communication protocol for communicating with the
+    (immediate) client.
     """
 
     def marshalRequest(self, socket, ctxt):

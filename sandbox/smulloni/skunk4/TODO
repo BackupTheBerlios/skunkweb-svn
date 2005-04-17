@@ -59,8 +59,23 @@ isn't feature-complete.)
 Built on top of request handler: a web service, which supports wsgi;
 httpd; aecgi (rename this!); remote protocols, etc.  
 
+--
 
+Should socketmgr call shutdown on the socket before closing?
 
+--
+
+The current requestHandler should be thought through with WSGI in
+mind.  Writing a general purpose server framework is sort of
+pointless, since no one is going to use it, including me.  Let's
+assume that everything is either HTTP or something like AECGI or WSGI
+that encapsulates HTTP data.  (As before, the client communication
+protocol is separate from the internal protocol.)
+
+Can all of the requestHandling stuff be turned into one WSGI pipeline?
+If so, should all the hooks be used at all?  
+
+Internal redirects should be possible.
 
 
 

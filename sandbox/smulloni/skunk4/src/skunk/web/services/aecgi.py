@@ -1,5 +1,5 @@
 from skunk.web.config import Configuration, mergeDefaults
-from skunk.web.services.requestHandler import (Protocol,
+from skunk.web.services.requestHandler import (ClientProtocol,
                                                RequestFailed,
                                                addRequestHandler)
 from skunk.net.SocketScience import read_this_many
@@ -9,7 +9,7 @@ import marshal
 # log methods
 loginit(make_all=False)
 
-class AecgiProtocol(Protocol):
+class AecgiProtocol(ClientProtocol):
     """
     protocol used to communicate with Apache via mod_skunkweb
     """

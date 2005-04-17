@@ -14,6 +14,8 @@ that you'll get as many bytes as you ask for.  Because of this fact
 say, "I want X number of bytes in N seconds or bust."
 
 """
+import select
+import socket
 
 class ShortReadError(Exception): pass
 class ShortWriteError(Exception): pass
@@ -93,8 +95,23 @@ def send_it_all(sock, s):
     return sentlen
 
 
+def can_read(sock, timeout):
+    """Returns whether or not the socket is available for reading
+    within the specified timeout"""
+    oldt=sock.gettimeout()
+    doblock=oldt is not None and oldt<timeout
+    if doblock:
+        sock.setblocking(1)
+    input=select.select([sock],[],[],timeout)[0]
+    ret=len(input) and len(input[0].recv(1, socket.MSG_PEEK))
+    if doblock:
+        sock.settimeout(oldt)
+    return ret
+    
+
 __all__=['ShortReadError',
          'ShortWriteError',
+         'can_read',
          'read_up_to',
          'read_this_many',
          'send_it_all']
