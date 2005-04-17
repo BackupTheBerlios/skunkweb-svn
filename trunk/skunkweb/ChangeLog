@@ -1,5 +1,9 @@
 2005-04-17  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
+	* pylibs/SocketMan/SocketMan.py: now, rather than hard-coding `5'
+	as the argument to listen(), use socket.SOMAXCONN, which is
+	much more than 5 on many platforms.
+
 	* SkunkWeb/Services/requestHandler/requestHandler.py
 	(_processRequest): typo in error handling (backport from skunk4).
 
