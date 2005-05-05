@@ -1,9 +1,9 @@
-from PyDO.dbi import getConnection
-from PyDO.field import Field
-from PyDO.exceptions import PyDOError
-from PyDO.operators import AND, EQ, FIELD
-from PyDO.dbtypes import unwrap
-from PyDO.utils import _tupleize, _setize
+from PyDO2.dbi import getConnection
+from PyDO2.field import Field
+from PyDO2.exceptions import PyDOError
+from PyDO2.operators import AND, EQ, FIELD
+from PyDO2.dbtypes import unwrap
+from PyDO2.utils import _tupleize, _setize
 
 from itertools import izip
 

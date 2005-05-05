@@ -1,7 +1,7 @@
 from distutils.core import setup
 import sys
 sys.path.insert(0, 'src')
-from PyDO import __version__ as version
+from PyDO2 import __version__ as version
 description='a Python ORM supporting many RDBMS backends'
 keywords=['ORM',
           'database',
@@ -18,5 +18,5 @@ setup(author='Drew Csillag',
       name='PyDO',
       url='http://skunkweb.org/PyDO.html',
       version=version,
-      packages=['PyDO', 'PyDO.drivers'],
+      packages=['PyDO2', 'PyDO2.drivers'],
       package_dir={'' : 'src'})

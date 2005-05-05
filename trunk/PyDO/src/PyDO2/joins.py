@@ -15,9 +15,9 @@ Current limits:
 
 """
 
-from PyDO.operators import SQLOperator, AND
-from PyDO.utils import every
-from PyDO.log import debug
+from PyDO2.operators import SQLOperator, AND
+from PyDO2.utils import every
+from PyDO2.log import debug
 
 from itertools import izip
 

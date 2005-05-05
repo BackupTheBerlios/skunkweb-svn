@@ -9,12 +9,12 @@ TODO: add support for sqlite3 and corresponding version of pysqlite.
 """
 
 
-from PyDO.dbi import DBIBase, ConnectionPool
-from PyDO.field import Field
-from PyDO.exceptions import PyDOError
-from PyDO.dbtypes import DATE, TIMESTAMP, BINARY, INTERVAL, \
+from PyDO2.dbi import DBIBase, ConnectionPool
+from PyDO2.field import Field
+from PyDO2.exceptions import PyDOError
+from PyDO2.dbtypes import DATE, TIMESTAMP, BINARY, INTERVAL, \
      date_formats, timestamp_formats
-from PyDO.operators import BindingConverter
+from PyDO2.operators import BindingConverter
 
 import time
 import datetime

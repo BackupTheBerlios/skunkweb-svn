@@ -6,11 +6,11 @@ and attempts to support both.
 
 """
 
-from PyDO.dbi import DBIBase, ConnectionPool
-from PyDO.exceptions import PyDOError
-from PyDO.log import debug
-from PyDO.operators import BindingConverter
-from PyDO.dbtypes import DATE, TIMESTAMP, BINARY, INTERVAL, \
+from PyDO2.dbi import DBIBase, ConnectionPool
+from PyDO2.exceptions import PyDOError
+from PyDO2.log import debug
+from PyDO2.operators import BindingConverter
+from PyDO2.dbtypes import DATE, TIMESTAMP, BINARY, INTERVAL, \
      date_formats, timestamp_formats
 
 import time
