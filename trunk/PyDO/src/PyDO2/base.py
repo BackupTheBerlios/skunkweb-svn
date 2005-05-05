@@ -44,6 +44,7 @@ class _metapydo(type):
     """metaclass for _pydobase.
     Manages attribute inheritance.
     """
+
     def __init__(cls, cl_name, bases, namespace):
 
         # create Field objects declared locally in this class
@@ -125,12 +126,28 @@ class PyDO(dict):
     __metaclass__=_metapydo
     _is_projection=False
 
-    table=None
     mutable=True
     use_attributes=True
     connectionAlias=None
-   
+    table=None
+    schema=None
     _projections={}
+
+    @classmethod
+    def getTable(cls, guess=False):
+        """returns the name of the table, qualified with the schema, if any.
+        If guess is True and no table name has been defined, the class name
+        will be used.
+        """
+        if cls.table is None and guess:
+            table=cls.__name__.lower()
+        else:
+            table=cls.table
+        if cls.schema:
+            return '%s.%s' % (cls.schema, table)
+        else:
+            return table
+
 
     @classmethod
     def project(cls, fields):
@@ -194,7 +211,7 @@ class PyDO(dict):
         values=converter.values
         where, wvals=self._uniqueWhere(conn, self)
         values+=wvals
-        sql = "UPDATE %s SET %s WHERE %s" % (self.table,
+        sql = "UPDATE %s SET %s WHERE %s" % (self.getTable(True),
                                              ", ".join(sqlbuff),
                                              where)
         result=conn.execute(sql, values)
@@ -214,7 +231,7 @@ class PyDO(dict):
         conn=cls.getDBI()
         converter=conn.getConverter()
         sqlbuff=["UPDATE ",
-                 cls.table,
+                 cls.getTable(True),
                  " SET ",
                  ', '.join(["%s = %s" % (x, converter(y)) \
                             for x, y in adict.iteritems()])]
@@ -265,7 +282,7 @@ class PyDO(dict):
             return cls._fields.keys()
         else:
             if not isinstance(qualifier, basestring):
-                qualifier=cls.table
+                qualifier=cls.getTable(True)
             return ["%s.%s" % (qualifier, x) for x in cls._fields.iterkeys()]
 
     @classmethod
@@ -335,7 +352,7 @@ class PyDO(dict):
         converted=map(converter, vals)
         
         sql = 'INSERT INTO %s (%s) VALUES  (%s)' \
-              % (cls.table,
+              % (cls.getTable(True),
                  ', '.join(cols),
                  ', '.join(converted))
         res = conn.execute(sql, converter.values)
@@ -409,7 +426,7 @@ class PyDO(dict):
     def _baseSelect(cls, qualified=False):
         """returns the beginning of a select statement for this object's table."""
         return 'SELECT %s FROM %s' % (', '.join(cls.getColumns(qualified)),
-                                      cls.table)
+                                      cls.getTable(True))
 
 
     @staticmethod
@@ -484,7 +501,7 @@ class PyDO(dict):
             raise ValueError, "cannot deleteSome through an immutable class"
         conn=cls.getDBI()
         sql, values=cls._processWhere(conn, args, fieldData)
-        query=["DELETE FROM %s" % cls.table]
+        query=["DELETE FROM %s" % cls.getTable(True)]
         if sql:
             query.extend(['WHERE', sql])
         return conn.execute(query, values)
@@ -502,7 +519,7 @@ class PyDO(dict):
         # unique unless someone is doing bad things to the
         # object 
         assert unique
-        sql = 'DELETE FROM %s WHERE %s' % (self.table, unique)
+        sql = 'DELETE FROM %s WHERE %s' % (self.getTable(True), unique)
         conn.execute(sql, values)
         # shadow the class attribute with an instance attribute
         self.mutable = False
@@ -653,7 +670,7 @@ def arrayfetch(objs, *args):
               "objects passed to join must have same connection alias"
     allcols=[o.getColumns(True) for o in objs]
     cols=', '.join(', '.join(a) for a in allcols)
-    tables=', '.join(o.table for o in objs)
+    tables=', '.join(o.getTable(True) for o in objs)
     select=["SELECT %s FROM %s" % (cols, tables)]
     if sql:
         select.append(" WHERE ")
