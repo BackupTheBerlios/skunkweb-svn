@@ -29,15 +29,16 @@ him, the fundamental design remains Csillag's.
 Overview
 --------
 
-.. Note::  PyDO is a Python package, but all the public objects
-    within its submodules (with the exception of the drivers) are
-    imported into its top-level namespace.  In what follows we will
-    assume that the current namespace has been initialized by::
+.. Note:: PyDO is a Python package (named ``PyDO2`` in this version),
+    but all the public objects within its submodules (with the
+    exception of the drivers) are imported into its top-level
+    namespace.  In what follows we will assume that the current
+    namespace has been initialized by::
 
-       from PyDO import *
+       from PyDO2 import *
 
     (In particular, this means that when we want to refer to the
-    ``PyDO.PyDO`` class, we shall just write ``PyDO``.)
+    ``PyDO2.PyDO`` class, we shall just write ``PyDO``.)
 
 PyDO's basic strategy is to let you define a ``PyDO`` subclass for
 every table in a database that you wish to represent.  Each ``PyDO``
@@ -76,7 +77,7 @@ Defining Table Classes
 To model a database table, you define a subclass of ``PyDO`` and set
 some class attributes that describe the table::
 
-  from PyDO import PyDO, Sequence, Unique
+  from PyDO2 import PyDO, Sequence, Unique
 
   class Article(PyDO):
       """PyDO class for the Article table"""
@@ -124,7 +125,7 @@ single-column uniqueness constraint.  Multiple-column uniqueness
 constraints can also be indicated, with the ``unique`` class
 attribute::
 
-   from PyDO import PyDO
+   from PyDO2 import PyDO
  
    class ArticleKeywordJunction(PyDO):
    """PyDO class for junction table between Article and Keyword"""
@@ -551,7 +552,7 @@ no pool is used.  ``verbose`` is whether or not to log the generated
 SQL; by default no logging is done.
 
 The class method ``PyDO.getDBI()`` returns a database interface object
-(an instance of a driver-specific ``PyDO.dbi.DBIBase`` subclass),
+(an instance of a driver-specific ``PyDO2.dbi.DBIBase`` subclass),
 which in turn uses an underlying DBAPI database connection.  The DBAPI
 connection is stored in thread-local storage and created lazily when
 an attempt is made to access it, so transactions in different threads
@@ -662,6 +663,9 @@ most notably:
     abstract this, as it seems unnecessary now; you can use
     something database-dependent like
     ``CONSTANT('CURRENT_TIMESTAMP')`` or ``mx.DateTime.now()``. 
+12. The package name of PyDO in this version is ``PyDO2``, not
+    ``PyDO``, so that both versions can be installed simultaneously
+    without any fancy footwork.
 
 
 

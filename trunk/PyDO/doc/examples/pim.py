@@ -3,7 +3,7 @@ a small example PIM application, using sqlite
 """
 import os
 from mx.DateTime import now
-from PyDO import *
+from PyDO2 import *
 
 
 
