@@ -125,7 +125,7 @@ class PyDO(dict):
 
     __metaclass__=_metapydo
     _is_projection=False
-
+    _guess_tablename=True
     mutable=True
     use_attributes=True
     connectionAlias=None
@@ -134,12 +134,13 @@ class PyDO(dict):
     _projections={}
 
     @classmethod
-    def getTable(cls, guess=False):
-        """returns the name of the table, qualified with the schema, if any.
-        If guess is True and no table name has been defined, the class name
-        will be used.
+    def getTable(cls):
+        """returns the name of the table, qualified with the schema,
+        if any.  If cls._guess_tablename is True and no table name has
+        been defined, the class name will be used.
         """
-        if cls.table is None and guess:
+        
+        if cls.table is None and cls._guess_tablename:
             table=cls.__name__.lower()
         else:
             table=cls.table
@@ -211,7 +212,7 @@ class PyDO(dict):
         values=converter.values
         where, wvals=self._uniqueWhere(conn, self)
         values+=wvals
-        sql = "UPDATE %s SET %s WHERE %s" % (self.getTable(True),
+        sql = "UPDATE %s SET %s WHERE %s" % (self.getTable(),
                                              ", ".join(sqlbuff),
                                              where)
         result=conn.execute(sql, values)
@@ -231,7 +232,7 @@ class PyDO(dict):
         conn=cls.getDBI()
         converter=conn.getConverter()
         sqlbuff=["UPDATE ",
-                 cls.getTable(True),
+                 cls.getTable(),
                  " SET ",
                  ', '.join(["%s = %s" % (x, converter(y)) \
                             for x, y in adict.iteritems()])]
@@ -282,7 +283,7 @@ class PyDO(dict):
             return cls._fields.keys()
         else:
             if not isinstance(qualifier, basestring):
-                qualifier=cls.getTable(True)
+                qualifier=cls.getTable()
             return ["%s.%s" % (qualifier, x) for x in cls._fields.iterkeys()]
 
     @classmethod
@@ -352,7 +353,7 @@ class PyDO(dict):
         converted=map(converter, vals)
         
         sql = 'INSERT INTO %s (%s) VALUES  (%s)' \
-              % (cls.getTable(True),
+              % (cls.getTable(),
                  ', '.join(cols),
                  ', '.join(converted))
         res = conn.execute(sql, converter.values)
@@ -426,7 +427,7 @@ class PyDO(dict):
     def _baseSelect(cls, qualified=False):
         """returns the beginning of a select statement for this object's table."""
         return 'SELECT %s FROM %s' % (', '.join(cls.getColumns(qualified)),
-                                      cls.getTable(True))
+                                      cls.getTable())
 
 
     @staticmethod
@@ -501,7 +502,7 @@ class PyDO(dict):
             raise ValueError, "cannot deleteSome through an immutable class"
         conn=cls.getDBI()
         sql, values=cls._processWhere(conn, args, fieldData)
-        query=["DELETE FROM %s" % cls.getTable(True)]
+        query=["DELETE FROM %s" % cls.getTable()]
         if sql:
             query.extend(['WHERE', sql])
         return conn.execute(query, values)
@@ -519,7 +520,7 @@ class PyDO(dict):
         # unique unless someone is doing bad things to the
         # object 
         assert unique
-        sql = 'DELETE FROM %s WHERE %s' % (self.getTable(True), unique)
+        sql = 'DELETE FROM %s WHERE %s' % (self.getTable(), unique)
         conn.execute(sql, values)
         # shadow the class attribute with an instance attribute
         self.mutable = False
@@ -670,7 +671,7 @@ def arrayfetch(objs, *args):
               "objects passed to join must have same connection alias"
     allcols=[o.getColumns(True) for o in objs]
     cols=', '.join(', '.join(a) for a in allcols)
-    tables=', '.join(o.getTable(True) for o in objs)
+    tables=', '.join(o.getTable() for o in objs)
     select=["SELECT %s FROM %s" % (cols, tables)]
     if sql:
         select.append(" WHERE ")
