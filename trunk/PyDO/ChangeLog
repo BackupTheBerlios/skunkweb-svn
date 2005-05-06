@@ -1,5 +1,7 @@
 2005-05-06  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
+	* src/PyDO2/__init__.py (__version__): bumped version to alpha 1.
+
 	* doc/manual.rst: now mentions "newfetch".
 	* src/PyDO2/base.py: adding new method, "newfetch" (equivalent to
 	calling new() with refetch=1).  Also, fixes some bugs with getUnique().

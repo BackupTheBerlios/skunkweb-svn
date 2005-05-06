@@ -669,7 +669,7 @@ most notably:
 12. The package name of PyDO in this version is ``PyDO2``, not
     ``PyDO``, so that both versions can be installed simultaneously
     without any fancy footwork.
-
+13. The ``newfetch`` method of ``PyDO`` objects is new in PyDO2.
 
 
 
