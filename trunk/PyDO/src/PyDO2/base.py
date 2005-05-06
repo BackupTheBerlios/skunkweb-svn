@@ -371,6 +371,11 @@ class PyDO(dict):
         return cls.getUnique(**fieldData)
 
     @classmethod
+    def newfetch(cls, **fieldData):
+        """syntactic sugar for .new(refetch=1, **fieldData)"""
+        return cls.new(refetch=True, **fieldData)
+
+    @classmethod
     def _matchUnique(cls, kw):
         """return a tuple of column names that will uniquely identify
         a row given the choices from kw
