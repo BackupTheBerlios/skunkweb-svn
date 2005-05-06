@@ -644,7 +644,7 @@ class PyDO(dict):
         vals=converter.values
         joins.extend(['%s.%s = %s.%s' % (pivotTable,
                                          col,
-                                         thatObject.table,
+                                         thatObject.getTable(),
                                          attr) \
                       for attr, col in zip(thatAttrNames,
                                            thatSideColumns)])

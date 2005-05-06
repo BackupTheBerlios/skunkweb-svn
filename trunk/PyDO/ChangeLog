@@ -1,8 +1,13 @@
 2005-05-06  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
+	* src/PyDO2/base.py (PyDO._joinTableSQL): fixed to use getTable().
+	(PyDO): now support schema name in a separate schema attribute,
+	and permit table name to be guessed from class name if
+	_guess_tablename is True (as it is by default).
+
 	* src/PyDO2/__init__.py (__version__): bumped version to alpha 1.
 
-	* doc/manual.rst: now mentions "newfetch".
+	* doc/manual.rst: now mentions "newfetch" and auto-guessing.
 	* src/PyDO2/base.py: adding new method, "newfetch" (equivalent to
 	calling new() with refetch=1).  Also, fixes some bugs with getUnique().
 

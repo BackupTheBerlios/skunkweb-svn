@@ -86,7 +86,10 @@ some class attributes that describe the table::
       # connect to the database
       connectionAlias='my_db'
 
-      # the table name
+      # the schema name, if applicable, e.g.:
+      # schema = 'myschema'
+
+      # the table name.  
       table='article'
 
       # whether we are allowed to update instances of this class;
@@ -105,10 +108,21 @@ The ``connectionAlias`` attribute must correspond to an alias
 initialized elsewhere that tells PyDO how to create a database
 connection.
 
+If the database supports schemas, like alter versions of PostgreSQL,
+the schema name can be specified by setting the ``schema`` attribute.
+When PyDO then generates SQL referring to this table, it will qualify it
+with the schema name.  By default, ``schema`` is ``None`` and there
+will be no such qualification.  (The method that returns the actual
+qualified tablename is ``getTable()``.)
+
 The ``table`` attribute is simply the name of the table, view, or
-table-like entity (set function, for instance).  If the database
-supports schemas, like later version of PostgreSQL, the schema name
-can be included here, if desired (e.g., ``myschema.mytable``).
+table-like entity (set function, for instance).  By default, you can
+leave this out if the name of the class is the name of the table; in
+this case, ``cls.table`` will be None, but ``cls.getTable()`` will
+return a name, possibly schema-qualified, made by coercing the class
+name to lowercase.  If you don't want to allow this behavior, you can
+suppress it by setting the class attribute ``_guess_tablename`` to
+``False``. 
 
 The ``fields`` attribute should be a tuple or list of either ``Field``
 instances (of which ``Sequence`` and ``Unique`` are subclasses),
@@ -670,7 +684,8 @@ most notably:
     ``PyDO``, so that both versions can be installed simultaneously
     without any fancy footwork.
 13. The ``newfetch`` method of ``PyDO`` objects is new in PyDO2.
-
+14. The support of schema-qualified table names and optional guessing
+    of table name from class name is new in PyDO2.
 
 
 
