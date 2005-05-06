@@ -348,13 +348,16 @@ To insert a new record in the database and create the corresponding
 If the object has a field which will acquire a default non-null value
 even though you haven't specified a value for it, PyDO will refetch it
 for you of you pass the additional keyword argument ``refetch`` with a
-true value::
+true value, or use the equivalent method ``newfetch``::
 
    >>> poem=Sonnet.new(refetch=True,
                        title='Anguished Parsnips',
                        body='\n'.join(' '.join(['oy veh!' * 5]) * 14))
    >>> poem.id
    456740
+   >>> dud=Failure.newfetch(name='Charlie Brown')
+   >>> dud.id
+   1
 
 This is equivalent to calling ``refresh()`` after ``new()``, and also
 requires that a uniqueness constraint be been declared for the class.

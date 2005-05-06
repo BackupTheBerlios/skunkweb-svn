@@ -384,7 +384,7 @@ class PyDO(dict):
             if isinstance(unique, (unicode,str)):
                 if kw.get(unique)!=None:
                     return (unique,)
-            elif isinstance(unique, (list,tuple)):
+            elif isinstance(unique, (frozenset,list,tuple)):
                 for u in unique:
                     if not kw.has_key(u):
                         break
@@ -421,7 +421,7 @@ class PyDO(dict):
         where, values = cls._uniqueWhere(conn, fieldData)
         sql = "%s WHERE %s" % (cls._baseSelect(), where)
         results = conn.execute(sql, values)
-        if not results:
+        if not results or not isinstance(results, (list,tuple)):
             return
         if len(results) > 1:
             raise PyDOError, 'got more than one row on unique query!'
