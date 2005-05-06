@@ -1,3 +1,13 @@
+2005-05-06  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* doc/manual.rst: now mentions "newfetch".
+	* src/PyDO2/base.py: adding new method, "newfetch" (equivalent to
+	calling new() with refetch=1).  Also, fixes some bugs with getUnique().
+
+2005-05-05  Jacob Smullyan  <smulloni@smullyan.org>	
+	 
+	* (many files): renamed package from PyDO to PyDO2.
+
 2005-04-08  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
 
 	* doc/manual.rst: an example used "!=%s" with a bind variable of
