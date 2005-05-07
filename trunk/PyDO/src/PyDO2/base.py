@@ -334,6 +334,10 @@ class PyDO(dict):
         fieldData.  This will also effect an INSERT into the database.  If refetch
         is true, effectively do a getUnique on cls.
         """
+        return cls._new(fieldData, refetch)
+
+    @classmethod
+    def _new(cls, fieldData, refetch=None):
         if not cls.mutable:
             raise ValueError, 'cannot make a new immutable object!'
         if refetch and not cls._unique:
@@ -373,7 +377,7 @@ class PyDO(dict):
     @classmethod
     def newfetch(cls, **fieldData):
         """syntactic sugar for .new(refetch=1, **fieldData)"""
-        return cls.new(refetch=True, **fieldData)
+        return cls._new(fieldData, True)
 
     @classmethod
     def _matchUnique(cls, kw):

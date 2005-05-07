@@ -4,6 +4,11 @@
 	(PyDO): now support schema name in a separate schema attribute,
 	and permit table name to be guessed from class name if
 	_guess_tablename is True (as it is by default).
+	(PyDO.new): moved the implementation of new to a new method, _new,
+	which moves fieldData from kwargs to a dictionary.  The only
+	reason to do this is that someone might have a column called
+	'refetch'; if they do, they can now implement new() in their class 
+	to address the problem.
 
 	* src/PyDO2/__init__.py (__version__): bumped version to alpha 1.
 
