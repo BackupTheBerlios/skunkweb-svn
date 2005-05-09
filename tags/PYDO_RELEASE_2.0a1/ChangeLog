@@ -1,0 +1,91 @@
+2005-05-06  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO2/base.py (PyDO._joinTableSQL): fixed to use getTable().
+	(PyDO): now support schema name in a separate schema attribute,
+	and permit table name to be guessed from class name if
+	_guess_tablename is True (as it is by default).
+	(PyDO.new): moved the implementation of new to a new method, _new,
+	which moves fieldData from kwargs to a dictionary.  The only
+	reason to do this is that someone might have a column called
+	'refetch'. (PyDO.project): fix to pass the table name to
+	projections, in case the table attribute doesn't contain it.
+
+	* src/PyDO2/__init__.py (__version__): bumped version to alpha 1.
+
+	* doc/manual.rst: now mentions "newfetch" and auto-guessing.
+	* src/PyDO2/base.py: adding new method, "newfetch" (equivalent to
+	calling new() with refetch=1) and "newnofetch".  Also, fixes some
+	bugs with getUnique(). 
+
+2005-05-05  Jacob Smullyan  <smulloni@smullyan.org>	
+	 
+	* (many files): renamed package from PyDO to PyDO2.
+
+2005-04-08  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
+
+	* doc/manual.rst: an example used "!=%s" with a bind variable of
+	None; but that is bad sql ("!=NULL" rather than "IS NOT NULL").
+	So I changed None to an empty string.
+
+2005-03-21  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
+
+	* doc/manual.rst: fixed inaccuracy in describing what input
+	getUnique() tolerates.
+
+	* src/PyDO/drivers/mysqlconn.py: adding stub implementation of
+	typewrapper conversion for mysql, pending testing.
+
+2005-03-20  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO/base.py (__all__): adding arrayfetch.
+
+2005-03-20  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
+
+	* doc/manual.rst: document the Join classes and arrayfetch.
+
+2005-03-19  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
+
+	* src/PyDO/joins.py: curried the Join class with a slew of subclasses. 
+
+2005-03-19  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO/joins.py (Join.getSome): reimplemented a bit.  Still
+	doesn't work with nested joins or self-joins.
+
+2005-03-18  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO/joins.py: starting work on module that does various
+	types of joins.  Doesn't work yet.
+
+2005-03-17  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO/utils.py: moved some utility functions to a separate
+	module. 
+
+	* src/PyDO/base.py (PyDO.getColumns): change to behavior, and
+	method signature (optional parameter is now "qualifier", not
+	"qualified").  If qualifier is a string, it will be used as the
+	table alias; if it isn't and is true, the full table name will be
+	used. 
+
+2005-03-16  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO/base.py (_metapydo.__init__): removed unnecessary
+	dict() around generator expression passed to update().
+	(PyDO.joinTable): now it is possible to add to the where clause, a
+	la getSome(), including order, limit, and offset, and add extra
+	tables to the select as well.
+	(arrayfetch): put in None rather than a PyDO object when all the
+	columns are null for an object.  This method, however, is probably
+	going bye-bye, to be replaced by a happy little family of Join
+	objects. 
+
+2005-03-15  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO/base.py (_setize): removed spurious variable
+	assignments (left in by mistake).
+
+2005-03-15  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/PyDO/__init__.py (__version__): cutting first alpha release (2.0a0).
+

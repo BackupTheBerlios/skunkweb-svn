@@ -1,0 +1,44 @@
+Needed now:
+
+  * mysql needs type wrapper converters, test improvements
+   * tests: many more.  creating PyDO classes within the test might
+       be a good idea in many cases.
+
+2nd priority:
+
+  * fix array fetch and add it to joins module.
+  * make joins work with self-joins and nested joins.
+  * set a default field class, so custom field classes can be
+    specified with tuple notation if desired.
+
+Other databases to support (eventually):
+  * firebird
+  * sqlrelay 
+  * gadfly (does anyone use this?)
+  * maxdb
+  * odbc bindings (mxODBC; Drew's pure python version?) 
+  * oracle (which adapter?)
+  * sybase
+
+Deferred goals:
+  * introspection (especially, what are the columns of a table?) 
+    and hence, generating CREATE TABLE statements (not a huge priority of
+    mine, but someone might use it).
+
+
+
+
+..
+   Local Variables:
+   mode: rst
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
+
+
+
+  
+
+
