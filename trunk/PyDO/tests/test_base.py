@@ -15,9 +15,9 @@ commit=base.commit
 rollback=base.rollback
 
 class PyDOGroup(base):
-    table="pydogroup"
     fields=(Sequence('id'),
             'groupname')
+    refetch=True
 
     def getUsers(self):
         return self.joinTable('id',
@@ -34,11 +34,10 @@ class user_group(base):
             'group_id')
 
 class PyDOUser(base):
-
-    table='pydouser'
     fields=(Sequence('id'),
             'firstname',
             'lastname')
+    refetch=True
 
     def getGroups(self):
         return self.joinTable('id',
@@ -53,7 +52,7 @@ class PyDOUser(base):
 
 
 class Article(base):
-    table="article"
+    refetch=True
     fields=(Sequence('id'),
             'title',
             'body',
@@ -102,28 +101,19 @@ def init_data(PyDOUser=PyDOUser,
               PyDOGroup=PyDOGroup,
               user_group=user_group,
               Article=Article):
-    users=[PyDOUser.new(refetch=1,
-                        firstname='Colin',
+    users=[PyDOUser.new(firstname='Colin',
                         lastname='Powell'),
-           PyDOUser.new(refetch=1,
-                        firstname='Richard',
+           PyDOUser.new(firstname='Richard',
                         lastname='Clarke'),
-           PyDOUser.new(refetch=1,
-                        firstname='Jacques',
+           PyDOUser.new(firstname='Jacques',
                         lastname='Chirac'),
-           PyDOUser.new(refetch=1,
-                        firstname='Goldie',
+           PyDOUser.new(firstname='Goldie',
                         lastname='Hawn')]
-    groups=[PyDOGroup.new(refetch=1,
-                          groupname='ForkLovers'),
-            PyDOGroup.new(refetch=1,
-                          groupname='SpoonLovers'),
-            PyDOGroup.new(refetch=1,
-                          groupname='KnifeLovers'),
-            PyDOGroup.new(refetch=1,
-                          groupname='ChopstickLovers'),
-            PyDOGroup.new(refetch=1,
-                          groupname='HandLovers')]
+    groups=[PyDOGroup.new(groupname='ForkLovers'),
+            PyDOGroup.new(groupname='SpoonLovers'),
+            PyDOGroup.new(groupname='KnifeLovers'),
+            PyDOGroup.new(groupname='ChopstickLovers'),
+            PyDOGroup.new(groupname='HandLovers')]
 
     # each user joins two groups at random
     for u in users:
@@ -133,8 +123,7 @@ def init_data(PyDOUser=PyDOUser,
     articles=[]
     for u in users:
         for i in range(random.randint(2, 10)):
-            articles.append(Article.new(refetch=1,
-                                        creator=u.id,
+            articles.append(Article.new(creator=u.id,
                                         title=_inventTitle(),
                                         body=_concoctBody(),
                                         created=mx.DateTime.now()))

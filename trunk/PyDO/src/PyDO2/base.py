@@ -131,6 +131,7 @@ class PyDO(dict):
     connectionAlias=None
     table=None
     schema=None
+    refetch=False
     _projections={}
 
     @classmethod
@@ -170,7 +171,9 @@ class PyDO(dict):
             return cls._projections[t]
         klsname='projection_%s__%s' % (cls.__name__,
                                        '_'.join(s))
-        kls=type(klsname, (cls,), dict(fields=fields, _is_projection=True))
+        kls=type(klsname, (cls,), dict(fields=fields,
+                                       table=cls.getTable(),
+                                       _is_projection=True))
         cls._projections[t]=kls
         return kls
 
@@ -329,15 +332,31 @@ class PyDO(dict):
         cls.getDBI().rollback()
 
     @classmethod
-    def new(cls, refetch=None,  **fieldData):
-        """create and return a new data class instance using the values in
-        fieldData.  This will also effect an INSERT into the database.  If refetch
-        is true, effectively do a getUnique on cls.
-        """
+    def new(cls, **fieldData):
+        """create and return a new data class instance using the
+        values in fieldData.  This will also effect an INSERT into the
+        database.  If the keyword argument refetch is passed and is true,
+        or, if it is not and cls.refetch is true, effectively do a getUnique
+        on cls.  """
+        if 'refetch' in cls._fields:
+            # don't use refetch keyword
+            refetch=cls.refetch
+        elif 'refetch' in fieldData:
+            refetch=fieldData.pop('refetch')
+        else:
+            refetch=cls.refetch
         return cls._new(fieldData, refetch)
 
+    def newfetch(cls, **fieldData):
+        """like new(), but always refetches."""
+        return cls._new(fieldData, 1)
+
+    def newnofetch(cls, **fieldData):
+        """like new(), but never refetches."""
+        return cls._new(fieldData, 0)
+
     @classmethod
-    def _new(cls, fieldData, refetch=None):
+    def _new(cls, fieldData, refetch):
         if not cls.mutable:
             raise ValueError, 'cannot make a new immutable object!'
         if refetch and not cls._unique:
@@ -373,11 +392,6 @@ class PyDO(dict):
         if not refetch:
             return cls(fieldData)
         return cls.getUnique(**fieldData)
-
-    @classmethod
-    def newfetch(cls, **fieldData):
-        """syntactic sugar for .new(refetch=1, **fieldData)"""
-        return cls._new(fieldData, True)
 
     @classmethod
     def _matchUnique(cls, kw):

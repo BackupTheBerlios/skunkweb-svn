@@ -7,14 +7,15 @@
 	(PyDO.new): moved the implementation of new to a new method, _new,
 	which moves fieldData from kwargs to a dictionary.  The only
 	reason to do this is that someone might have a column called
-	'refetch'; if they do, they can now implement new() in their class 
-	to address the problem.
+	'refetch'. (PyDO.project): fix to pass the table name to
+	projections, in case the table attribute doesn't contain it.
 
 	* src/PyDO2/__init__.py (__version__): bumped version to alpha 1.
 
 	* doc/manual.rst: now mentions "newfetch" and auto-guessing.
 	* src/PyDO2/base.py: adding new method, "newfetch" (equivalent to
-	calling new() with refetch=1).  Also, fixes some bugs with getUnique().
+	calling new() with refetch=1) and "newnofetch".  Also, fixes some
+	bugs with getUnique(). 
 
 2005-05-05  Jacob Smullyan  <smulloni@smullyan.org>	
 	 

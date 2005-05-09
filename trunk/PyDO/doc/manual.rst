@@ -96,6 +96,11 @@ some class attributes that describe the table::
       # this defaults to True anyway.
       mutable=True
 
+      # whether, after creating a new instance (i.e., performing
+      # an insert) the instance should be refreshed to get any
+      # default (or other automatic) values.
+      refetch=True
+
       # declare the fields
       fields=(Sequence('id'),
               Unique('title'),
@@ -360,21 +365,38 @@ To insert a new record in the database and create the corresponding
    {'email' : 'alvin@krinst.org', 'magazine' : 'NYRB'}
 
 If the object has a field which will acquire a default non-null value
-even though you haven't specified a value for it, PyDO will refetch it
-for you of you pass the additional keyword argument ``refetch`` with a
-true value, or use the equivalent method ``newfetch``::
+even though you haven't specified a value for it, PyDO will
+automatically refetch it for you if you have set ``cls.refetch`` to a
+true value:: 
 
-   >>> poem=Sonnet.new(refetch=True,
-                       title='Anguished Parsnips',
+   >>> Sonnet.refetch
+   True
+   >>> poem=Sonnet.new(title='Anguished Parsnips',
                        body='\n'.join(' '.join(['oy veh!' * 5]) * 14))
-   >>> poem.id
-   456740
-   >>> dud=Failure.newfetch(name='Charlie Brown')
-   >>> dud.id
-   1
+   >>> poem.created
+   datetime.datetime(2005, 5, 9, 11, 6, 25, 221004)
 
 This is equivalent to calling ``refresh()`` after ``new()``, and also
 requires that a uniqueness constraint be been declared for the class.
+You can also explicitly set the refetch behavior on a per-call basis
+by using the methods ``newfetch()`` and ``newnofetch()``, or (for
+backwards compatibility with PyDO1) by using a deprecated keyword
+parameter, ``refetch``, to ``new()``::
+
+   >>> dud=Failure.newfetch(name="Charlie Brown")
+   >>> dud2=Failure.new(refetch=1, name="Oblomov")
+
+Usually this isn't necessary, as whether you need to refetch is
+primarily determined by the characteristics of the table, but
+sometimes it useful -- for instance, if refetch is true class-wide,
+but you don't plan on doing anything with the object you are
+creating, it will be more efficient to use ``newnofetch``.
+
+.. Note:: The ``refetch`` parameter to ``new()`` is deprecated because
+     it makes it awkward to have a column named ``refetch``.  In PyDO2,
+     if you have a field named "refetch", the ``refetch`` keyword
+     argument to ``new()`` will be interpreted as field data and won't
+     affect refetch behavior.  
 
 If a class is declared mutable and has a uniqueness constraint, it is
 possible to mutate an undeleted instance of it by calling::
@@ -683,7 +705,12 @@ most notably:
 12. The package name of PyDO in this version is ``PyDO2``, not
     ``PyDO``, so that both versions can be installed simultaneously
     without any fancy footwork.
-13. The ``newfetch`` method of ``PyDO`` objects is new in PyDO2.
+13. The ``newfetch()`` and ``newnofetch()`` methods and the
+    ``refetch`` and ``_refetch_keyword`` class attributes of ``PyDO``
+    objects are new in PyDO2; in PyDO1, the ``refetch`` keyword
+    argument to ``new()`` was hence used much more.  Also, in PyDO1, 
+    ``new()`` was broken for the unlikely case of a column named
+    "refetch". 
 14. The support of schema-qualified table names and optional guessing
     of table name from class name is new in PyDO2.
 
