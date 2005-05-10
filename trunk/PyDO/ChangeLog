@@ -1,3 +1,8 @@
+2005-05-10  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* doc/examples/pim.py: removed refetchs and table attributes,
+	added a couple of comments.
+	
 2005-05-10  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* setup.py (classifiers): little improvements to setup.py.
