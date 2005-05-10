@@ -1,4 +1,11 @@
-2005-05-06  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+2005-05-10  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* setup.py (classifiers): little improvements to setup.py.
+
+2005-05-09  Jacob Smullyan <smulloni@smullyan.org>
+	* cut release PyDO-2.0a1.
+
+2005-05-06  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/PyDO2/base.py (PyDO._joinTableSQL): fixed to use getTable().
 	(PyDO): now support schema name in a separate schema attribute,
@@ -21,13 +28,13 @@
 	 
 	* (many files): renamed package from PyDO to PyDO2.
 
-2005-04-08  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
+2005-04-08  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* doc/manual.rst: an example used "!=%s" with a bind variable of
 	None; but that is bad sql ("!=NULL" rather than "IS NOT NULL").
 	So I changed None to an empty string.
 
-2005-03-21  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
+2005-03-21  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* doc/manual.rst: fixed inaccuracy in describing what input
 	getUnique() tolerates.
@@ -35,29 +42,29 @@
 	* src/PyDO/drivers/mysqlconn.py: adding stub implementation of
 	typewrapper conversion for mysql, pending testing.
 
-2005-03-20  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+2005-03-20  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/PyDO/base.py (__all__): adding arrayfetch.
 
-2005-03-20  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
+2005-03-20  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* doc/manual.rst: document the Join classes and arrayfetch.
 
-2005-03-19  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
+2005-03-19  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/PyDO/joins.py: curried the Join class with a slew of subclasses. 
 
-2005-03-19  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+2005-03-19  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/PyDO/joins.py (Join.getSome): reimplemented a bit.  Still
 	doesn't work with nested joins or self-joins.
 
-2005-03-18  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+2005-03-18  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/PyDO/joins.py: starting work on module that does various
 	types of joins.  Doesn't work yet.
 
-2005-03-17  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+2005-03-17  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/PyDO/utils.py: moved some utility functions to a separate
 	module. 
@@ -68,7 +75,7 @@
 	table alias; if it isn't and is true, the full table name will be
 	used. 
 
-2005-03-16  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+2005-03-16  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/PyDO/base.py (_metapydo.__init__): removed unnecessary
 	dict() around generator expression passed to update().
@@ -80,7 +87,7 @@
 	going bye-bye, to be replaced by a happy little family of Join
 	objects. 
 
-2005-03-15  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+2005-03-15  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/PyDO/base.py (_setize): removed spurious variable
 	assignments (left in by mistake).
