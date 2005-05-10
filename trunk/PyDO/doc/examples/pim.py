@@ -5,11 +5,8 @@ import os
 from mx.DateTime import now
 from PyDO2 import *
 
-
-
 class Contact(PyDO):
     connectionAlias='pim'
-    table='contact'
     fields=(Sequence('id'),
             'first_name',
             'last_name',
@@ -30,7 +27,7 @@ class Contact(PyDO):
             return Address.getUnique(id=self.address_id2)
 
     def addNote(self, title, body):
-        n=Note.new(refetch=1, title=title, body=body, created=now())
+        n=Note.new(title=title, body=body, created=now())
         junction=ContactNote.new(contact_id=self.id,
                                  note_id=n.id)
         
@@ -45,7 +42,6 @@ class Contact(PyDO):
 
 class Address(PyDO):
     connectionAlias='pim'
-    table='address'
     fields=(Sequence('id'),
             'line1',
             'line2',
@@ -60,7 +56,11 @@ class Address(PyDO):
 
 class Note(PyDO):
     connectionAlias="pim"
-    table="note"
+    # if created had a default value (which
+    # it would if the version of sqlite this was
+    # tested on supported anything like CURRENT_TIMESTAMP)
+    # I'd set:
+    # refetch=True
     fields=(Sequence('id'),
             'title',
             'body',
@@ -68,6 +68,8 @@ class Note(PyDO):
 
 class ContactNote(PyDO):
     connectionAlias='pim'
+    # table is specified here, because the class name
+    # is not the same as the table name
     table="contact_note"
     fields=('contact_id',
             'note_id')
@@ -78,15 +80,13 @@ DB=os.environ.get('PIMDB', 'pim.db')
 initAlias('pim', 'sqlite', DB)
 
 def initDB():
-    joseAddress=Address.new(refetch=1,
-                            line1="43 Chestnut Place",
+    joseAddress=Address.new(line1="43 Chestnut Place",
                             line2="Fourth Floor",
                             town="Princeton",
                             state="NJ",
                             country="USA",
                             postal_code="06540")
-    jose=Contact.new(refetch=1,
-                     first_name='Jose',
+    jose=Contact.new(first_name='Jose',
                      last_name='Gutenberg',
                      email1='jgutenberg@example.com',
                      address_id1=joseAddress.id,
