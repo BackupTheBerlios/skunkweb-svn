@@ -347,10 +347,12 @@ class PyDO(dict):
             refetch=cls.refetch
         return cls._new(fieldData, refetch)
 
+    @classmethod
     def newfetch(cls, **fieldData):
         """like new(), but always refetches."""
         return cls._new(fieldData, 1)
 
+    @classmethod
     def newnofetch(cls, **fieldData):
         """like new(), but never refetches."""
         return cls._new(fieldData, 0)

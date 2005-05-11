@@ -1,3 +1,9 @@
+2005-05-11  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO2/base.py (PyDO.newfetch, PyDO.newnofetch): brown bag
+	typo fix: was missing @classmethod for these two methods, which
+	hence did not work.
+
 2005-05-10  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
 	* doc/examples/pim.py: removed refetchs and table attributes,
