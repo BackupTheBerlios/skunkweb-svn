@@ -1,3 +1,7 @@
+2005-05-10  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
+
+	* SkunkWeb/Services/sessionHandler/PsycopgSessionStore.py:
+	adding (contributed by Nick Murtagh).
 
 2005-04-18  Jacob Smullyan  <smulloni@smullyan.org>
 	
