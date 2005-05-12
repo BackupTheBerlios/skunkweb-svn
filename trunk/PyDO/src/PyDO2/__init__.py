@@ -18,4 +18,4 @@ from PyDO2.dbtypes import *
 from PyDO2.log import *
 from PyDO2.joins import *
 
-__version__='2.0a1'
+__version__='2.0a2'
