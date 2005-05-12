@@ -1,0 +1,27 @@
+CREATE TABLE pydogroup (
+   id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+   groupname VARCHAR(128) UNIQUE NOT NULL
+);
+
+CREATE TABLE pydouser (
+   id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+   firstname VARCHAR(128),
+   lastname VARCHAR(128)
+);
+
+CREATE TABLE pydouser_pydogroup (
+   user_id INTEGER NOT NULL REFERENCES pydouser,
+   group_id INTEGER NOT NULL REFERENCES pydogroup,
+   PRIMARY KEY(user_id, group_id)
+);
+
+CREATE TABLE article (
+   id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+   title TEXT NOT NULL,
+   body LONGTEXT NOT NULL,
+   creator INTEGER NOT NULL REFERENCES pydouser,
+   created TIMESTAMP
+);
+
+
+

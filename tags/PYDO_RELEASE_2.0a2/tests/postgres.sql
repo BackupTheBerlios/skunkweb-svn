@@ -1,0 +1,27 @@
+CREATE TABLE pydogroup (
+   id SERIAL PRIMARY KEY,
+   groupname TEXT UNIQUE NOT NULL
+);
+
+CREATE TABLE pydouser (
+   id SERIAL PRIMARY KEY,
+   firstname TEXT,
+   lastname TEXT
+);
+
+CREATE TABLE pydouser_pydogroup (
+   user_id INTEGER NOT NULL REFERENCES pydouser,
+   group_id INTEGER NOT NULL REFERENCES pydogroup,
+   PRIMARY KEY(user_id, group_id)
+);
+
+CREATE TABLE article (
+   id SERIAL PRIMARY KEY,
+   title TEXT NOT NULL,
+   body TEXT NOT NULL,
+   creator INTEGER NOT NULL REFERENCES pydouser,
+   created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
