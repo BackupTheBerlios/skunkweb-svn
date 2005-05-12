@@ -53,16 +53,15 @@ class _metapydo(type):
         # we keep track of which fields are declared just with a string;
         # inheritance semantics are a little different for these
         simplefields=set()
-        
         for f in namespace.get('fields', ()):
             # support for tuple syntax for plain Jane fields.
             if isinstance(f, str):
                 simplefields.add(f)                
-                f=Field(f)
+                f=cls._create_field(f)
             elif isinstance(f, dict):
-                f=Field(**f)
+                f=cls._create_field(**f)
             elif isinstance(f, (tuple, list)):
-                f=Field(*f)
+                f=cls._create_field(*f)
             elif not isinstance(f, Field):
                 raise ValueError, "cannot coerce into a field: %s" % f
                 
@@ -134,18 +133,29 @@ class PyDO(dict):
     refetch=False
     _projections={}
 
+    @staticmethod
+    def _create_field(*args, **kwargs):
+        """ controls how fields are created when declared in the field
+        list with a simple string, list, tuple, or dictionary rather
+        than a field instance.  By default, passes field declaration
+        to the Field constructor.
+        """
+        
+        return Field(*args, **kwargs)
+
     @classmethod
-    def getTable(cls):
+    def getTable(cls, withSchema=True):
         """returns the name of the table, qualified with the schema,
-        if any.  If cls._guess_tablename is True and no table name has
-        been defined, the class name will be used.
+        if any, is withSchema is true.  If cls._guess_tablename is
+        True and no table name has been defined, the class name will
+        be used.
         """
         
         if cls.table is None and cls._guess_tablename:
             table=cls.__name__.lower()
         else:
             table=cls.table
-        if cls.schema:
+        if cls.schema and withSchema:
             return '%s.%s' % (cls.schema, table)
         else:
             return table
@@ -172,7 +182,7 @@ class PyDO(dict):
         klsname='projection_%s__%s' % (cls.__name__,
                                        '_'.join(s))
         kls=type(klsname, (cls,), dict(fields=fields,
-                                       table=cls.getTable(),
+                                       table=cls.getTable(False),
                                        _is_projection=True))
         cls._projections[t]=kls
         return kls

@@ -113,12 +113,14 @@ The ``connectionAlias`` attribute must correspond to an alias
 initialized elsewhere that tells PyDO how to create a database
 connection.
 
-If the database supports schemas, like alter versions of PostgreSQL,
+If the database supports schemas, like later versions of PostgreSQL,
 the schema name can be specified by setting the ``schema`` attribute.
-When PyDO then generates SQL referring to this table, it will qualify it
-with the schema name.  By default, ``schema`` is ``None`` and there
+When PyDO then generates SQL referring to this table, it will qualify
+it with the schema name.  By default, ``schema`` is ``None`` and there
 will be no such qualification.  (The method that returns the actual
-qualified tablename is ``getTable()``.)
+qualified tablename is ``getTable(cls, withSchema=True)``; the
+``withSchema`` parameter determines whether the returned value is
+schema qualified.)
 
 The ``table`` attribute is simply the name of the table, view, or
 table-like entity (set function, for instance).  By default, you can
@@ -130,11 +132,14 @@ suppress it by setting the class attribute ``_guess_tablename`` to
 ``False``. 
 
 The ``fields`` attribute should be a tuple or list of either ``Field``
-instances (of which ``Sequence`` and ``Unique`` are subclasses),
-strings (which should be column names), or tuples that can be passed
-to the ``Field`` constructor (i.e., ``Field(**fieldTuple)``).  You can
-also use your own ``Field`` subclasses if you wish to store additional
-information about fields (e.g., data type, validators, etc.).
+instances (of which ``Sequence`` and ``Unique`` are subclasses), or
+data -- strings (which should be column names), dicts, or tuples --
+that can be passed to a ``Field`` constructor (e.g.,
+``Field(*fieldTuple)``).  You can use your own ``Field`` subclasses if
+you wish to store additional information about fields (e.g., data
+type, validators, etc.), and if you want to customize how strings,
+tuples, or dicts are turned into ``Fields`` for you, you can shadow
+the static factory method ``PyDO.create_field()`` to do so.
 
 A ``Sequence`` field is used to represent either an auto-increment
 column, for databases like MySQL that use that mechanism, or a
@@ -187,10 +192,10 @@ fields.  Special inheritance semantics obtain for ``field`` and
 to those declarations are inherited from superclasses even if
 ``fields`` is redeclared in the subclass, shadowing any superclass's
 declaration.  Subclasses therefore may augment the field listing of
-their base classes.  This behavior is applicable not only to
-PostgreSQL table inheritance, but to defining base or mixin classes
-(which need not be ``PyDO`` subclasses themselves) that define groups
-of fields that are shared by multiple tables.  
+their base classes.  This behavior is applicable not only to cases
+like PostgreSQL table inheritance, but to defining base or mixin
+classes (which need not be ``PyDO`` subclasses themselves) that define
+groups of fields that are shared by multiple tables.
 
 Normally, if a subclasses redeclares a field declared by a base class,
 the subclass's declaration overrides that of the base class, but an
