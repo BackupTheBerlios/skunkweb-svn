@@ -1,6 +1,7 @@
-import logging
+import logging, sys
 
 logger=logging.getLogger('PyDO2')
+logger.addHandler(logging.StreamHandler(sys.stderr))
 debug=logger.debug
 error=logger.error
 warn=logger.warn

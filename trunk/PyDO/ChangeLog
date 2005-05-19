@@ -1,4 +1,16 @@
-2005-05-12  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+2005-05-19  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/PyDO2/log.py (logger): another Jonathan Ellis patch: adding
+	default handler to logger.
+
+	* src/PyDO2/drivers/psycopgconn.py (PsycopgDBI.describeTable):
+	from patch by Jonathan Ellis, implementation of describeTable().
+
+	* src/PyDO2/dbi.py (DBIBase.describeTable): docstring patch
+	from Jonathan Ellis (lightly edited) documenting his change to the
+	return value of this function.
+
+2005-05-12  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/PyDO2/__init__.py (__version__): upping to 2.0a2.
 

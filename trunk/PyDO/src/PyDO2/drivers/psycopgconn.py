@@ -12,6 +12,7 @@ from PyDO2.log import debug
 from PyDO2.operators import BindingConverter
 from PyDO2.dbtypes import DATE, TIMESTAMP, BINARY, INTERVAL, \
      date_formats, timestamp_formats
+from PyDO2.field import Field
 
 import time
 import datetime
@@ -19,10 +20,10 @@ import datetime
 import psycopg
 
 if psycopg.__version__[:3] >= '1.9':
-   #psycopg version two.
-   psycopg_version=2
+    #psycopg version two.
+    psycopg_version=2
 else:
-   psycopg_version=1
+    psycopg_version=1
 
 try:
    import mx.DateTime
@@ -147,5 +148,66 @@ class PsycopgDBI(DBIBase):
             raise PyDOError, "could not get value for sequence %s!" % name
         return res[0]
 
-    
 
+    def describeTable(self, table):
+        sql = """
+        SELECT a.attname, a.attnum
+        FROM pg_catalog.pg_attribute a
+        WHERE a.attrelid = %s::regclass
+          AND a.attnum > 0
+          AND NOT a.attisdropped
+        ORDER BY a.attnum
+        """
+        fields = {}
+        cur = self.conn.cursor()
+        if self.verbose:
+            debug("SQL: %s", (sql,))
+        cur.execute(sql, (table,))
+        for row in cur.fetchall():
+            if self.verbose:
+                debug("Found column %s" % list(row))
+            fields[row[1]] = Field(row[0])
+
+        sql = """
+        SELECT indkey
+        FROM pg_catalog.pg_index i
+        WHERE i.indrelid = %s::regclass
+          AND i.indisunique
+        """
+        unique = set()
+        if self.verbose:
+            debug("SQL: %s", (sql,))
+        cur.execute(sql, (table,))
+        for row in cur.fetchall():
+            L = [int(i) for i in row[0].split(' ')]
+            if self.verbose:
+                debug("Found unique index on %s" % L)
+            if len(L) == 1:
+                fields[L[0]].unique = True
+            else:
+                unique.add(frozenset([fields[i] for i in L]))
+
+        sql = """
+        SELECT relname
+        FROM pg_class
+        WHERE relname like '%s_%%_seq'
+          AND relkind = 'S'
+        """ % table
+        if self.verbose:
+            debug("SQL: %s", (sql,))
+        cur.execute(sql)
+        for row in cur.fetchall():
+            maybecolname = row[0][len(table) + 1:-4]
+            for field in fields.values():
+                if field.name == maybecolname:
+                    if self.verbose:
+                        debug("Found sequence %s on %s" % (row[0], field.name))
+                    field.sequence = row[0]
+                    break
+
+        cur.close()
+        d = {}
+        for f in fields.values():
+            d[f.name] = f
+        return (d, unique)
+    
