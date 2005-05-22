@@ -20,7 +20,6 @@ class DiskCache(Cache):
         b=canonicalName.split('.')
         return normpath('%s/%s' % (self.cachePath,
                                    '/'.join(b)))
-        #return os.path.join(self.cachePath, '/'.join(b))
 
     def _path_for_name_and_key(self, canonicalName, cacheKey):
         b=canonicalName.split('.')
@@ -29,7 +28,6 @@ class DiskCache(Cache):
         b.append(cacheKey)
         return normpath('%s/%s' % (self.cachePath,
                                    '%s.cache' % '/'.join(b)))
-        #return os.path.join(self.cachePath, '%s.cache' % '/'.join(b))
 
     def _retrieve(self, canonicalName, cacheKey):
         p=self._path_for_name_and_key(canonicalName, cacheKey)

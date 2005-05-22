@@ -66,7 +66,6 @@ class CompileCache(object):
                 pass
         if self.cacheroot:
             f=normpath('%s/%sc' % (self.cacheroot, name))
-            #f=os.path.join(self.cacheroot, name)+'c'
             cachemod=_mtime(f)
             if cachemod:
                 stuff=file(f).read()
