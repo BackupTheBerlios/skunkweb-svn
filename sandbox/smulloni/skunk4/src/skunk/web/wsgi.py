@@ -122,3 +122,40 @@ class WSGIRunner(object):
 # This api should work outside of skunkweb itself, in, say, a wsgikit
 # runner.
 
+WSGIConnection(object):
+    def __init__(env, stdin, stdout):
+        self._env=env
+        self._stdin=stdin
+        self._stdout=stdout
+
+    def requestCookie():
+        def fget(self):
+            if hasattr(self, '_requestCookie'):
+                return self._requestCookie
+            cookie=SimpleCookie()
+            if self._env.has_key('HTTP_COOKIE'):
+                try:
+                    cookie.load(self._env['HTTP_COOKIE'])
+                except CookieError:
+                    exception("error loading cookie")
+            self._requestCookie=cookie
+            return cookie
+        doc="the cookie submitted with the client request"
+        return fget, None, None, doc
+    requestCookie=property(*requestCookie())
+
+    def requestPath():
+        def fget(self):
+            return self._env.get('SCRIPT_NAME', '')+self._env.get('PATH_INFO', '')
+        return fget
+    requestPath=property(requestPath())
+
+    def method():
+        def fget(self):
+            return self._env['REQUEST_METHOD'].upper()
+        return fget
+    method=property(method())
+
+    def querystring(
+        
+

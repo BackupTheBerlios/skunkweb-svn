@@ -119,8 +119,6 @@ def processRequest(sock, addr, protocol):
             updateConfig()
             return
 
-
-
 def SIGALRMHandler(*args):
     updateConfig()
     error('Throwing timeout exception')
@@ -171,7 +169,6 @@ RequestFailed.__doc__="""\
 A hook function that may be used by ClientProtocol implementations in marshalException().
 """
 
-
 class ClientProtocol(object):
     """
     interface for protocols used in handling request and response.
@@ -205,4 +202,5 @@ class ClientProtocol(object):
         return -1
 
         
+
 
