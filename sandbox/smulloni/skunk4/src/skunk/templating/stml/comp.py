@@ -1,22 +1,15 @@
-from skunk.components import StringOutputComponent, StringOutputFileComponent, \
-     ComponentFactory, DEFAULT_FILE_COMPONENT_SUFFIX_MAP, \
-     LocalFileComponentHandler, CallableComponentHandler
+from skunk.components import (StringOutputComponent,
+                              StringOutputFileComponent, 
+                              ComponentFactory,
+                              DEFAULT_FILE_COMPONENT_SUFFIX_MAP, 
+                              LocalFileComponentHandler,
+                              CallableComponentHandler)
 from skunk.templating.stml.parser import parse as stml_parse
 from skunk.templating.stml.tags import BaseTags
 from skunk.templating.stml.codeStream import PythonCodeOutputStream
 from skunk.templating.stml.tagutils import import_into
 from skunk.date.timeutil import convertDuration
 
-try:
-    set
-except NameError:
-    from sets import Set as set
-
-try:
-    frozenset
-except NameError:
-    from sets import ImmutableSet as frozenset
-    
 class _namespaceholder:
     pass
 
