@@ -1,3 +1,14 @@
+2005-05-23  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/PyDO2/dbi.py (DBIBase.describeTable): adding schema parameter.
+
+2005-05-23  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/PyDO2/drivers/psycopgconn.py (PsycopgDBI.describeTable):
+	made schema-aware, and raises a ValueError if there is no such
+	table. 
+	(PsycopgDBI.listTables): added implementation.
+
 2005-05-19  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/PyDO2/log.py (logger): another Jonathan Ellis patch: adding

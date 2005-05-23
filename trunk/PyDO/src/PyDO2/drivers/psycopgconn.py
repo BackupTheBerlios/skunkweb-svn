@@ -10,8 +10,8 @@ from PyDO2.dbi import DBIBase, ConnectionPool
 from PyDO2.exceptions import PyDOError
 from PyDO2.log import debug
 from PyDO2.operators import BindingConverter
-from PyDO2.dbtypes import DATE, TIMESTAMP, BINARY, INTERVAL, \
-     date_formats, timestamp_formats
+from PyDO2.dbtypes import (DATE, TIMESTAMP, BINARY, INTERVAL, 
+                           date_formats, timestamp_formats)
 from PyDO2.field import Field
 
 import time
@@ -149,11 +149,65 @@ class PsycopgDBI(DBIBase):
         return res[0]
 
 
-    def describeTable(self, table):
+    def listTables(self, schema=None):
+        """lists the tables in the database schema"""
+        if schema is None:
+            schema='public'
+        sql="""
+        SELECT t.tablename AS name
+        FROM pg_catalog.pg_tables t
+        WHERE t.schemaname=%s
+        UNION
+        SELECT v.viewname AS name
+        FROM pg_catalog.pg_views v
+        WHERE v.schemaname=%s
+        """
+        cur=self.conn.cursor()
+        if self.verbose:
+            debug("SQL: %s", (sql,))
+        cur.execute(sql, (schema, schema))
+        res=cur.fetchall()
+        cur.close()
+        if not res:
+            return []
+        return sorted(x[0] for x in res)
+        
+
+    def describeTable(self, table, schema=None):
+        # verify that the table exists
+        sql = """
+        SELECT t.tablename AS tname
+        FROM pg_catalog.pg_tables t
+        WHERE t.tablename=%s
+        AND t.schemaname=%s
+        UNION
+        SELECT v.viewname AS tname
+        FROM pg_catalog.pg_views v
+        WHERE v.viewname=%s
+        and v.schemaname=%s
+        """
+        if schema is None:
+            schema='public'
+        cur=self.conn.cursor()
+        bind=(table, schema, table, schema)
+        if self.verbose:
+            debug("SQL: %s", (sql,))
+        cur.execute(sql, bind)
+        for row in cur.fetchall():
+            # it exists, get on with it
+            break
+        else:
+            raise ValueError, "no such table or view: %s.%s" % (schema, table)
+        
         sql = """
         SELECT a.attname, a.attnum
-        FROM pg_catalog.pg_attribute a
+        FROM pg_catalog.pg_attribute a,
+          pg_catalog.pg_namespace n,
+          pg_catalog.pg_class c
         WHERE a.attrelid = %s::regclass
+          AND c.oid=a.attrelid
+          AND c.relnamespace=n.oid
+          AND n.nspname=%s
           AND a.attnum > 0
           AND NOT a.attisdropped
         ORDER BY a.attnum
@@ -162,7 +216,7 @@ class PsycopgDBI(DBIBase):
         cur = self.conn.cursor()
         if self.verbose:
             debug("SQL: %s", (sql,))
-        cur.execute(sql, (table,))
+        cur.execute(sql, (table,schema))
         for row in cur.fetchall():
             if self.verbose:
                 debug("Found column %s" % list(row))
@@ -170,14 +224,19 @@ class PsycopgDBI(DBIBase):
 
         sql = """
         SELECT indkey
-        FROM pg_catalog.pg_index i
+        FROM pg_catalog.pg_index i,
+        pg_catalog.pg_class c,
+        pg_catalog.pg_namespace n
         WHERE i.indrelid = %s::regclass
+          AND c.oid=i.indrelid
+          AND c.relnamespace=n.oid
+          AND n.nspname=%s
           AND i.indisunique
         """
         unique = set()
         if self.verbose:
             debug("SQL: %s", (sql,))
-        cur.execute(sql, (table,))
+        cur.execute(sql, (table,schema))
         for row in cur.fetchall():
             L = [int(i) for i in row[0].split(' ')]
             if self.verbose:
@@ -188,14 +247,16 @@ class PsycopgDBI(DBIBase):
                 unique.add(frozenset([fields[i] for i in L]))
 
         sql = """
-        SELECT relname
-        FROM pg_class
-        WHERE relname like '%s_%%_seq'
+        SELECT c.relname
+        FROM pg_catalog.pg_class c, pg_catalog.pg_namespace n
+        WHERE relname like '%s_%%%%_seq'
+          AND c.relnamespace=n.oid
+          AND n.nspname=%%s
           AND relkind = 'S'
         """ % table
         if self.verbose:
             debug("SQL: %s", (sql,))
-        cur.execute(sql)
+        cur.execute(sql, (schema,))
         for row in cur.fetchall():
             maybecolname = row[0][len(table) + 1:-4]
             for field in fields.values():

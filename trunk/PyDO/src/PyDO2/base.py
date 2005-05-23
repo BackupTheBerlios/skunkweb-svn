@@ -7,7 +7,6 @@ from PyDO2.utils import _tupleize, _setize
 
 from itertools import izip
 
-
 def _restrict(flds, coll):
     """private method for cleaning a set or dict of any items that aren't
     in a field list (or dict); needed for handling attribute inheritance
@@ -258,7 +257,7 @@ class PyDO(dict):
 
 
     def dict(self):
-        """retruns a copy of self as a plain dict"""
+        """returns a copy of self as a plain dict"""
         return dict(self)
 
     def copy(self):
@@ -313,6 +312,7 @@ class PyDO(dict):
     def getSequences(cls):
         """returns the effective sequences for the class"""
         return cls._sequenced.copy()
+
 
     @classmethod
     def _validateFields(cls, adict):

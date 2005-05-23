@@ -170,7 +170,7 @@ class DBIBase(object):
         """list the tables in the database schema"""
         raise NotImplementedError
 
-    def describeTable(self, table):
+    def describeTable(self, table, schema=None):
         """for the given table, returns a 2-tuple: a dict of Field objects
         keyed by name, and list of multi-column unique constraints (sets of Fields)).
         The Field instances should contain information about whether they are unique
