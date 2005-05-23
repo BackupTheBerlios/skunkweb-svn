@@ -2,10 +2,10 @@ import exceptions
 import re
 import shutil
 import os
-from os.path import dirname, \
-     normpath, \
-     join as pathjoin, \
-     split as pathsplit
+from os.path import (dirname, 
+                     normpath, 
+                     join as pathjoin, 
+                     split as pathsplit)
 
 from skunk.vfs.pathutil import containedPaths
 
@@ -326,10 +326,10 @@ class MultiFS(FS):
             self.mounts=mountdict
         else:
             self.mounts={}
-        self.__mountpoints=self.mounts.keys()
-        self.__sortMountPoints()
+        self._mountpoints=self.mounts.keys()
+        self._sortMountPoints()
 
-    def __sortMountPoints(self):
+    def _sortMountPoints(self):
         """
         keeps mount points sorted longest first (and otherwise in
         alphabetical order, which doesn't actually matter)
@@ -337,23 +337,23 @@ class MultiFS(FS):
         def lencmp(x, y):
             xs, ys=map(str, (x, y))
             return cmp(len(ys), len(xs)) or cmp(xs, ys)
-        self.__mountpoints.sort(lencmp)
+        self._mountpoints.sort(lencmp)
         
     def mount(self, fs, mountPoint='/'):
         if self.mounts.has_key(mountPoint):
             self.mounts[mountPoint].append(fs)
         else:
             self.mounts[mountPoint]=[fs]
-            self.__mountpoints.append(mountPoint)
-            self.__sortMountPoints()
+            self._mountpoints.append(mountPoint)
+            self._sortMountPoints()
 
     def find_mount(self, path, strict=0):
         found=None
         # because of dynamic mounting, these need to be re-sorted
         # at find_mount invocation time, which is too bad
-        self.__sortMountPoints()
+        self._sortMountPoints()
         # these are kept sorted longest first
-        for p in self.__mountpoints:
+        for p in self._mountpoints:
             ps=str(p)
             if path.startswith(ps):
                 found=p
@@ -389,7 +389,7 @@ class MultiFS(FS):
         found, fs, translated, stat=self.find_mount(dir, 1)
         listing=fs.listdir(translated)
         mounts=map(lambda x, y=dir: x[len(y):],
-                   containedPaths(map(str, self.__mountpoints),
+                   containedPaths(map(str, self._mountpoints),
                                   dir))
 
         def cleanpath(path):
