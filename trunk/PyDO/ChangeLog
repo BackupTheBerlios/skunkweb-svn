@@ -1,3 +1,8 @@
+2005-05-24  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO2/base.py (_metapydo.__init__): implementation of field
+	guessing ('_guess_columns') that works with projections.
+
 2005-05-23  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/PyDO2/dbi.py (DBIBase.describeTable): adding schema parameter.

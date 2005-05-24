@@ -46,6 +46,15 @@ class _metapydo(type):
 
     def __init__(cls, cl_name, bases, namespace):
 
+        # field guessing
+        if namespace.get('_guess_columns', False):
+            if 'fields' in namespace or 'unique' in namespace:
+                raise ValueError, ("incompatible declarations: _guess_columns "
+                                   "with explicit declaration of fields and/or unique")
+            gfields, gunique=cls.getDBI().describeTable(cls.getTable(False), cls.schema)
+            namespace['fields']=gfields
+            namespace['unique']=gunique
+
         # create Field objects declared locally in this class
         # and store them in a temporary dict
         fielddict={}
@@ -112,7 +121,7 @@ class _metapydo(type):
         cls._unique=frozenset(uniqueset)
 
         # add attribute access to fields
-        if cls.use_attributes:
+        if cls._use_attributes:
             for name in cls._fields:
                 if not hasattr(cls, name):
                     # a field is also a descriptor
@@ -122,16 +131,23 @@ class PyDO(dict):
     """ Base class for PyDO data classes."""
 
     __metaclass__=_metapydo
-    _is_projection=False
+
+    # protected -- subclasses may customize these
     _guess_tablename=True
+    _guess_columns=False
+    _use_attributes=True
+
+    # public 
     mutable=True
-    use_attributes=True
     connectionAlias=None
     table=None
     schema=None
     refetch=False
-    _projections={}
 
+    # private
+    _projections={}
+    _is_projection=False
+    
     @staticmethod
     def _create_field(*args, **kwargs):
         """ controls how fields are created when declared in the field
