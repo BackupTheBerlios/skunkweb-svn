@@ -1,3 +1,7 @@
+2005-05-24  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
+
+	* doc/manual.rst: documenting _guess_columns.
+
 2005-05-24  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/PyDO2/drivers/mysqlconn.py: adding implementations of

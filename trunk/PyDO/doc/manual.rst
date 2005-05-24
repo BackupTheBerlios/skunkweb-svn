@@ -44,7 +44,7 @@ PyDO's basic strategy is to let you define a ``PyDO`` subclass for
 every table in a database that you wish to represent.  Each ``PyDO``
 instance contains the data for one row in a database table. As
 ``PyDO`` is a ``dict`` subclass, you can access this data by key, and,
-if the class attribute ``use_attributes`` is true (the default) also
+if the class attribute ``_use_attributes`` is true (the default) also
 by attribute.  In either case, the key or attribute name is the name
 of the database column::
 
@@ -180,6 +180,12 @@ may be read, but not changed, through the class methods
 ``getFields()``, ``getUniquenessConstraints()``, and
 ``getSequences()``, respectively.
 
+Finally, if you omit the ``fields`` and ``unique`` declarations
+completely and declare the class attribute ``_guess_columns``, PyDO
+will attempt to introspect into the database and build the table
+description itself at class creation time.  The declaration only
+affects the class in which it is declared; classes that inherit the
+attribute will not themselves attempt to guess columns. 
 
 Inheritance Semantics
 +++++++++++++++++++++
