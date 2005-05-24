@@ -10,10 +10,11 @@ TODO: add support for sqlite3 and corresponding version of pysqlite.
 
 
 from PyDO2.dbi import DBIBase, ConnectionPool
-from PyDO2.field import Field
+from PyDO2.field import Field, Sequence
 from PyDO2.exceptions import PyDOError
-from PyDO2.dbtypes import DATE, TIMESTAMP, BINARY, INTERVAL, \
-     date_formats, timestamp_formats
+from PyDO2.dbtypes import (DATE, TIMESTAMP, BINARY, INTERVAL,
+                           date_formats, timestamp_formats)
+from PyDO2.log import debug
 from PyDO2.operators import BindingConverter
 
 import time
@@ -109,4 +110,53 @@ class SqliteDBI(DBIBase):
       return ()
 
 
+
+   def describeTable(self, table, schema=None):
+      if schema is not None:
+         raise ValueError, "db schemas not supported by sqlite driver"
+      
+      fields={}
+      unique=set()
+
+      nullable=[]
+      c=self.conn.cursor()
+
+      if self.verbose:
+         def execute(sql):
+            debug('SQL: %s', (sql,))
+            c.execute(sql)
+      else:
+         execute=c.execute
+      
+      sql="pragma table_info('%s')" % table
+      execute(sql)
+      res=c.fetchall()
+      if not res:
+         raise ValueError, "no such table: %s" % table
+      for row in res:
+         cid, name, type, notnull, dflt_value, pk=row
+         if type=='INTEGER' and pk=='1' and int(notnull):
+            # a sequence
+            fields[name]=Sequence(name)
+         else:
+            fields[name]=Field(name)
+         if not notnull:
+            nullable.append(name)
+            
+      # get indexes
+      sql="pragma index_list('%s')" % table
+      execute(sql)
+      res=c.fetchall()
+      for row in res:
+         seq, name, uneek=row
+         if uneek:
+            sql="pragma index_info('%s')" % name
+            execute(sql)
+            subres=c.fetchall()
+            unset=frozenset(x[-1] for x in subres)
+            if not unset.intersection(nullable):
+               unique.add(unset)
+      c.close()
+      return fields, unique
+      
 

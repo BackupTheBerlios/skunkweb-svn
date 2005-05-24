@@ -1,3 +1,12 @@
+2005-05-24  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO2/drivers/sqliteconn.py (SqliteDBI.describeTable):
+	implementation added for sqlite introspection.
+
+	* src/PyDO2/base.py (_metapydo.__init__): thinko fix: was
+	discarding the values of the dictionary passed and only using the
+	keys. 
+
 2005-05-24  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
 
 	* doc/manual.rst: documenting _guess_columns.

@@ -52,7 +52,7 @@ class _metapydo(type):
                 raise ValueError, ("incompatible declarations: _guess_columns "
                                    "with explicit declaration of fields and/or unique")
             gfields, gunique=cls.getDBI().describeTable(cls.getTable(False), cls.schema)
-            namespace['fields']=gfields
+            namespace['fields']=gfields.values()
             namespace['unique']=gunique
 
         # create Field objects declared locally in this class

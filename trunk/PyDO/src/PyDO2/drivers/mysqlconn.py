@@ -69,8 +69,6 @@ class MysqlDBI(DBIBase):
             name, tipe, nullable, key, default, extra=row
             if extra=='auto_increment':
                 fields[name]=Sequence(name)
-#            elif (not nullable) and (key=='UNI' or key=='PRI'):
-#                fields[name]=Unique(name)
             else:
                 fields[name]=Field(name)
                 
