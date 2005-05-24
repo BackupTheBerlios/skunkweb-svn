@@ -1,4 +1,7 @@
-2005-05-24  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+2005-05-24  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/PyDO2/drivers/mysqlconn.py: adding implementations of
+	listTables and describeTable.  
 
 	* src/PyDO2/base.py (_metapydo.__init__): implementation of field
 	guessing ('_guess_columns') that works with projections.
