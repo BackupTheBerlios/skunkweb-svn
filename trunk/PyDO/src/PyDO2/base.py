@@ -45,11 +45,13 @@ class _metapydo(type):
     """
 
     def __init__(cls, cl_name, bases, namespace):
-
+        # tablename guessing
+        if not namespace.has_key('table') and cls.guess_tablename:
+            cls.table=cl_name.lower()
         # field guessing
-        if namespace.get('_guess_columns', False):
+        if namespace.get('guess_columns', False):
             if 'fields' in namespace or 'unique' in namespace:
-                raise ValueError, ("incompatible declarations: _guess_columns "
+                raise ValueError, ("incompatible declarations: guess_columns "
                                    "with explicit declaration of fields and/or unique")
             gfields, gunique=cls.getDBI().describeTable(cls.getTable(False), cls.schema)
             namespace['fields']=gfields.values()
@@ -121,7 +123,7 @@ class _metapydo(type):
         cls._unique=frozenset(uniqueset)
 
         # add attribute access to fields
-        if cls._use_attributes:
+        if cls.use_attributes:
             for name in cls._fields:
                 if not hasattr(cls, name):
                     # a field is also a descriptor
@@ -132,19 +134,21 @@ class PyDO(dict):
 
     __metaclass__=_metapydo
 
-    # protected -- subclasses may customize these
-    _guess_tablename=True
-    _guess_columns=False
-    _use_attributes=True
-
-    # public 
+    # subclasses may customize these
+    guess_tablename=True
+    guess_columns=False
+    use_attributes=True
     mutable=True
     connectionAlias=None
     table=None
     schema=None
     refetch=False
+    
+    ## not defined by default, but if you aren't using guess_columns
+    ## you'll want to define it at some point in your class hierarchy
+    # fields 
 
-    # private
+    # private - don't touch
     _projections={}
     _is_projection=False
     
@@ -161,19 +165,13 @@ class PyDO(dict):
     @classmethod
     def getTable(cls, withSchema=True):
         """returns the name of the table, qualified with the schema,
-        if any, is withSchema is true.  If cls._guess_tablename is
-        True and no table name has been defined, the class name will
-        be used.
+        if any, if withSchema is true.
         """
-        
-        if cls.table is None and cls._guess_tablename:
-            table=cls.__name__.lower()
-        else:
-            table=cls.table
+       
         if cls.schema and withSchema:
-            return '%s.%s' % (cls.schema, table)
+            return '%s.%s' % (cls.schema, cls.table)
         else:
-            return table
+            return cls.table
 
 
     @classmethod
@@ -707,6 +705,9 @@ class PyDO(dict):
 def arrayfetch(objs, *args):
     """
     An experimental method that returns several an array of PyDO objects.
+    objs is a list of PyDO objects, or (PyDOObj, tableAlias) tuples (may be
+    intermingled).  *args are like the arguments passed to getSome().
+    
     API subject to change.
     """
     if args:
@@ -715,14 +716,25 @@ def arrayfetch(objs, *args):
     else:
         sql=""
         values=()
+    qobjs=[]
+    for o in objs:
+        if isinstance(o, (tuple, list)) and len(o)==2:
+            qobjs.append(o)
+        else:
+            qobjs.append((o, o.getTable()))
+    objs=[x[0] for x in qobjs]
     # connectionAlias must be the same for all objects
-    aliases=tuple(frozenset(o.connectionAlias for o in objs))
-    if len(aliases)!=1:
+    caliases=tuple(frozenset(o.connectionAlias for o in objs))
+    if len(caliases)!=1:
         raise ValueError, \
               "objects passed to join must have same connection alias"
-    allcols=[o.getColumns(True) for o in objs]
+    allcols=[o.getColumns(a) for o, a in qobjs]
+    def formatTexp(o, a):
+        if o.getTable()==a:
+            return a
+        return '%s %s' % (o.getTable(), a)
     cols=', '.join(', '.join(a) for a in allcols)
-    tables=', '.join(o.getTable() for o in objs)
+    tables=', '.join(formatTexp(o, a) for o, a in qobjs)
     select=["SELECT %s FROM %s" % (cols, tables)]
     if sql:
         select.append(" WHERE ")

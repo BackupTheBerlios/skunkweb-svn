@@ -125,11 +125,10 @@ schema qualified.)
 The ``table`` attribute is simply the name of the table, view, or
 table-like entity (set function, for instance).  By default, you can
 leave this out if the name of the class is the name of the table; in
-this case, ``cls.table`` will be None, but ``cls.getTable()`` will
-return a name, possibly schema-qualified, made by coercing the class
+this case, ``cls.table`` will be a name made by coercing the class
 name to lowercase.  If you don't want to allow this behavior, you can
-suppress it by setting the class attribute ``_guess_tablename`` to
-``False``. 
+suppress it by setting the class attribute ``guess_tablename`` to
+``False``.
 
 The ``fields`` attribute should be a tuple or list of either ``Field``
 instances (of which ``Sequence`` and ``Unique`` are subclasses), or
@@ -181,7 +180,7 @@ may be read, but not changed, through the class methods
 ``getSequences()``, respectively.
 
 Finally, if you omit the ``fields`` and ``unique`` declarations
-completely and declare the class attribute ``_guess_columns``, PyDO
+completely and declare the class attribute ``guess_columns``, PyDO
 will attempt to introspect into the database and build the table
 description itself at class creation time.  The declaration only
 affects the class in which it is declared; classes that inherit the
@@ -724,6 +723,8 @@ most notably:
     "refetch". 
 14. The support of schema-qualified table names and optional guessing
     of table name from class name is new in PyDO2.
+15. The optional guessing of field information at runtime, controlled
+    by the ``guess_columns`` attribute, is a new feature in PyDO2.
 
 
 

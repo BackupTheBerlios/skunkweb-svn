@@ -1,4 +1,15 @@
-2005-05-24  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+2005-05-25  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* doc/manual.rst: document the change to cls.table/getTable(), and
+	changed the _guess_* attribute names.
+
+	* src/PyDO2/base.py (_metapydo.__init__): now guess table name in
+	the metaclass rather than in getTable(), so cls.table now returns
+	the real table name.
+	(PyDO): rename _guess_tablename and _guess_columns, removing the
+	leading underscores.
+
+2005-05-24  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/PyDO2/drivers/sqliteconn.py (SqliteDBI.describeTable):
 	implementation added for sqlite introspection.
@@ -7,7 +18,7 @@
 	discarding the values of the dictionary passed and only using the
 	keys. 
 
-2005-05-24  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
+2005-05-24  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* doc/manual.rst: documenting _guess_columns.
 
