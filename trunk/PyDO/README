@@ -14,10 +14,9 @@ available in SkunkWeb 3.4.0.)
 .. _Skunkweb: http://www.skunkweb.org/
 
 The previous version of PyDO supported PostgreSQL with three different
-database adapters, Mysql, SapDB, Firebird, Sqlite, and Oracle.  The
-2.0 series currently supports only PostgreSQL (with the psycopg
-driver), Mysql, and Sqlite, but support for other database systems is
-planned.  
+database adapters, Mysql, SapDB, Sqlite, and Oracle.  The 2.0 series
+currently supports only PostgreSQL (with the psycopg driver), Mysql,
+and Sqlite, but support for other database systems is planned.
 
 PyDO 2 has several enhancements:
 
