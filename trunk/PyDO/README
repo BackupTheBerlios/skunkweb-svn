@@ -31,6 +31,9 @@ PyDO 2 has several enhancements:
    * Projections -- subsets of the field list of a super-class -- are
      now supported by the PyDO.project() method.
 
+   * PyDO classes can now introspect into the database at runtime to
+     obtain field information.
+
    * Overall, the API has been tightened and the code restructured.
 
 PyDO 2 requires Python 2.4 or later.
