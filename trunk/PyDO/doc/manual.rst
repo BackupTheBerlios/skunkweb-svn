@@ -570,11 +570,13 @@ If you want to join multiple tables and get ``PyDO`` instances back
 without using JOIN syntax, that is possible using the ``arrayfetch``
 method::
 
-   arrayfetch(objs, *args)
+   arrayfetch(objs, *args, **fieldData)
 
-Currently ``args`` must be a SQL string, followed by any bind variables.
+Each item in the ``objs`` sequence must be either a ``PyDO`` object,
+or a 2-tuple of the form ``(PyDOObj, alias)`` where ``alias`` is a
+table alias to be used in the generated SQL.  The remaining arguments
+are the same as those taken by ``PyDO.getSome()``.
  
-
 .. note:: The various Join classes and ``arrayfetch`` are experimental
     features, subject to change.  
 
