@@ -1,10 +1,9 @@
-2005-05-25  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
-
-	* doc/manual.rst: document arrayfetch.
-
 2005-05-25  Jacob Smullyan  <smulloni@smullyan.org>
 
-	* src/PyDO2/base.py (arrayfetch): now supports table aliases.
+	* doc/manual.rst: document arrayfetch changes.
+
+	* src/PyDO2/base.py (arrayfetch): now supports table aliases, and
+	has improved signature (takes getSome()-like arguments).
 
 	* doc/manual.rst: document the change to cls.table/getTable(), and
 	changed the _guess_* attribute names.

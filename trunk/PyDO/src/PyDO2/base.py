@@ -702,7 +702,7 @@ class PyDO(dict):
         return ''.join(sql), vals
 
 
-def arrayfetch(objs, *args):
+def arrayfetch(objs, *args, **fieldData):
     """
     An experimental method that returns several an array of PyDO objects.
     objs is a list of PyDO objects, or (PyDOObj, tableAlias) tuples (may be
@@ -710,12 +710,9 @@ def arrayfetch(objs, *args):
     
     API subject to change.
     """
-    if args:
-        sql=args[0]
-        values=args[1:]
-    else:
-        sql=""
-        values=()
+    order=fieldData.pop('order', None)
+    limit=fieldData.pop('limit', None)
+    offset=fieldData.pop('offset', None)
     qobjs=[]
     for o in objs:
         if isinstance(o, (tuple, list)) and len(o)==2:
@@ -728,6 +725,8 @@ def arrayfetch(objs, *args):
     if len(caliases)!=1:
         raise ValueError, \
               "objects passed to join must have same connection alias"
+    dbi=objs[0].getDBI()
+    sql, values=PyDO._processWhere(dbi, args, fieldData)
     allcols=[o.getColumns(a) for o, a in qobjs]
     cols=', '.join(', '.join(a) for a in allcols)
     tables=', '.join(formatTexp(o, a) for o, a in qobjs)
@@ -735,7 +734,8 @@ def arrayfetch(objs, *args):
     if sql:
         select.append(" WHERE ")
         select.append(sql)
-    dbi=objs[0].getDBI()
+    if filter(None, (order, limit, offset)):
+        select.append(dbi.orderByString(order, limit, offset))
     result=dbi.execute(''.join(select), values, True)
     if not result:
         return ()
