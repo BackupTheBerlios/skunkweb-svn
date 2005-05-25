@@ -1,30 +1,28 @@
-Needed now:
-
-  * mysql needs type wrapper converters, test improvements
-   * tests: many more.  creating PyDO classes within the test might
-       be a good idea in many cases.
-
-2nd priority:
-
-  * fix array fetch and add it to joins module.
+Todo:
   * make joins work with self-joins and nested joins.
+  * some sort of validation framework.
+  * mysql needs type wrapper converters, test improvements
+  * tests: many more.  creating PyDO classes within the test might
+       be a good idea in many cases.
+  * genscripts -- generate modules with classes for every table.  
+    (guess relations?)
+ 
+Done:
+  * fix array fetch
   * set a default field class, so custom field classes can be
-    specified with tuple notation if desired.
+    specified with tuple notation if desired 
+  * introspection (especially, what are the columns of a table?) 
 
 Other databases to support (eventually):
   * firebird
   * sqlrelay 
-  * gadfly (does anyone use this?)
   * maxdb
+  * gadfly (does anyone use this?)
   * odbc bindings (mxODBC; Drew's pure python version?) 
   * oracle (which adapter?)
+  * ingres
   * sybase
-
-Deferred goals:
-  * introspection (especially, what are the columns of a table?) 
-    and hence, generating CREATE TABLE statements (not a huge priority of
-    mine, but someone might use it).
-
+  * db2
 
 
 
