@@ -54,3 +54,23 @@ def any(val, iter):
         if i==val:
             return True
     return False
+
+def flatten(*l):
+    r=[]
+    for i in l:
+        if isinstance(i, (list, tuple)):
+            r.extend(flatten(*i))
+        else:
+            r.append(i)
+    return r
+
+
+def formatTexp(o, a):
+    if o.getTable()==a:
+        return a
+    return '%s %s' % (o.getTable(), a)
+
+def stripTname(s):
+    if '.' in s:
+        return s[s.rindex('.')+1:]
+    return s

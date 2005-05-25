@@ -1,5 +1,7 @@
 2005-05-25  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/PyDO2/base.py (arrayfetch): now supports table aliases.
+
 	* doc/manual.rst: document the change to cls.table/getTable(), and
 	changed the _guess_* attribute names.
 

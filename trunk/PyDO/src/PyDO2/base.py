@@ -3,7 +3,7 @@ from PyDO2.field import Field
 from PyDO2.exceptions import PyDOError
 from PyDO2.operators import AND, EQ, FIELD
 from PyDO2.dbtypes import unwrap
-from PyDO2.utils import _tupleize, _setize
+from PyDO2.utils import _tupleize, _setize, formatTexp, stripTname
 
 from itertools import izip
 
@@ -729,10 +729,6 @@ def arrayfetch(objs, *args):
         raise ValueError, \
               "objects passed to join must have same connection alias"
     allcols=[o.getColumns(a) for o, a in qobjs]
-    def formatTexp(o, a):
-        if o.getTable()==a:
-            return a
-        return '%s %s' % (o.getTable(), a)
     cols=', '.join(', '.join(a) for a in allcols)
     tables=', '.join(formatTexp(o, a) for o, a in qobjs)
     select=["SELECT %s FROM %s" % (cols, tables)]
@@ -747,7 +743,7 @@ def arrayfetch(objs, *args):
     for row in result:
         retrow=[]
         for o, cols in izip(objs, allcols):
-            d=dict((c, row[c]) for c in cols)
+            d=dict((stripTname(c), row[c]) for c in cols)
             # if all values are NULL, take that as meaning that this
             # is a full join and the whole object is NULL, and append
             # None
