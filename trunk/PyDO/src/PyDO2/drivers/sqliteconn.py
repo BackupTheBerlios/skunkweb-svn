@@ -135,7 +135,10 @@ class SqliteDBI(DBIBase):
          raise ValueError, "no such table: %s" % table
       for row in res:
          cid, name, type, notnull, dflt_value, pk=row
-         if type=='INTEGER' and pk=='1' and int(notnull):
+         # we ignore the nullable bit for sequences, because
+         # apparently sqlite permits sequences to be defined as nullable
+         # (thanks Tim Golden)
+         if type=='INTEGER' and int(pk): # and int(notnull):
             # a sequence
             fields[name]=Sequence(name)
          else:

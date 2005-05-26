@@ -1,3 +1,18 @@
+2005-05-26  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/PyDO2/drivers/sqliteconn.py (SqliteDBI.describeTable): patch
+	by Tim Golden: sqlite permits sequences to be defined as nullable,
+	so don't test the nullable bit.  Also, better test for pk column
+	(driver returns int in some versions, string in others).
+
+	* src/PyDO2/base.py (PyDO._uniqueWhere): fix for bug found by Tim
+	Golden (attempt to index a set).
+
+	* src/PyDO2/base.py (_metapydo.__init__): fix for how _unique is
+	built.  Uniqueness constraints created with the Unique class were
+	being added improperly (a string -- the field name -- was being
+	put in _unique, rather than a frozenset with one element).  
+
 2005-05-25  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* doc/manual.rst: document arrayfetch changes.

@@ -117,9 +117,8 @@ class _metapydo(type):
             if f.sequence:
                 cls._sequenced[f.name]=f.sequence
             if f.unique:
-                uniqueset.add(f.name)
+                uniqueset.add(frozenset((f.name,)))
 
-        # this doesn't need to be 
         cls._unique=frozenset(uniqueset)
 
         # add attribute access to fields
@@ -446,7 +445,8 @@ class PyDO(dict):
                   (str(kw), unique)
         converter=conn.getConverter()        
         if len(unique)==1:
-            sql=str(EQ(FIELD(unique[0]), kw[unique[0]], converter=converter))
+            u=tuple(unique)[0]
+            sql=str(EQ(FIELD(u), kw[u], converter=converter))
         else:
             sql=str(AND(converter=converter, *[EQ(FIELD(u), kw[u]) for u in unique]))
         return sql, converter.values
