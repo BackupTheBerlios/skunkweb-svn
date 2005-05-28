@@ -183,7 +183,8 @@ class DBIBase(object):
 _driverConfig = {
     'mysql':       'PyDO2.drivers.mysqlconn.MysqlDBI',
     'psycopg':	   'PyDO2.drivers.psycopgconn.PsycopgDBI',
-    'sqlite':      'PyDO2.drivers.sqliteconn.SqliteDBI'
+    'sqlite':      'PyDO2.drivers.sqliteconn.SqliteDBI',
+    'mssql' :      'PyDO2.drivers.mssqlconn.MssqlDBI'
     # more to come!
     }
 _loadedDrivers = {}

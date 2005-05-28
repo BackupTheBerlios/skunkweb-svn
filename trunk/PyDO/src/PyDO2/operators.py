@@ -91,7 +91,7 @@ class CONSTANT(object):
     __slots__=('name',)
     
     def __init__(self, name):
-        if not isinstance(name, str):
+        if not isinstance(name, basestring):
             raise TypeError, "name must be a string"
         self.name=name
 

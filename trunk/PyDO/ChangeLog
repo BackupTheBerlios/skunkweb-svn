@@ -1,3 +1,16 @@
+2005-05-27  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* README: adding mention of the mssql driver.
+
+	* src/PyDO2/operators.py (CONSTANT.__init__): converting
+	is-a-string tests to is-a-basestring (again, thanks to Tim
+	Golden).
+
+	* src/PyDO2/drivers/mssqlconn.py: Tim Golden's mssql driver.
+
+	* src/PyDO2/dbi.py (_driverConfig): adding mssql driver (patch
+	from Tim Golden).
+
 2005-05-26  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/PyDO2/drivers/sqliteconn.py (SqliteDBI.describeTable): patch
