@@ -6,6 +6,7 @@ persisted at the RDBMS level.  Supported databases are:
    * postgresql
    * mysql
    * sqlite
+   * mssql
 
 """
 
@@ -16,6 +17,6 @@ from PyDO2.operators import *
 from PyDO2.dbi import *
 from PyDO2.dbtypes import *
 from PyDO2.log import *
-from PyDO2.joins import *
+from PyDO2.fetch import *
 
-__version__='2.0a2'
+__version__='2.0a3'

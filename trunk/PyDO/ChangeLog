@@ -1,5 +1,10 @@
 2005-05-29  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/PyDO2/base.py: removing arrayfetch from __all__.
+
+	* src/PyDO2/__init__.py: importing from fetch.py, and no longer
+	importing from joins.py.
+
 	* src/PyDO2/{base,utils}.py: removing redundant util function. 
 
 	* src/PyDO2/fetch.py: first cut at sql template

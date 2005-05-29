@@ -760,14 +760,5 @@ def arrayfetch(objs, *args, **fieldData):
         ret.append(tuple(retrow))
     return tuple(ret)
             
-                
-    
-    
-    
 
-    
-
-
-    
-
-__all__=['PyDO', 'arrayfetch']
+__all__=['PyDO']

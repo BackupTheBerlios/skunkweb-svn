@@ -14,7 +14,7 @@ Current limits:
    * does not support self joins.
 
 """
-
+from PyDO2.base import PyDO
 from PyDO2.operators import SQLOperator, AND
 from PyDO2.utils import every
 from PyDO2.log import debug
@@ -53,6 +53,16 @@ class joinbase(object):
         
         
         """
+
+        def parseO(o):
+            if isinstance(o, (list, tuple)):
+                o, q=o
+                return o, q
+            else:
+                return o, None
+
+        self.objL, self.aliasL=parseO(objL)
+        self.objR, self.aliasR=parseO(objR)
         
         if jointype is None:
             if on is None and using is None:
@@ -73,22 +83,20 @@ class joinbase(object):
                     raise ValueError, \
                           'must define "on" or "using" parameter with this join'
 
-        if objL.connectionAlias != objR.connectionAlias:
+        if self.objL.connectionAlias != self.objR.connectionAlias:
             raise ValueError, \
                   "connection aliases must the same for joined PyDO objects!"
 
         # to support nesting of joins in the future ....
-        self.connectionAlias=objL.connectionAlias
+        self.connectionAlias=self.objL.connectionAlias
         self.jointype=jointype
-        self.objL=objL
-        self.objR=objR
         self.on=on
         self.using=using
         # rather than recalculating this all the time,
         # do it upon initialization        
-        cols=self.objL.getColumns(False)
+        cols=self.objL.getColumns()
         self._lenL=len(cols)
-        self._allcols=cols+self.objR.getColumns(False)
+        self._allcols=cols+self.objR.getColumns()
 
 
     def getDBI(self):
@@ -150,8 +158,8 @@ class joinbase(object):
 
     def getColumns(self, qualifier=None):
         # qualifier argument doesn't work or make sense at the moment
-        return self.objL.getColumns(True) \
-               + self.objR.getColumns(True)
+        return self.objL.getColumns(self.aliasL) \
+               + self.objR.getColumns(self.aliasR)
 
     def _resolveObjects(self, resultRow):
         pairs=zip(self._allcols, resultRow)
@@ -168,7 +176,7 @@ class joinbase(object):
         limit=fieldData.pop('limit', None)
         offset=fieldData.pop('offset', None)
         conn=self.getDBI()
-        sql, values=self.objL._processWhere(conn, args, fieldData)
+        sql, values=PyDO._processWhere(conn, args, fieldData)
         query=[self._baseSelect()]
         if sql:
             query.extend(['WHERE', sql])

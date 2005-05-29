@@ -100,3 +100,5 @@ def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
 
 def fetch(resultSpec, sqlTemplate, *values, **kwargs):
     return list(iterfetch(resultSpec, sqlTemplate, *values, **kwargs))
+
+__all__=['fetch', 'iterfetch']
