@@ -3,7 +3,8 @@
 	* src/PyDO2/base.py: removing arrayfetch from __all__.
 
 	* src/PyDO2/__init__.py: importing from fetch.py, and no longer
-	importing from joins.py.
+	importing from joins.py.  Also, increased version number to alpha
+	3. 
 
 	* src/PyDO2/{base,utils}.py: removing redundant util function. 
 
