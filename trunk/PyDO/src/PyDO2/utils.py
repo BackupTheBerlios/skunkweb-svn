@@ -55,15 +55,16 @@ def any(val, iter):
             return True
     return False
 
-def flatten(*l):
-    r=[]
+def iflatten(*l):
     for i in l:
         if isinstance(i, (list, tuple)):
-            r.extend(flatten(*i))
+            for i2 in flatten(*i):
+                yield i2
         else:
-            r.append(i)
-    return r
+            yield i
 
+def flatten(*l):
+    return list(iflatten(*l))
 
 def formatTexp(o, a):
     if o.getTable()==a:
