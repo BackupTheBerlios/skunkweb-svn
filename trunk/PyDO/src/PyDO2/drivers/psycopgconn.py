@@ -52,7 +52,7 @@ def convert_DATE(dt):
       return psycopg.Date(d.year, d.month, d.day)
    elif isinstance(val, (tuple, list)):
       return psycopg.Date(*val[:3])
-   elif isinstance(val, (str, unicode)):
+   elif isinstance(val, basestring):
       for f in date_formats:
          try:
             t=time.strptime(val, f)[:3]
@@ -75,7 +75,7 @@ def convert_TIMESTAMP(ts):
       return psycopg.TimestampFromTicks(val)
    elif isinstance(val, (tuple, list)) and len(val)==9:
       return psycopg.TimestampFromTicks(time.mktime(val))
-   elif isinstance(val, (str, unicode)):
+   elif isinstance(val, basestring):
       for f in timestamp_formats:
          try:
             t=time.strptime(val, f)

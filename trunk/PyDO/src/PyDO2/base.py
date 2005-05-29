@@ -65,7 +65,7 @@ class _metapydo(type):
         simplefields=set()
         for f in namespace.get('fields', ()):
             # support for tuple syntax for plain Jane fields.
-            if isinstance(f, str):
+            if isinstance(f, basestring):
                 simplefields.add(f)                
                 f=cls._create_field(f)
             elif isinstance(f, dict):
@@ -179,7 +179,7 @@ class PyDO(dict):
         for f in fields:
             if isinstance(f, Field):
                 s.append(f.name.lower())
-            elif isinstance(f, str):
+            elif isinstance(f, basestring):
                 s.append(f.lower())
             elif isinstance(f, tuple):
                 if not len(f):
@@ -424,7 +424,7 @@ class PyDO(dict):
         a row given the choices from kw
         """
         for unique in cls._unique:
-            if isinstance(unique, (unicode,str)):
+            if isinstance(unique, basestring):
                 if kw.get(unique)!=None:
                     return (unique,)
             elif isinstance(unique, (frozenset,list,tuple)):
@@ -481,7 +481,7 @@ class PyDO(dict):
 
     @staticmethod
     def _processWhere(conn, args, fieldData):
-        if args and isinstance(args[0], str):
+        if args and isinstance(args[0], basestring):
             if fieldData:
                 raise ValueError, "cannot pass keyword args when including sql string"
             sql=args[0]

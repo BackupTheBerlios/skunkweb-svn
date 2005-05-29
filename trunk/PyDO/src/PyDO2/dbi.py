@@ -136,12 +136,12 @@ class DBIBase(object):
     @staticmethod
     def orderByString(order, limit, offset):
         def do_order(o):
-            if isinstance(o, str):
+            if isinstance(o, basestring):
                 return o
             return ' '.join(o)
         if not order:
             order=""
-        elif not isinstance(order, str):
+        elif not isinstance(order, basestring):
             order= ', '.join(map(do_order, order))
         if order:
             order="ORDER BY %s" % order
@@ -200,7 +200,7 @@ def _real_connect(connfunc, connargs):
         return connfunc(connargs)
 
 def _connect(driver, connectArgs, pool=None, verbose=False):
-    if isinstance(driver, str):
+    if isinstance(driver, basestring):
         driver=_get_driver_class(driver)
     return driver(connectArgs, pool, verbose)
 

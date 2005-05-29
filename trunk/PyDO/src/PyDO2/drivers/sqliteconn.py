@@ -36,7 +36,7 @@ def convert_DATE(dt):
       return mx.DateTime.DateFrom(d.year, d.month, d.day)
    elif isinstance(val, (tuple, list)):
       return mx.DateTime.DateFrom(*val[:3])
-   elif isinstance(val, (str, unicode)):
+   elif isinstance(val, basestring):
       for f in date_formats:
          try:
             t=time.strptime(val, f)[:3]
@@ -58,7 +58,7 @@ def convert_TIMESTAMP(ts):
       return mx.DateTime.DateTimeFromTicks(val)
    elif isinstance(val, (tuple, list)) and len(val)==9:
       return mx.DateTime.DateTimeFromTicks(time.mktime(val))
-   elif isinstance(val, (str, unicode)):
+   elif isinstance(val, basestring):
       for f in timestamp_formats:
          try:
             return mx.DateTime.strptime(val, f)

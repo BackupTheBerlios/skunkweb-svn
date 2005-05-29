@@ -1,3 +1,8 @@
+2005-05-29  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/PyDO2/drivers/{psycopgconn,sqliteconn,mssqlconn}.py, 
+	src/PyDO2/{base,dbi}.py: change all str tests to basestring.
+
 2005-05-27  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* README: adding mention of the mssql driver.
