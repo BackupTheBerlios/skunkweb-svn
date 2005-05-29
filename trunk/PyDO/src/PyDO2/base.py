@@ -3,7 +3,7 @@ from PyDO2.field import Field
 from PyDO2.exceptions import PyDOError
 from PyDO2.operators import AND, EQ, FIELD
 from PyDO2.dbtypes import unwrap
-from PyDO2.utils import _tupleize, _setize, formatTexp, stripTname
+from PyDO2.utils import _tupleize, _setize, formatTexp, _strip_tablename
 
 from itertools import izip
 
@@ -743,7 +743,7 @@ def arrayfetch(objs, *args, **fieldData):
     for row in result:
         retrow=[]
         for o, cols in izip(objs, allcols):
-            d=dict((stripTname(c), row[c]) for c in cols)
+            d=dict((_strip_tablename(c), row[c]) for c in cols)
             # if all values are NULL, take that as meaning that this
             # is a full join and the whole object is NULL, and append
             # None

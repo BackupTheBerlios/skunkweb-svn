@@ -1,6 +1,6 @@
 from PyDO2.base import PyDO
 from PyDO2.log import debug
-from PyDO2.utils import iflatten, stripTname
+from PyDO2.utils import iflatten, _strip_tablename
 from inspect import isclass
 import string
 from itertools import izip
@@ -82,7 +82,7 @@ def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
                 assert isinstance(o, TableAlias) or (isclass(o) and issubclass(o, PyDO))
                 d={}
                 for col in cols:
-                    d[stripTname(col)]=row[p]
+                    d[_strip_tablename(col)]=row[p]
                     p+=1
                 for v in d.itervalues():
                     if v is not None:

@@ -71,7 +71,3 @@ def formatTexp(o, a):
         return a
     return '%s %s' % (o.getTable(), a)
 
-def stripTname(s):
-    if '.' in s:
-        return s[s.rindex('.')+1:]
-    return s
