@@ -554,7 +554,7 @@ class PyDO(dict):
         query=["DELETE FROM %s" % cls.getTable()]
         if sql:
             query.extend(['WHERE', sql])
-        return conn.execute(query, values)
+        return conn.execute(' '.join(query), values)
 
     def delete(self):
         """remove the row that represents me in the database"""
