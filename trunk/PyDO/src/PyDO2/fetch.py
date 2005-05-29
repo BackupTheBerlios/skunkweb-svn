@@ -44,6 +44,47 @@ def flattenResultSpec(resultSpec):
             yield i
 
 def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
+    """
+    a method that executes sql and returns rows of tuples of PyDO
+    objects and scalar values, ordered according to a result set
+    specification.
+
+    resultSpec is a list that may contain:
+
+      * PyDO classes;
+      
+      * 2-tuples of (PyDO class, alias string), which indicate that
+        the table represented by the PyDO class is to be referenced by
+        the given alias;
+
+      * strings, which represent arbitrary SQL expressions that may
+        occur in a SQL column-list specification.
+
+    The resultSpec list may contain nested lists, which will be
+    flattened for you and are taken to be equivalent to an unflattened
+    list (except for the 2-tuples mentioned above).
+
+    sqlTemplate is a string that may contain interpolation variables
+    in the style of string.Template.  In particular, two variables are
+    supplied to this template automatically:
+
+      $COLUMNS -- a list of columns computed from the supplied resultSpec;
+
+      $TABLES -- a list of tables similarly computed.
+
+    Additional interpolation variables may be passed in as keyword
+    arguments.  Bind variables to the SQL may also be passed in,
+    through positional arguments; if there is only one positional
+    argument, and it is a dictionary, it will be used instead of a
+    list of values, under the assumption that the 'pyformat'
+    paramstyle is being used.
+
+    For each element E in the (flattened) resultSpec, the result row
+    contains one element F.  If E is a PyDO class, F will either be an
+    instance of E, or, if all its corresponding columns were null for
+    that row, None.  If E is a string, F will be whatever the cursor
+    returned for that column.
+    """
     resultSpec=list(flattenResultSpec(resultSpec))
     objs=[x for x in resultSpec if not isinstance(x, basestring)]
     # check that all objs have the same connectionAlias
@@ -61,13 +102,18 @@ def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
         else:
             allcols.append(item)
     columns=', '.join(iflatten(allcols))
-    sql=string.Template(sqlTemplate).substitute(kwargs, TABLES=tables, COLUMNS=columns)
+    sql=string.Template(sqlTemplate).substitute(kwargs,
+                                                TABLES=tables,
+                                                COLUMNS=columns)
     c=dbi.cursor()
+    if len(values)==1 and isinstance(values, dict):
+        values=values[0]
     if dbi.verbose:
         debug('SQL: %s', sql)
         debug('bind variables: %s', values)
     c.execute(sql, values)
     result=c.fetchall()
+    c.close()
     if not result:
         raise StopIteration
     retrow=[]
@@ -96,9 +142,9 @@ def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
                     retrow.append(None)
         yield tuple(retrow)
 
-                    
-
 def fetch(resultSpec, sqlTemplate, *values, **kwargs):
     return list(iterfetch(resultSpec, sqlTemplate, *values, **kwargs))
 
-__all__=['fetch', 'iterfetch']
+fetch.__doc__=iterfetch.__doc__
+
+__all__=['fetch']

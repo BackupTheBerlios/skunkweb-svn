@@ -1,5 +1,8 @@
 2005-05-29  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/PyDO2/fetch.py (fetch): remove iterfetch from __all__, and
+	add great big docstring.
+
 	* src/PyDO2/base.py: removing arrayfetch from __all__.
 
 	* src/PyDO2/__init__.py: importing from fetch.py, and no longer
@@ -12,7 +15,7 @@
 	method.
 
 	* src/PyDO2/drivers/{psycopgconn,sqliteconn,mssqlconn}.py, 
-	src/PyDO2/{base,dbi}.py: change all str tests to basestring.
+	src/PyDO2/{base,dbi}.py: change all  str tests to basestring.
 
 2005-05-27  Jacob Smullyan  <smulloni@smullyan.org>
 
