@@ -26,22 +26,21 @@ class TableAlias(object):
     def __call__(self, **kwargs):
         return self.obj(**kwargs)
 
-def flattenResultSpec(resultSpec):
+def _processResultSpec(resultSpec):
     for i in resultSpec:
         if isinstance(i, (list, tuple)):
             if len(i)==2 and isclass(i[0]) and isinstance(i[1], basestring):
                 # an alias
                 yield TableAlias(*i)
             else:
-                for x in flattenResultSpec(i):
-                    yield x
+                raise ValueError, "nested sequence!"
         else:
             if isclass(i):
                 if not issubclass(i, PyDO):
                     raise ValueError, "unknown class"
             elif not isinstance(i, (TableAlias, basestring)):
                 raise ValueError, "table alias or string expression: %s" % i
-            yield i
+            yield i            
 
 def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
     """
@@ -60,10 +59,6 @@ def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
       * strings, which represent arbitrary SQL expressions that may
         occur in a SQL column-list specification.
 
-    The resultSpec list may contain nested lists, which will be
-    flattened for you and are taken to be equivalent to an unflattened
-    list (except for the 2-tuples mentioned above).
-
     sqlTemplate is a string that may contain interpolation variables
     in the style of string.Template.  In particular, two variables are
     supplied to this template automatically:
@@ -79,13 +74,13 @@ def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
     list of values, under the assumption that the 'pyformat'
     paramstyle is being used.
 
-    For each element E in the (flattened) resultSpec, the result row
-    contains one element F.  If E is a PyDO class, F will either be an
-    instance of E, or, if all its corresponding columns were null for
-    that row, None.  If E is a string, F will be whatever the cursor
-    returned for that column.
+    For each element E in the resultSpec, the result row contains one
+    element F.  If E is a PyDO class, F will either be an instance of
+    E, or, if all its corresponding columns were null for that row,
+    None.  If E is a string, F will be whatever the cursor returned
+    for that column.
     """
-    resultSpec=list(flattenResultSpec(resultSpec))
+    resultSpec=list(_processResultSpec(resultSpec))
     objs=[x for x in resultSpec if not isinstance(x, basestring)]
     # check that all objs have the same connectionAlias
     caliases=tuple(frozenset(o.connectionAlias for o in objs))
@@ -142,9 +137,9 @@ def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
                     retrow.append(None)
         yield tuple(retrow)
 
-def fetch(resultSpec, sqlTemplate, *values, **kwargs):
+def scatterfetch(resultSpec, sqlTemplate, *values, **kwargs):
     return list(iterfetch(resultSpec, sqlTemplate, *values, **kwargs))
 
-fetch.__doc__=iterfetch.__doc__
+scatterfetch.__doc__=iterfetch.__doc__
 
-__all__=['fetch']
+__all__=['scatterfetch']

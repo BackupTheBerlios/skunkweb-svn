@@ -44,7 +44,7 @@ PyDO's basic strategy is to let you define a ``PyDO`` subclass for
 every table in a database that you wish to represent.  Each ``PyDO``
 instance contains the data for one row in a database table. As
 ``PyDO`` is a ``dict`` subclass, you can access this data by key, and,
-if the class attribute ``_use_attributes`` is true (the default) also
+if the class attribute ``use_attributes`` is true (the default) also
 by attribute.  In either case, the key or attribute name is the name
 of the database column::
 
@@ -526,59 +526,64 @@ table name, or a list of names.
 Getting Data From Multiple Tables At Once
 +++++++++++++++++++++++++++++++++++++++++
 
-PyDO includes a number of classes that join two ``PyDO`` classes and
-make it possible to get pairs of instances of those classes at once in
-a single query, closely modelling (and generating) SQL joins:
-``CrossJoin``, ``InnerJoin``, ``RightJoin``, ``LeftJoin``,
-``FullJoin``, ``NaturalInnerJoin``, ``NaturalRightJoin``,
-``NaturalLeftJoin``, and ``NaturalFullJoin``.  ``CrossJoin`` and all
-the natural joins have constructors of this form::
+.. note:: The techniques for doing this in PyDO2 alpha releases are in
+    flux.  2.0a2 supported a number of specialized classes and a
+    function, ``arrayfetch``, for performing joins of different kinds,
+    but these have been deprecated in 2.0a3 in favor of ``scatterfetch``,
+    documented below, and will be probably be removed.  ``scatterfetch``,
+    too, is experimental and subject to change during the alpha
+    release cycle.
 
-   Join(leftObject, rightObject...)
+The ``scatterfetch`` function makes it possible to query multiple
+tables, use aggregates and obtain other non-table data, while still
+returning table data coalesced into ``PyDO`` instances.  Its signature
+is::
 
-Whereas the rest take two additional parameters::
+   def scatterfetch(resultSpec, sqlTemplate, *values, **kwargs)
 
-   Join(leftObject, rightObject, on=None, using=None)
+``resultSpec``, a result set specification, is a list that may
+contain: 
 
-The ``on`` and ``using`` parameters are mutually exclusive.  If
-supplied, ``on`` may be a ``SQLOperator`` instance, a sequence of
-``SQLOperator`` instances, a SQL string, or a sequence of which the
-first element is a string and the rest are bind variables; ``using``,
-if supplied instead, must be a sequence of field names.  
+* ``PyDO`` classes;
+      
+* 2-tuples of (``PyDO`` class, alias string), which indicate that the
+  table represented by the ``PyDO`` class is to be referenced in SQL
+  by the given alias;
 
-To issue a query, call the ``getSome()`` method on the join instance::
+* strings, which represent arbitrary SQL expressions that may occur in
+   a SQL column-list specification.
 
-    >>> j1=CrossJoin(Teachers, Students)
-    >>> res=j1.getSome(order=('teacher.lastname DESC', 
-    ...                       'students.lastname DESC'), 
-    ...                limit=1)
-    >>> res[0][0].lastname, res[0][1].lastname
-    Zyznowski, Yeoman
-    
-This ``getSome`` takes the same arguments as ``PyDO.getSome()``, but,
-unlike it, is an instance method.
+``sqlTemplate`` is a string that may contain interpolation variables
+in the style of ``string.Template``.  In particular, two variables are
+supplied to this template automatically:
 
-.. note:: All of these classes generate SQL using the SQL92 JOIN
-    syntax, and not all the database systems supported by PyDO accept all
-    these JOINS at all or in exactly the same way.
+  ``$COLUMNS``
+     a list of columns computed from the supplied resultSpec;
 
-Currently these classes do not nest; the objects passed to the
-constructor must be ``PyDO`` classes, not joins themselves.  Nested joins
-may be supported in future.
+  ``$TABLES``
+     a list of tables similarly computed.
 
-If you want to join multiple tables and get ``PyDO`` instances back
-without using JOIN syntax, that is possible using the ``arrayfetch``
-method::
+Additional interpolation variables may be passed in as keyword
+arguments.  Bind variables to the SQL may also be passed in, through
+positional arguments; if there is only one positional argument, and it
+is a dictionary, it will be used instead of a list of values, under
+the assumption that the ``pyformat`` paramstyle is being used.
 
-   arrayfetch(objs, *args, **fieldData)
+For each element *E* in the resultSpec, the result row contains one
+element *F*.  If *E* is a ``PyDO`` class, *F* will either be an
+instance of *E*, or, if all its corresponding columns were null for
+that row, ``None``.  If *E* is a string, *F* will be whatever the
+cursor returned for that column.
 
-Each item in the ``objs`` sequence must be either a ``PyDO`` object,
-or a 2-tuple of the form ``(PyDOObj, alias)`` where ``alias`` is a
-table alias to be used in the generated SQL.  The remaining arguments
-are the same as those taken by ``PyDO.getSome()``.
- 
-.. note:: The various Join classes and ``arrayfetch`` are experimental
-    features, subject to change.  
+For example::
+
+  >>> tmpl='''SELECT $COLUMNS FROM $TABLES WHERE art.creator=auth.id 
+  ...         AND art.id=%s'''
+  >>> res=scatterfetch([(Article.project(('title',)), 'art'),
+  ...                   (Author.project('lastname',)), 'auth'),
+  ...                   '3-2'], tmpl, 4)
+  (({'title': 'My Woodchuck Smarts'}, {'lastname' : 'Pydong'}, 1),)
+
 
 Managing Database Connections
 -----------------------------
@@ -704,11 +709,13 @@ most notably:
     methods). 
 9.  PyDO1 supports more databases than PyDO2 does at the time of
     writing.
-10. PyDO2 does not implement PyDO1's ``scatterFetch()`` method, which
-    returns multiple ``PyDO`` objects of different types in a single
-    query. Related functionality is implemented by  ``arrayfetch()``
-    and the Join classes, but they are subject to change during the
-    alpha release cycle.
+10. PyDO2 does not implement PyDO1's original ``scatterFetch()``
+    method, which returns multiple ``PyDO`` objects of different types
+    in a single query. Related functionality was implemented by
+    ``arrayfetch()`` and a number of Join classes in the first alpha
+    releases, but as of 2.0a3 they are deprecated in favor of a new
+    function, also called ``scatterfetch`` but unrelated to the PyDO1
+    version. 
 11. PyDO1 has a variable ``SYSDATE`` that means the current
     datetime, regardless of the underlying db.  PYDO2 does not
     abstract this, as it seems unnecessary now; you can use

@@ -1,3 +1,10 @@
+2005-05-30  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/PyDO2/fetch.py: renaming fetch to scatterfetch (fetch
+	conflicts with module name); stopped flattening the resultSpec.
+
+	* doc/manual.rst: documenting scatterfetch.
+
 2005-05-29  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/PyDO2/fetch.py (iterfetch): add the columns to the column
