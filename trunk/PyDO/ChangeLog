@@ -1,5 +1,9 @@
 2005-05-29  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/PyDO2/fetch.py (iterfetch): add the columns to the column
+	list in sorted order, so that if you don't use $COLUMNS you can at
+	least predict what the right order is.
+
 	* src/PyDO2/base.py (PyDO.deleteSome): fix for silly but bad bug
 	reported by Steve Kieu.
 

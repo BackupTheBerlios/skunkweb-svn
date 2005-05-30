@@ -98,7 +98,7 @@ def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
     allcols=[]
     for item in resultSpec:
         if hasattr(item, 'getColumns'):
-            allcols.append(item.getColumns(True))
+            allcols.append(sorted(item.getColumns(True)))
         else:
             allcols.append(item)
     columns=', '.join(iflatten(allcols))
