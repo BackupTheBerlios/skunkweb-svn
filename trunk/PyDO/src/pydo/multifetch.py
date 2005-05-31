@@ -74,8 +74,8 @@ def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
     arguments.  Bind variables to the SQL may also be passed in,
     through positional arguments; if there is only one positional
     argument, and it is a dictionary, it will be used instead of a
-    list of values, under the assumption that the 'pyformat'
-    paramstyle is being used.
+    list of values, under the assumption that either the 'named' or
+    'pyformat' paramstyle is being used.
 
     For each element E in the resultSpec, the result row contains one
     element F.  If E is a PyDO class, F will either be an instance of
