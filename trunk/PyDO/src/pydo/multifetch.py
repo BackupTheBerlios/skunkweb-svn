@@ -20,6 +20,9 @@ class TableAlias(object):
     def getColumns(self, alias=True):
         return self.obj.getColumns(self.alias)
 
+    def getUniquenessConstraints(self):
+        return self.obj.getUniquenessConstraints()
+
     def getDBI(self):
         return self.obj.getDBI()
 
@@ -76,10 +79,12 @@ def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
 
     For each element E in the resultSpec, the result row contains one
     element F.  If E is a PyDO class, F will either be an instance of
-    E, or, if all its corresponding columns were null for that row,
-    None.  If E is a string, F will be whatever the cursor returned
-    for that column.
+    E, or, if all its corresponding columns were null for that row and
+    E has a uniqueness constraint (which in PyDO is implicitly a not
+    null constraint), None.  If E is a string, F will be whatever the
+    cursor returned for that column.
     """
+    
     resultSpec=list(_processResultSpec(resultSpec))
     objs=[x for x in resultSpec if not isinstance(x, basestring)]
     # check that all objs have the same connectionAlias
@@ -90,6 +95,11 @@ def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
     dbi=objs[0].getDBI()    
 
     tables = ', '.join(x.getTable() for x in objs)
+    # if an item has no uniqueness constraints, it really could
+    # be all null; otherwise, take all-nullness to mean that
+    # we're dealing with a join with a no matching row for that
+    # table.  "noneable" means here, "we can represent it as None"
+    noneable=[o for o in objs if o.getUniquenessConstraints()]
     allcols=[]
     for item in resultSpec:
         if hasattr(item, 'getColumns'):
@@ -125,12 +135,15 @@ def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
                 for col in cols:
                     d[_strip_tablename(col)]=row[p]
                     p+=1
-                for v in d.itervalues():
-                    if v is not None:
-                        notnull=True
-                        break
-                    else:
-                        notnull=False
+                if o in noneable:
+                    for v in d.itervalues():
+                        if v is not None:
+                            notnull=True
+                            break
+                        else:
+                            notnull=False
+                else:
+                    notnull=True
                 if notnull:
                     retrow.append(o(**d))
                 else:

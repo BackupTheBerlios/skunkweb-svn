@@ -143,10 +143,10 @@ the static factory method ``PyDO.create_field()`` to do so.
 A ``Sequence`` field is used to represent either an auto-increment
 column, for databases like MySQL that use that mechanism, or a
 sequence column, as used in PostgreSQL.  These columns are implicitly
-unique.  A ``Unique`` field is used to represent a column that has a
-single-column uniqueness constraint.  Multiple-column uniqueness
-constraints can also be indicated, with the ``unique`` class
-attribute::
+unique and not null.  A ``Unique`` field is used to represent a column
+that has a single-column uniqueness constraint and is not null.
+Multiple-column not-null uniqueness constraints can also be indicated,
+with the ``unique`` class attribute::
 
    from pydo import PyDO
  
@@ -571,8 +571,9 @@ the assumption that the ``pyformat`` paramstyle is being used.
 For each element *E* in the resultSpec, the result row contains one
 element *F*.  If *E* is a ``PyDO`` class, *F* will either be an
 instance of *E*, or, if all its corresponding columns were null for
-that row, ``None``.  If *E* is a string, *F* will be whatever the
-cursor returned for that column.
+that row and *E* has a uniqueness constraint (which in PyDO is
+implicitly a not null constraint), ``None``.  If *E* is a string, *F*
+will be whatever the cursor returned for that column.
 
 For example::
 

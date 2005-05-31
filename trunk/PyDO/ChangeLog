@@ -1,5 +1,11 @@
 2005-05-31  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
+	* doc/manual.rst: document the refinement in null treatment in
+	fetch. 
+
+	* src/pydo/multifetch.py (iterfetch): add a little intelligence
+	about whether to map an object with all null values to None. 
+
 	* src/pydo/base.py (arrayfetch): note in docstring that this
 	function is deprecated.
 
