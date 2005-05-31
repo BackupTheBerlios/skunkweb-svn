@@ -1,5 +1,7 @@
 2005-05-31  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
+	* doc/examples/pim.py: changed import here as well.
+
 	* doc/api/Makefile (EPYDOC): change for package name.
 
 	* doc/manual.rst: change package name, and name of fetch
