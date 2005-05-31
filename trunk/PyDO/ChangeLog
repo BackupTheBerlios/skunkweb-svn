@@ -1,3 +1,11 @@
+2005-05-31  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/pydo/base.py (PyDO._joinTableSQL, PyDO.updateSome)
+	(PyDO._uniqueWhere, PyDO._processWhere, PyDO.joinTable):
+	more refactoring to get bind variable conversion to work correctly
+	with paramstyles that keep bind variables in dictionaries and
+	generate interpolation keys. 
+
 2005-05-31  Tim Golden  <mail@timgolden.me.uk>
 
         * src/pydo/drivers/mssqlconn.py: more precise handling of

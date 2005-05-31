@@ -272,11 +272,11 @@ class PyDO(dict):
                  " SET ",
                  ', '.join(["%s = %s" % (x, converter(y)) \
                             for x, y in adict.iteritems()])]
-        values=converter.values
-        where, wvals=cls._processWhere(conn, args, fieldData)
+        #values=converter.values
+        where, values=cls._processWhere(conn, args, fieldData, converter)
         if where:
             sqlbuff.extend([' WHERE ', where])
-            values+=wvals
+            #values+=wvals
         return conn.execute(''.join(sqlbuff), values)
 
 
@@ -492,7 +492,7 @@ class PyDO(dict):
 
 
     @staticmethod
-    def _processWhere(conn, args, fieldData):
+    def _processWhere(conn, args, fieldData, converter=None):
         if args and isinstance(args[0], basestring):
             if fieldData:
                 raise ValueError, "cannot pass keyword args when including sql string"
@@ -506,12 +506,15 @@ class PyDO(dict):
             # declared in the class/projection.
             #cls._validateFields(fieldData)
             andValues=list(args)
-            converter=conn.getConverter()
+            # why was I using a converter here???
+            #tmpconverter=conn.getConverter()
             for k, v in fieldData.items():
-                andValues.append(EQ(FIELD(k), v, converter=converter))
+                andValues.append(EQ(FIELD(k), v)) #, converter=tmpconverter))
             andlen=len(andValues)
-            # discard converter.values, we'll regenerate that next
-            converter.reset()
+            ## discard converter.values, we'll regenerate that next
+            #converter.reset()
+            if converter is None:
+                converter=conn.getConverter()
             if andlen==0:
                 sql=''
             elif andlen==1:
@@ -638,7 +641,8 @@ class PyDO(dict):
         limit=extra.pop('limit', None)
         offset=extra.pop('offset', None)
         conn=self.getDBI()
-        wheresql, wherevals=self._processWhere(conn, whereArgs, extra)
+        converter=conn.getConverter()
+        wheresql, wherevals=self._processWhere(conn, whereArgs, extra, converter=converter)
         sql, vals = self._joinTableSQL(conn,
                                        thisAttrNames,
                                        pivotTable,
@@ -648,7 +652,8 @@ class PyDO(dict):
                                        thatAttrNames,
                                        extraTables,
                                        wheresql,
-                                       wherevals,
+                                       #wherevals,
+                                       converter,
                                        order,
                                        limit,
                                        offset)
@@ -667,7 +672,8 @@ class PyDO(dict):
                       thatAttrNames,
                       extraTables,
                       wheresql,
-                      wherevals,
+                      #wherevals,
+                      converter,
                       order,
                       limit,
                       offset):
@@ -693,7 +699,7 @@ class PyDO(dict):
              ' WHERE ']
         
         joins = []
-        converter=conn.getConverter()
+        #converter=conn.getConverter()
         for attr, col in zip(thisAttrNames, thisSideColumns):
             lit=converter(self[attr])
             joins.append("%s.%s = %s" % (pivotTable, col, lit))
@@ -707,8 +713,9 @@ class PyDO(dict):
         sql.append(' AND '.join(joins))
         if wheresql:
             sql.append(' AND (%s)' % wheresql)
-            if wherevals:
-                vals=vals+wherevals
+            ## not needed, wherevals are now in the converter already
+            #if wherevals:
+            #    vals=vals+wherevals
         if filter(None, (order, limit, offset)):
             sql.append(conn.orderByString(order, limit, offset))                
         return ''.join(sql), vals
