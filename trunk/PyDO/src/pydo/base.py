@@ -715,11 +715,11 @@ class PyDO(dict):
 
 def arrayfetch(objs, *args, **fieldData):
     """
-    An experimental method that returns several an array of PyDO objects.
+    An experimental function that returns several an array of PyDO objects.
     objs is a list of PyDO objects, or (PyDOObj, tableAlias) tuples (may be
     intermingled).  *args are like the arguments passed to getSome().
     
-    API subject to change.
+    N.B.  This function is deprecated and will be removed in future.
     """
     order=fieldData.pop('order', None)
     limit=fieldData.pop('limit', None)

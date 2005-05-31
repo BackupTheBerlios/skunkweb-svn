@@ -3,15 +3,7 @@
 The joins module contains a number of Join classes that enables you to
 get multiple PyDO objects in one join operation.
 
-N.B.: this is still experimental!  And in any case, not every database
-system will necessarily support every join, and this won't attempt to
-deal with that, except by (eventually) documenting what the limits
-are.
-
-Current limits:
-
-   * does not support nested joins.
-   * does not support self joins.
+N.B.: this module is deprecated and will probably disappear.
 
 """
 from pydo.base import PyDO

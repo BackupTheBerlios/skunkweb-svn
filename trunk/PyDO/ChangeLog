@@ -1,5 +1,11 @@
 2005-05-31  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
+	* src/pydo/base.py (arrayfetch): note in docstring that this
+	function is deprecated.
+
+	* src/pydo/joins.py: note in docstring that this module is
+	deprecated. 
+
 	* src/pydo/operators.py: removed redundancy in docstring.
 
 	* doc/examples/pim.py: changed import here as well.
