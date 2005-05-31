@@ -17,6 +17,6 @@ from pydo.operators import *
 from pydo.dbi import *
 from pydo.dbtypes import *
 from pydo.log import *
-from pydo.fetch import *
+from pydo.multifetch import *
 
 __version__='2.0a3'

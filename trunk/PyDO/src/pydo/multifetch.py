@@ -137,9 +137,9 @@ def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
                     retrow.append(None)
         yield tuple(retrow)
 
-def scatterfetch(resultSpec, sqlTemplate, *values, **kwargs):
+def fetch(resultSpec, sqlTemplate, *values, **kwargs):
     return list(iterfetch(resultSpec, sqlTemplate, *values, **kwargs))
 
-scatterfetch.__doc__=iterfetch.__doc__
+fetch.__doc__=iterfetch.__doc__
 
-__all__=['scatterfetch']
+__all__=['fetch']

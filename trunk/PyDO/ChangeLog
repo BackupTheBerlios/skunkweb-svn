@@ -1,4 +1,12 @@
-2005-05-30  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+2005-05-31  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+
+	* src/pydo/multifetch.py: renamed module again, and renamed
+	scatterfetch back to fetch.  src/pydo/__init__.py: changed import
+	from fetch to multifetch.
+
+	* setup.py, tests, src/pydo: renamed package again, from PyDO2 to pydo.  
+	
+2005-05-30  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/PyDO2/fetch.py: renaming fetch to scatterfetch (fetch
 	conflicts with module name); stopped flattening the resultSpec.

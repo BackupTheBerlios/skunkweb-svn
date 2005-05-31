@@ -1,7 +1,7 @@
 from distutils.core import setup
 import sys
 sys.path.insert(0, 'src')
-from PyDO2 import __version__ as version
+from pydo import __version__ as version
 description='a Python ORM supporting many RDBMS backends'
 long_description="""
 PyDO is a ORM (Object-Relational Mapper) database access library for
@@ -30,5 +30,5 @@ setup(author='Drew Csillag',
       name='PyDO',
       url='http://skunkweb.org/pydo2.html',
       version=version,
-      packages=['PyDO2', 'PyDO2.drivers'],
+      packages=['pydo', 'pydo.drivers'],
       package_dir={'' : 'src'})
