@@ -35,10 +35,10 @@ Overview
     namespace.  In what follows we will assume that the current
     namespace has been initialized by::
 
-       from PyDO2 import *
+       from pydo import *
 
     (In particular, this means that when we want to refer to the
-    ``PyDO2.PyDO`` class, we shall just write ``PyDO``.)
+    ``pydo.PyDO`` class, we shall just write ``PyDO``.)
 
 PyDO's basic strategy is to let you define a ``PyDO`` subclass for
 every table in a database that you wish to represent.  Each ``PyDO``
@@ -77,7 +77,7 @@ Defining Table Classes
 To model a database table, you define a subclass of ``PyDO`` and set
 some class attributes that describe the table::
 
-  from PyDO2 import PyDO, Sequence, Unique
+  from pydo import PyDO, Sequence, Unique
 
   class Article(PyDO):
       """PyDO class for the Article table"""
@@ -148,7 +148,7 @@ single-column uniqueness constraint.  Multiple-column uniqueness
 constraints can also be indicated, with the ``unique`` class
 attribute::
 
-   from PyDO2 import PyDO
+   from pydo import PyDO
  
    class ArticleKeywordJunction(PyDO):
    """PyDO class for junction table between Article and Keyword"""
@@ -529,17 +529,16 @@ Getting Data From Multiple Tables At Once
 .. note:: The techniques for doing this in PyDO2 alpha releases are in
     flux.  2.0a2 supported a number of specialized classes and a
     function, ``arrayfetch``, for performing joins of different kinds,
-    but these have been deprecated in 2.0a3 in favor of ``scatterfetch``,
-    documented below, and will be probably be removed.  ``scatterfetch``,
+    but these have been deprecated in 2.0a3 in favor of ``fetch``,
+    documented below, and will be probably be removed.  ``fetch``,
     too, is experimental and subject to change during the alpha
     release cycle.
 
-The ``scatterfetch`` function makes it possible to query multiple
-tables, use aggregates and obtain other non-table data, while still
-returning table data coalesced into ``PyDO`` instances.  Its signature
-is::
+The ``fetch`` function makes it possible to query multiple tables, use
+aggregates and obtain other non-table data, while still returning
+table data coalesced into ``PyDO`` instances.  Its signature is::
 
-   def scatterfetch(resultSpec, sqlTemplate, *values, **kwargs)
+   def fetch(resultSpec, sqlTemplate, *values, **kwargs)
 
 ``resultSpec``, a result set specification, is a list that may
 contain: 
@@ -579,9 +578,9 @@ For example::
 
   >>> tmpl='''SELECT $COLUMNS FROM $TABLES WHERE art.creator=auth.id 
   ...         AND art.id=%s'''
-  >>> res=scatterfetch([(Article.project(('title',)), 'art'),
-  ...                   (Author.project('lastname',)), 'auth'),
-  ...                   '3-2'], tmpl, 4)
+  >>> res=fetch([(Article.project(('title',)), 'art'),
+  ...            (Author.project('lastname',)), 'auth'),
+  ...            '3-2'], tmpl, 4)
   (({'title': 'My Woodchuck Smarts'}, {'lastname' : 'Pydong'}, 1),)
 
 
@@ -608,7 +607,7 @@ no pool is used.  ``verbose`` is whether or not to log the generated
 SQL; by default no logging is done.
 
 The class method ``PyDO.getDBI()`` returns a database interface object
-(an instance of a driver-specific ``PyDO2.dbi.DBIBase`` subclass),
+(an instance of a driver-specific ``pydo.dbi.DBIBase`` subclass),
 which in turn uses an underlying DBAPI database connection.  The DBAPI
 connection is stored in thread-local storage and created lazily when
 an attempt is made to access it, so transactions in different threads
@@ -714,16 +713,19 @@ most notably:
     in a single query. Related functionality was implemented by
     ``arrayfetch()`` and a number of Join classes in the first alpha
     releases, but as of 2.0a3 they are deprecated in favor of a new
-    function, also called ``scatterfetch`` but unrelated to the PyDO1
-    version. 
+    function, simply called ``fetch``.
 11. PyDO1 has a variable ``SYSDATE`` that means the current
     datetime, regardless of the underlying db.  PYDO2 does not
     abstract this, as it seems unnecessary now; you can use
     something database-dependent like
     ``CONSTANT('CURRENT_TIMESTAMP')`` or ``mx.DateTime.now()``. 
-12. The package name of PyDO in this version is ``PyDO2``, not
-    ``PyDO``, so that both versions can be installed simultaneously
-    without any fancy footwork.
+12. The package name of PyDO in this version is ``pydo``, not
+    ``PyDO``. Both versions can be installed simultaneously
+    without any fancy footwork on case-sensitive operating systems; on
+    case-insensitive OSes, it is still possible to install and use
+    both, by putting PyDO1 into a zip file, in which paths are always
+    case-sensitive.  (Thanks to Hamish Lawson for suggesting this
+    workaround.) 
 13. The ``newfetch()`` and ``newnofetch()`` methods and the
     ``refetch`` and ``_refetch_keyword`` class attributes of ``PyDO``
     objects are new in PyDO2; in PyDO1, the ``refetch`` keyword

@@ -1,5 +1,10 @@
 2005-05-31  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
+	* doc/api/Makefile (EPYDOC): change for package name.
+
+	* doc/manual.rst: change package name, and name of fetch
+	function. 
+
 	* src/pydo/multifetch.py: renamed module again, and renamed
 	scatterfetch back to fetch.  src/pydo/__init__.py: changed import
 	from fetch to multifetch.

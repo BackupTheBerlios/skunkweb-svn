@@ -1,7 +1,7 @@
 EPYDOC=/usr/bin/epydoc
 
 html:
-	PYTHONPATH=../../src ${EPYDOC} -o html -n PyDO2 -u http://skunkweb.org/pydo.html  ../../src/PyDO2/
+	PYTHONPATH=../../src ${EPYDOC} -o html -n pydo -u http://skunkweb.org/pydo.html  ../../src/pydo/
 
 clean:
 	-rm -fR html
