@@ -23,7 +23,7 @@ helper class, SET, is available to help use the IN operator:
 
 For convenience, most SQL operators are additionally wrapped in
 operator-specific SQLOperator subclasses, which are exactly equivalent
-to the explicit tuple notation and are exactly equivalent:
+to the explicit tuple notation.
 
   >>> print IN(FIELD('x'), SET(1, 2, 3, 4))
   (x IN (1, 2, 3, 4))
