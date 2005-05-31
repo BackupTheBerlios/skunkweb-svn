@@ -245,9 +245,9 @@ class PyDO(dict):
         conn=self.getDBI()
         converter=conn.getConverter()
         sqlbuff=["%s  = %s" % (x, converter(y)) for x, y in adict.iteritems()]
-        values=converter.values
-        where, wvals=self._uniqueWhere(conn, self)
-        values+=wvals
+        # pass in the same converter so that we don't get generated
+        # interpolation names that clobber any others
+        where, values=self._uniqueWhere(conn, self, converter)
         sql = "UPDATE %s SET %s WHERE %s" % (self.getTable(),
                                              ", ".join(sqlbuff),
                                              where)
@@ -446,7 +446,7 @@ class PyDO(dict):
                     return unique
 
     @classmethod
-    def _uniqueWhere(cls, conn, kw):
+    def _uniqueWhere(cls, conn, kw, converter=None):
         """given a connection and kw, using _matchUnique, generate a
         where clause to select a unique row.
         """
@@ -454,7 +454,8 @@ class PyDO(dict):
         if not unique:
             raise ValueError, 'No way to get unique row! %s %s' % \
                   (str(kw), unique)
-        converter=conn.getConverter()        
+        if converter is None:
+            converter=conn.getConverter()        
         if len(unique)==1:
             u=tuple(unique)[0]
             sql=str(EQ(FIELD(u), kw[u], converter=converter))

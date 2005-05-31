@@ -1,5 +1,10 @@
 2005-05-31  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
+	* src/pydo/base.py (PyDO._update_raw): *partial* fix for bug found
+	by Hamish Lawson -- the accumulation of bind variables is broken
+	for parastyles that store values in a dictionary.  This fix is for
+	_update_raw, but there more methods to be repaired.
+
 	* doc/manual.rst: document the refinement in null treatment in
 	fetch. 
 
