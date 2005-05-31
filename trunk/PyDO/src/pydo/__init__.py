@@ -10,13 +10,13 @@ persisted at the RDBMS level.  Supported databases are:
 
 """
 
-from PyDO2.exceptions import *
-from PyDO2.field import *
-from PyDO2.base import *
-from PyDO2.operators import *
-from PyDO2.dbi import *
-from PyDO2.dbtypes import *
-from PyDO2.log import *
-from PyDO2.fetch import *
+from pydo.exceptions import *
+from pydo.field import *
+from pydo.base import *
+from pydo.operators import *
+from pydo.dbi import *
+from pydo.dbtypes import *
+from pydo.log import *
+from pydo.fetch import *
 
 __version__='2.0a3'

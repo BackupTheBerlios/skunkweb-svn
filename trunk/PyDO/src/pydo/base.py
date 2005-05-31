@@ -1,9 +1,9 @@
-from PyDO2.dbi import getConnection
-from PyDO2.field import Field
-from PyDO2.exceptions import PyDOError
-from PyDO2.operators import AND, EQ, FIELD
-from PyDO2.dbtypes import unwrap
-from PyDO2.utils import _tupleize, _setize, formatTexp, _strip_tablename
+from pydo.dbi import getConnection
+from pydo.field import Field
+from pydo.exceptions import PyDOError
+from pydo.operators import AND, EQ, FIELD
+from pydo.dbtypes import unwrap
+from pydo.utils import _tupleize, _setize, formatTexp, _strip_tablename
 
 from itertools import izip
 
@@ -53,7 +53,7 @@ class _metapydo(type):
             if 'fields' in namespace or 'unique' in namespace:
                 raise ValueError, ("incompatible declarations: guess_columns "
                                    "with explicit declaration of fields and/or unique")
-            gfields, gunique=cls.getDBI().describeTable(cls.getTable(False), cls.schema)
+            gfields, gunique=cls._getTableDescription()
             namespace['fields']=gfields.values()
             namespace['unique']=gunique
 
@@ -150,6 +150,17 @@ class PyDO(dict):
     # private - don't touch
     _projections={}
     _is_projection=False
+
+    @classmethod
+    def _getTableDescription(cls):
+        """ supplies the table fields (as a dict of fieldnames to Field objects)
+	and a list of multi-column unique constraints to the metaclass, which will
+	call it when guessing columns.  By default this delegates to the DBI driver 
+	and performs no caching; if you want to cache it (to a file, presumably, since
+	it will only get called once per process anyway, at class creation time) this
+	is the hook to do it.
+	"""
+	return cls.getDBI().describeTable(cls.getTable(False), cls.schema)
     
     @staticmethod
     def _create_field(*args, **kwargs):

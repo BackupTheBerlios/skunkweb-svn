@@ -14,10 +14,10 @@ Current limits:
    * does not support self joins.
 
 """
-from PyDO2.base import PyDO
-from PyDO2.operators import SQLOperator, AND
-from PyDO2.utils import every
-from PyDO2.log import debug
+from pydo.base import PyDO
+from pydo.operators import SQLOperator, AND
+from pydo.utils import every
+from pydo.log import debug
 
 from itertools import izip
 

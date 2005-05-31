@@ -1,13 +1,13 @@
 """
 PyDO driver for mssql, using the ADO adapter.
 """
-from PyDO2.dbi import DBIBase, ConnectionPool
-from PyDO2.field import Field, Sequence
-from PyDO2.exceptions import PyDOError
-from PyDO2.dbtypes import (DATE, TIMESTAMP, BINARY, INTERVAL,
-                           date_formats, timestamp_formats)
-from PyDO2.log import debug
-from PyDO2.operators import BindingConverter
+from pydo.dbi import DBIBase, ConnectionPool
+from pydo.field import Field, Sequence
+from pydo.exceptions import PyDOError
+from pydo.dbtypes import (DATE, TIMESTAMP, BINARY, INTERVAL,
+                          date_formats, timestamp_formats)
+from pydo.log import debug
+from pydo.operators import BindingConverter
 
 import time
 import datetime

@@ -1,6 +1,6 @@
-from PyDO2.base import PyDO
-from PyDO2.log import debug
-from PyDO2.utils import iflatten, _strip_tablename
+from pydo.base import PyDO
+from pydo.log import debug
+from pydo.utils import iflatten, _strip_tablename
 from inspect import isclass
 import string
 from itertools import izip

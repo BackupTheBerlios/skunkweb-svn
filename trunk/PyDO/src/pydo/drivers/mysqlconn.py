@@ -3,12 +3,12 @@ PyDO driver for MySQL, using the MySQLdb driver.
 
 """
 
-from PyDO2.dbi import DBIBase, ConnectionPool
-from PyDO2.exceptions import PyDOError
-from PyDO2.operators import BindingConverter
-from PyDO2.dbtypes import DATE, TIMESTAMP, BINARY, INTERVAL
-from PyDO2.field import Field, Unique, Sequence
-from PyDO2.log import debug
+from pydo.dbi import DBIBase, ConnectionPool
+from pydo.exceptions import PyDOError
+from pydo.operators import BindingConverter
+from pydo.dbtypes import DATE, TIMESTAMP, BINARY, INTERVAL
+from pydo.field import Field, Unique, Sequence
+from pydo.log import debug
 
 import MySQLdb
 

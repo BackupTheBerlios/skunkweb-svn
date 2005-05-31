@@ -5,7 +5,7 @@ import unittest
 import logging
 import sys
 sys.path.append('../src')
-from PyDO2 import *
+from pydo import *
 
 
 class base(PyDO):

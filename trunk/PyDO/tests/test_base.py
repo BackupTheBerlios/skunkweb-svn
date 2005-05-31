@@ -6,7 +6,7 @@ import logging
 import sys
 import time
 sys.path.append('../src')
-from PyDO2 import *
+from pydo import *
 
 class base(PyDO):
     pass

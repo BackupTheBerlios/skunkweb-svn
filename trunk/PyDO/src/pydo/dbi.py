@@ -3,10 +3,10 @@ from threading import Lock, local
 from marshal import dumps as marshal_dumps
 from collections import deque
 import time
-from PyDO2.log import *
-from PyDO2.operators import BindingConverter
-from PyDO2.exceptions import PyDOError
-from PyDO2.utils import _strip_tablename, _import_a_class
+from pydo.log import *
+from pydo.operators import BindingConverter
+from pydo.exceptions import PyDOError
+from pydo.utils import _strip_tablename, _import_a_class
 
 
 class DBIBase(object):
@@ -181,10 +181,10 @@ class DBIBase(object):
 
 
 _driverConfig = {
-    'mysql':       'PyDO2.drivers.mysqlconn.MysqlDBI',
-    'psycopg':	   'PyDO2.drivers.psycopgconn.PsycopgDBI',
-    'sqlite':      'PyDO2.drivers.sqliteconn.SqliteDBI',
-    'mssql' :      'PyDO2.drivers.mssqlconn.MssqlDBI'
+    'mysql':       'pydo.drivers.mysqlconn.MysqlDBI',
+    'psycopg':	   'pydo.drivers.psycopgconn.PsycopgDBI',
+    'sqlite':      'pydo.drivers.sqliteconn.SqliteDBI',
+    'mssql' :      'pydo.drivers.mssqlconn.MssqlDBI'
     # more to come!
     }
 _loadedDrivers = {}
