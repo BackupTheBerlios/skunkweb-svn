@@ -1,3 +1,11 @@
+2005-05-31  Tim Golden  <mail@timgolden.me.uk>
+
+        * src/pydo/drivers/mssqlconn.py: more precise handling of
+        identity / sequence detection (only consider something as
+        a sequence if it is not null, an identity and a primary key).
+        Also correct a type which had the wrong sql executed when
+        looking for unique constraints.
+
 2005-05-31  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
 
 	* src/pydo/base.py (PyDO._update_raw): *partial* fix for bug found

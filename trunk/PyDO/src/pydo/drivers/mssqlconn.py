@@ -151,21 +151,35 @@ class MssqlDBI(DBIBase):
 
       sql = """
         select 
-          COLUMN_NAME, 
-          is_nullable = CASE LOWER (IS_NULLABLE) WHEN 'yes' THEN 1 ELSE 0 END,
-          is_identity = COLUMNPROPERTY (OBJECT_ID (TABLE_SCHEMA + '.' + TABLE_NAME), COLUMN_NAME, 'IsIdentity')
+          column_name = col.COLUMN_NAME, 
+          is_nullable = CASE LOWER (col.IS_NULLABLE) WHEN 'yes' THEN 1 ELSE 0 END,
+          is_identity = COLUMNPROPERTY (OBJECT_ID (col.TABLE_SCHEMA + '.' + col.TABLE_NAME), col.COLUMN_NAME, 'IsIdentity'),
+          is_primary_key = CASE WHEN ccu.COLUMN_NAME IS NULL THEN 0 ELSE 1 END
         FROM
-          INFORMATION_SCHEMA.COLUMNS
+          INFORMATION_SCHEMA.COLUMNS AS col
+        LEFT OUTER JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tco ON
+          tco.TABLE_SCHEMA = col.TABLE_SCHEMA AND
+          tco.TABLE_NAME = col.TABLE_NAME AND
+          tco.CONSTRAINT_TYPE = 'PRIMARY KEY'
+        LEFT OUTER JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE AS ccu ON
+          ccu.CONSTRAINT_CATALOG = tco.CONSTRAINT_CATALOG AND
+          ccu.CONSTRAINT_SCHEMA = tco.CONSTRAINT_SCHEMA AND
+          ccu.CONSTRAINT_NAME = tco.CONSTRAINT_NAME AND
+          ccu.COLUMN_NAME = col.COLUMN_NAME
         WHERE
-          TABLE_SCHEMA = '%s' AND
-          TABLE_NAME = '%s'
+          col.TABLE_SCHEMA = '%s' AND
+          col.TABLE_NAME = '%s'
       """ % (schema, table)
       execute (sql)
-      for name, is_nullable, is_identity in c.fetchall ():
-        if is_identity:
-          #
-          # @@FIXME: An identity doesn't have to be a PK. Is this implied?
-          #
+      for name, is_nullable, is_identity, is_primary_key in c.fetchall ():
+        #
+        # We're only interested in a sequence if it is
+        #  a NOT-NULL PK IDENTITY. 
+        #  ROWGUIDCOL columns probably do not count here, 
+        #   since their values have to be filled in by hand 
+        #   although typically via a DEFAULT of NewID ().
+        #
+        if is_identity and not is_nullable and is_primary_key:
           fields[name] = Sequence (name)
         else:
           fields[name] = Field (name)
@@ -200,7 +214,7 @@ class MssqlDBI(DBIBase):
         ccu.CONSTRAINT_SCHEMA = '%s' AND
         ccu.CONSTRAINT_NAME = '%s'
       """
-      execute (sql)
+      execute (constraint_sql)
       for constraint_catalog, constraint_schema, constraint_name in c.fetchall ():
         q2 = self.conn.cursor ()
         q2.execute (column_sql % (constraint_catalog, constraint_schema, constraint_name))
