@@ -29,7 +29,9 @@ him, the fundamental design remains Csillag's.
 Overview
 --------
 
-.. Note:: PyDO is a Python package (named ``PyDO2`` in this version),
+.. Note:: PyDO is a Python package (finally named ``pydo`` in this
+    version -- PyDO1 used the package name ``PyDO``, and previous
+    alpha releases of PyDO2 used first ``PyDO`` and then ``PyDO2``),
     but all the public objects within its submodules (with the
     exception of the drivers) are imported into its top-level
     namespace.  In what follows we will assume that the current
