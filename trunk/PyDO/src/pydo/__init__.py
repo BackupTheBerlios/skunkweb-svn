@@ -12,6 +12,7 @@ persisted at the RDBMS level.  Supported databases are:
 
 from pydo.exceptions import *
 from pydo.field import *
+from pydo.guesscache import *
 from pydo.base import *
 from pydo.operators import *
 from pydo.dbi import *
@@ -22,7 +23,7 @@ from pydo.multifetch import *
 # make __all__ nice
 from pydo.utils import getall
 __all__=getall('pydo.%s' % m for m in \
-               'exceptions field base operators dbi dbtypes log multifetch'.split())
+               'exceptions field guesscache base operators dbi dbtypes log multifetch'.split())
 del getall
     
 

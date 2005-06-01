@@ -1,5 +1,13 @@
 2005-06-01  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/pydo/__init__.py: import from guesscache.py.
+
+	* src/pydo/guesscache.py: adding a cache for storing table
+	introspection data.
+
+	* src/pydo/base.py (PyDO): added guesscache attribute, and
+	processing with it in _getTableDescription.
+
 	* doc/manual.rst: document change to signature of project().
 
 	* src/pydo/__init__.py: use getall to make the package's __all__

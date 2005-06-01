@@ -1,5 +1,6 @@
 from pydo.dbi import getConnection
 from pydo.field import Field
+from pydo.guesscache import GuessCache
 from pydo.exceptions import PyDOError
 from pydo.operators import AND, EQ, FIELD
 from pydo.dbtypes import unwrap
@@ -50,6 +51,9 @@ class _metapydo(type):
             cls.table=cl_name.lower()
         # field guessing
         if namespace.get('guess_columns', False):
+            if cls.guesscache == True:
+                # supply default cache
+                cls.guesscache=GuessCache()
             if 'fields' in namespace or 'unique' in namespace:
                 raise ValueError, ("incompatible declarations: guess_columns "
                                    "with explicit declaration of fields and/or unique")
@@ -142,6 +146,7 @@ class PyDO(dict):
     table=None
     schema=None
     refetch=False
+    guesscache=None
     
     ## not defined by default, but if you aren't using guess_columns
     ## you'll want to define it at some point in your class hierarchy
@@ -153,14 +158,25 @@ class PyDO(dict):
 
     @classmethod
     def _getTableDescription(cls):
-        """ supplies the table fields (as a dict of fieldnames to Field objects)
-	and a list of multi-column unique constraints to the metaclass, which will
-	call it when guessing columns.  By default this delegates to the DBI driver 
-	and performs no caching; if you want to cache it (to a file, presumably, since
-	it will only get called once per process anyway, at class creation time) this
-	is the hook to do it.
-	"""
-	return cls.getDBI().describeTable(cls.getTable(False), cls.schema)
+        
+        """ Supplies the table fields (as a dict of fieldnames to
+        Field objects) and a list of multi-column unique constraints
+        to the metaclass, which will call it when guessing columns.
+        If cls.guesscache is false, this delegates directly to the DBI
+        driver's describeTable() method, and performs no caching;
+        otherwise, cls.guesscache is presumed to be something
+        compatible a pydo.GuessCache, and it will be consulted and
+        populated. 
+        """
+        
+        if cls.guesscache:
+            data=cls.guesscache.retrieve(cls)
+            if not data:
+                data=cls.getDBI().describeTable(cls.getTable(False), cls.schema)
+                cls.guesscache.store(cls, data)
+            return data
+        else:
+            return cls.getDBI().describeTable(cls.getTable(False), cls.schema)
     
     @staticmethod
     def _create_field(*args, **kwargs):
@@ -232,7 +248,7 @@ class PyDO(dict):
         super(PyDO, self).update(unwrapped)
 
     def onUpdate(self, adict):
-        """a hook for subclasses to modify updates; 
+        """a hook for subclasses to modify/validate updates; 
         by default returns the original data unchanged."""
         return adict
 
@@ -275,11 +291,9 @@ class PyDO(dict):
                  " SET ",
                  ', '.join(["%s = %s" % (x, converter(y)) \
                             for x, y in adict.iteritems()])]
-        #values=converter.values
         where, values=cls._processWhere(conn, args, fieldData, converter)
         if where:
             sqlbuff.extend([' WHERE ', where])
-            #values+=wvals
         return conn.execute(''.join(sqlbuff), values)
 
 
@@ -505,17 +519,13 @@ class PyDO(dict):
             if len(values)==1 and isinstance(values[0], dict):
                 values=values[0]
         else:
-            # no longer require fields expressed as keyword arguments to be
+            # N.B. -- we don't call _validateFields here, as we permit
+            # fields expressed as keyword arguments that aren't 
             # declared in the class/projection.
-            #cls._validateFields(fieldData)
             andValues=list(args)
-            # why was I using a converter here???
-            #tmpconverter=conn.getConverter()
             for k, v in fieldData.items():
-                andValues.append(EQ(FIELD(k), v)) #, converter=tmpconverter))
+                andValues.append(EQ(FIELD(k), v)) 
             andlen=len(andValues)
-            ## discard converter.values, we'll regenerate that next
-            #converter.reset()
             if converter is None:
                 converter=conn.getConverter()
             if andlen==0:
@@ -702,7 +712,6 @@ class PyDO(dict):
              ' WHERE ']
         
         joins = []
-        #converter=conn.getConverter()
         for attr, col in zip(thisAttrNames, thisSideColumns):
             lit=converter(self[attr])
             joins.append("%s.%s = %s" % (pivotTable, col, lit))
@@ -716,9 +725,6 @@ class PyDO(dict):
         sql.append(' AND '.join(joins))
         if wheresql:
             sql.append(' AND (%s)' % wheresql)
-            ## not needed, wherevals are now in the converter already
-            #if wherevals:
-            #    vals=vals+wherevals
         if filter(None, (order, limit, offset)):
             sql.append(conn.orderByString(order, limit, offset))                
         return ''.join(sql), vals
