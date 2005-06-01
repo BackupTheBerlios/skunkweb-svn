@@ -27,6 +27,18 @@ def _strip_tablename(colname):
         return colname
     return colname[i+1:]
 
+def getall(modlist):
+    all=[]
+    for m in modlist:
+        try:
+            __all__=_import_a_class('%s.__all__' % m)
+        except ValueError:
+            continue
+        else:
+            all.extend(__all__)
+    return sorted(all)
+                             
+
 def _import_a_class(fqcn):
     lastDot=fqcn.rfind('.')   
     if lastDot==0:
@@ -71,3 +83,5 @@ def formatTexp(o, a):
         return a
     return '%s %s' % (o.getTable(), a)
 
+
+        

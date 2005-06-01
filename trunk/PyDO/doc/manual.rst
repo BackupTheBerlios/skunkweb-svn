@@ -61,9 +61,9 @@ an attempt at attribute access of that field will give rise to a
 ``SyntaxError``, but you'll still be able to access it
 dictionary-style.
 
-Instances are obtained, not by directly invoking the PyDO class's
-constructor, but by calling one of various class methods, discussed
-below, that return single instances or lists thereof.
+Instances are normally obtained, not by directly invoking the ``PyDO``
+class's constructor, but by calling one of various class methods,
+discussed below, that return single instances or lists thereof.
 
 PyDO is not an attempt to model all of SQL or its relational model.
 Its focus is on modelling those relations that tend to be both
@@ -140,7 +140,7 @@ that can be passed to a ``Field`` constructor (e.g.,
 you wish to store additional information about fields (e.g., data
 type, validators, etc.), and if you want to customize how strings,
 tuples, or dicts are turned into ``Fields`` for you, you can shadow
-the static factory method ``PyDO.create_field()`` to do so.
+the static factory method ``PyDO.create_field()`` to do so. 
 
 A ``Sequence`` field is used to represent either an auto-increment
 column, for databases like MySQL that use that mechanism, or a
@@ -167,6 +167,13 @@ single-column uniqueness constraints, which are more conveniently
 declared inline with the field, but necessary for the multi-column
 case.  
 
+.. note:: The reason that in PyDO, declaring a uniqueness constraint
+    implies a not null constraint, is that PyDO is only interested in
+    unique constraints as a way of determining precisely to which row
+    in the database a given object corresponds.  A nullable uniqueness
+    constraint is of no use to PyDO in this regard, and hence the
+    library doesn't attempt to model it.
+
 It is not necessary to declare any uniqueness constraints in a
 ``PyDO`` class at all, either implicitly with the ``Unique`` field
 class, or via the ``unique`` class attribute.  However, if you do not,
@@ -186,7 +193,7 @@ completely and declare the class attribute ``guess_columns``, PyDO
 will attempt to introspect into the database and build the table
 description itself at class creation time.  The declaration only
 affects the class in which it is declared; classes that inherit the
-attribute will not themselves attempt to guess columns. 
+attribute will not themselves attempt to guess columns.
 
 Inheritance Semantics
 +++++++++++++++++++++
@@ -227,10 +234,11 @@ listing -- for the case of projection subclasses, in which the local
 declaration of fields overrides that of superclasses.  Projections are
 useful when you wish to select only a few columns from a larger table.
 To derive a projection from a ``PyDO`` class, simply call the class
-method ``project()`` on the class, passing in a tuple of fields that
-you wish to include in the projection::
+method ``project()`` on the class, passing in a tuple of fields as
+positional arguments (or as a single tuple/list) that you wish to
+include in the projection::
 
-   myProjection=MyBaseClass.project(('id', 'title'))
+   myProjection=MyBaseClass.project('id', 'title')
 
 The return value is a subclass of ``myBaseClass`` with the fields
 ``id`` and ``title``. This class is cached, so if you call
@@ -552,7 +560,7 @@ contain:
   by the given alias;
 
 * strings, which represent arbitrary SQL expressions that may occur in
-   a SQL column-list specification.
+  a SQL column-list specification.
 
 ``sqlTemplate`` is a string that may contain interpolation variables
 in the style of ``string.Template``.  In particular, two variables are
@@ -568,7 +576,8 @@ Additional interpolation variables may be passed in as keyword
 arguments.  Bind variables to the SQL may also be passed in, through
 positional arguments; if there is only one positional argument, and it
 is a dictionary, it will be used instead of a list of values, under
-the assumption that the ``pyformat`` paramstyle is being used.
+the assumption that either the ``pyformat`` or ``named`` paramstyle is
+being used. 
 
 For each element *E* in the resultSpec, the result row contains one
 element *F*.  If *E* is a ``PyDO`` class, *F* will either be an
@@ -581,8 +590,8 @@ For example::
 
   >>> tmpl='''SELECT $COLUMNS FROM $TABLES WHERE art.creator=auth.id 
   ...         AND art.id=%s'''
-  >>> res=fetch([(Article.project(('title',)), 'art'),
-  ...            (Author.project('lastname',)), 'auth'),
+  >>> res=fetch([(Article.project('title'), 'art'),
+  ...            (Author.project('lastname'), 'auth'),
   ...            '3-2'], tmpl, 4)
   (({'title': 'My Woodchuck Smarts'}, {'lastname' : 'Pydong'}, 1),)
 

@@ -185,7 +185,10 @@ class PyDO(dict):
 
 
     @classmethod
-    def project(cls, fields):
+    def project(cls, *fields):
+        # also accept passing in a list or tuple (backwards compatibility)
+        if len(fields)==1 and isinstance(fields[0], (list, tuple)):
+            fields=fields[0]
         s=[]
         for f in fields:
             if isinstance(f, Field):

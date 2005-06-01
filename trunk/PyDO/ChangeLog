@@ -1,4 +1,18 @@
-2005-05-31  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+2005-06-01  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* doc/manual.rst: document change to signature of project().
+
+	* src/pydo/__init__.py: use getall to make the package's __all__
+	nicer. 
+
+	* src/pydo/utils.py (getall): function for coalescing __all__ of
+	submodules into the package namespace's __all__.
+
+2005-05-31  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/base.py (PyDO.project): change to signature: take
+	fields as positional parameters rather than a tuple (saves typing
+	and is easier for tuples of length one).
 
 	* src/pydo/multifetch.py (iterfetch): correction to docstring.
 
@@ -16,7 +30,7 @@
         Also correct a type which had the wrong sql executed when
         looking for unique constraints.
 
-2005-05-31  Jacob Smullyan  <smulloni@bunbury.smullyan.org>
+2005-05-31  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/base.py (PyDO._update_raw): *partial* fix for bug found
 	by Hamish Lawson -- the accumulation of bind variables is broken
@@ -48,7 +62,13 @@
 	scatterfetch back to fetch.  src/pydo/__init__.py: changed import
 	from fetch to multifetch.
 
-	* setup.py, tests, src/pydo: renamed package again, from PyDO2 to pydo.  
+	* setup.py, tests, src/pydo: renamed package again, from PyDO2 to
+	pydo.  
+
+	* src/pydo/base.py (PyDO._getTableDescription): column guessing
+	now delegates to this classmethod rather than calling the dbi
+	directly; the intention is that this hook can be used for caching
+	the table description.  
 	
 2005-05-30  Jacob Smullyan  <smulloni@smullyan.org>
 
