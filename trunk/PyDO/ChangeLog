@@ -1,5 +1,7 @@
 2005-06-01  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* doc/manual.rst: documenting guesscache.
+
 	* src/pydo/__init__.py: import from guesscache.py.
 
 	* src/pydo/guesscache.py: adding a cache for storing table

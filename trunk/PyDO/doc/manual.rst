@@ -193,7 +193,18 @@ completely and declare the class attribute ``guess_columns``, PyDO
 will attempt to introspect into the database and build the table
 description itself at class creation time.  The declaration only
 affects the class in which it is declared; classes that inherit the
-attribute will not themselves attempt to guess columns.
+attribute will not themselves attempt to guess columns.  By default,
+column guessing will require querying the database when the class is
+initialized for every process in which the class is imported; to
+mitigate this potential performance hit, the data can be cached to
+disk if you set ``PyDO.guesscache`` to an instance of ``GuessCache``
+or a compatible object, or to ``1`` or ``True``, in which case a
+default ``GuessCache`` will be used.  ``GuessCache`` stores pickles
+associated with classes in a cache directory, by default one created
+with the name ``pydoguesscache`` inside ``tempfile.gettempdir()``; if
+the schema of one of your objects has changed and you want to refresh
+the cache, simply delete the corresponding cache object and restart
+your application.
 
 Inheritance Semantics
 +++++++++++++++++++++
