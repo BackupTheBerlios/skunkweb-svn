@@ -1,5 +1,9 @@
 2005-06-01  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/pydo/drivers/mssqlconn.py (MssqlDBI.listTables),
+	src/pydo/drivers/sqliteconn.py (SqliteDBI.listTables): for
+	consistency, return list sorted as the other drivers do.
+
 	* doc/manual.rst: documenting guesscache.
 
 	* src/pydo/__init__.py: import from guesscache.py.
