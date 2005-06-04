@@ -58,7 +58,7 @@ def summarize_tests(success, fail):
          len(success),
          len(fail))
 
-__all__=['runModule', 'runNamespace']    
+__all__=['runModule', 'runNamespace', 'info']    
     
     
 def test_anything():
