@@ -1,7 +1,6 @@
 2005-06-04  Jacob Smullyan  <smulloni@smullyan.org>
 
-	* src/testingtesting.py: an extremely barebones testing framework,
-	probably upwards compatible with py.test.
+	* src/testingtesting.py: an extremely barebones testing framework.
 	(annotate): adding decorator for tagging tests.
 	(_testsForNamespace): rough draft of filtering by tag.
 
