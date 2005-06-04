@@ -17,9 +17,18 @@ def _testsForModule(m, func=defaultCriterion):
     return _testsForNamespace(vars(m), func)
 
 
-def _testsForNamespace(n, func=defaultCriterion):
-    return [x[1] for x in sorted((i for i in n.iteritems() if func(*i)),
-                                 key=lambda x: x[0])]
+def _testsForNamespace(n, func=defaultCriterion, attrname='tags', *tags):
+    all=(x[1] for x in sorted((i for i in n.iteritems() if func(*i)),
+                              key=lambda x: x[0]))
+    for a in all:
+        ftags=getattr(a, attrname, None)
+        if not ftags:
+            yield a
+        else:
+            if set(tags).subset(ftags):
+                yield a
+    
+    
 
 def runtests(tests):
     success=[]
@@ -76,6 +85,13 @@ def test_exception():
     else:
         x=0
     assert x==1
+
+def annotate(attrname, *tags):
+    """ decorator for tests """
+    def wrapper(func):
+        setattr(f, attrname, tags)
+        return f
+    return wrapper
 
 if __name__=='__main__':
     logger.setLevel(logging.INFO)

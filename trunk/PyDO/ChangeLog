@@ -2,6 +2,8 @@
 
 	* src/testingtesting.py: an extremely barebones testing framework,
 	probably upwards compatible with py.test.
+	(annotate): adding decorator for tagging tests.
+	(_testsForNamespace): rough draft of filtering by tag.
 
 2005-06-01  Jacob Smullyan  <smulloni@smullyan.org>
 
