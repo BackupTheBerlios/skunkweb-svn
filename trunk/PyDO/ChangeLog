@@ -1,3 +1,8 @@
+2005-06-04  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/testingtesting.py: an extremely barebones testing framework,
+	probably upwards compatible with py.test.
+
 2005-06-01  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/drivers/mssqlconn.py (MssqlDBI.listTables),
@@ -11,7 +16,7 @@
 	* src/pydo/guesscache.py: adding a cache for storing table
 	introspection data.
 
-	* src/pydo/base.py (PyDO): added guesscache attribute, and
+	* src/pydo/base.py (PyDO): added guesscache attribute, and 
 	processing with it in _getTableDescription.
 
 	* doc/manual.rst: document change to signature of project().
@@ -41,7 +46,7 @@
         * src/pydo/drivers/mssqlconn.py: more precise handling of
         identity / sequence detection (only consider something as
         a sequence if it is not null, an identity and a primary key).
-        Also correct a type which had the wrong sql executed when
+        Also correct a typo which had the wrong sql executed when
         looking for unique constraints.
 
 2005-05-31  Jacob Smullyan  <smulloni@smullyan.org>
