@@ -1,0 +1,15 @@
+#! /usr/bin/env python
+#
+# Call the command line interface for Epydoc,
+# with a hack for PyDO 
+#
+
+
+# by excluding the submodules, this was making epydoc consider them
+# all private, so I'm deleting __all__
+import pydo
+del pydo.__all__
+# run epydoc
+from epydoc.cli import cli
+cli()
+

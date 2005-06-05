@@ -1,3 +1,11 @@
+2005-06-05  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* doc/api/Makefile (EPYDOC): call new wrapper script.
+
+	* doc/api/epydoc: wrapper script for epydoc with somewhat
+	unfortunate hack (__all__ in __init__.py confuses epydoc, so I
+	delete it first).
+
 2005-06-04  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/drivers/oracleconn.py, src/pydo/dbi.py (_driverConfig):

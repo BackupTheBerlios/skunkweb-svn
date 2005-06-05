@@ -1,4 +1,4 @@
-EPYDOC=/usr/bin/epydoc
+EPYDOC=./epydoc
 
 html:
 	PYTHONPATH=../../src ${EPYDOC} -o html -n pydo -u http://skunkweb.org/pydo.html  ../../src/pydo/

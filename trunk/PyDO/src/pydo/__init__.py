@@ -7,6 +7,7 @@ persisted at the RDBMS level.  Supported databases are:
    * mysql
    * sqlite
    * mssql
+   * oracle
 
 """
 
