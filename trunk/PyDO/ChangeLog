@@ -1,5 +1,7 @@
 2005-06-05  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/testingtesting.py: now selects on basis of tag.
+
 	* doc/api/epydoc (dependencies): put fake modules in sys.modules
 	so that dbapi drivers don't need to be present to build the api
 	docs. 

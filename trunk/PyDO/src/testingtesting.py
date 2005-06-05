@@ -2,6 +2,7 @@
 a very very simple test framework.
 """
 
+import re
 import sys
 import logging
 
@@ -10,50 +11,47 @@ exception=logger.exception
 info=logger.info
 logger.addHandler(logging.StreamHandler(sys.stderr))
 
-def defaultCriterion(n, f):
-    return n.startswith('test') and callable(f)
+_defaultNamePat=re.compile(r'^test')
 
-def _testsForModule(m, func=defaultCriterion):
-    return _testsForNamespace(vars(m), func)
+def _testsForModule(m, namePat, tags):
+    return _testsForNamespace(vars(m), namePat, *tags)
 
-
-def _testsForNamespace(n, func=defaultCriterion, attrname='tags', *tags):
-    all=(x[1] for x in sorted((i for i in n.iteritems() if func(*i)),
-                              key=lambda x: x[0]))
-    for a in all:
-        ftags=getattr(a, attrname, None)
-        if not ftags:
-            yield a
-        else:
-            if set(tags).subset(ftags):
-                yield a
-    
-    
-
+def _testsForNamespace(ns, namePat, tags):
+    for name, value in sorted(ns.iteritems()):
+        if callable(value) and namePat.search(name):
+            ftags=getattr(value, 'tags', None)
+            if not ftags:
+                yield value
+            else:
+                if set(tags).issubset(ftags):
+                    yield value
+            
 def runtests(tests):
     success=[]
     fail=[]
     for i, t in enumerate(tests):
         i+=1
+        info('running test no %d (%s)', i, t.__name__)
         try:
             t()
         except:
             exception("test no. %d (%s)  failed", i, t.__name__)
             fail.append((t, sys.exc_info()))
         else:
+            info('test %s passed', t.__name__)
             success.append(t)
     summarize_tests(success, fail)
     if fail:
         return 1
     return 0
 
-def runModule(m):
-    return runtests(_testsForModule(m))
+def runModule(m, tags=None, namePat=_defaultNamePat):
+    return runtests(_testsForModule(m, namePat, tags))
 
-def runNamespace(n=None):
-    if n is None:
-        n=globals()
-    return runtests(_testsForNamespace(n))
+def runNamespace(tags=None, ns=None, namePat=_defaultNamePat):
+    if ns is None:
+        ns=globals()
+    return runtests(_testsForNamespace(ns, namePat, tags))
 
 def summarize_tests(success, fail):
     total=len(success)+len(fail)
@@ -67,16 +65,26 @@ def summarize_tests(success, fail):
          len(success),
          len(fail))
 
-__all__=['runModule', 'runNamespace', 'info']    
-    
-    
+def tag(*tags):
+    """ decorator for tests """
+    def wrapper(func):
+        func.tags=tags
+        return func
+    return wrapper
+
+
+__all__=['runModule', 'runNamespace', 'info', 'tag']    
+
+@tag('choo')    
 def test_anything():
     assert 1==1
 
+@tag('foo')
 def test_anotherthing():
     # this one will fail
     assert 2==1, "2 should equal 1"
 
+@tag('foo', 'choo')
 def test_exception():
     try:
         1 / 0
@@ -86,17 +94,11 @@ def test_exception():
         x=0
     assert x==1
 
-def annotate(attrname, *tags):
-    """ decorator for tests """
-    def wrapper(func):
-        setattr(f, attrname, tags)
-        return f
-    return wrapper
-
 if __name__=='__main__':
+    tags=sys.argv[1:]
     logger.setLevel(logging.INFO)
     info('running tests')
-    res=runNamespace()
+    res=runNamespace(tags)
     sys.exit(res)
     
     
