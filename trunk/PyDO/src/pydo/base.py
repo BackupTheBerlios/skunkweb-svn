@@ -54,6 +54,9 @@ class _metapydo(type):
             if cls.guesscache == True:
                 # supply default cache
                 cls.guesscache=GuessCache()
+            elif isinstance(cls.guesscache, basestring):
+                # assume it is a path
+                cls.guesscache=GuessCache(cls.guesscache)
             if 'fields' in namespace or 'unique' in namespace:
                 raise ValueError, ("incompatible declarations: guess_columns "
                                    "with explicit declaration of fields and/or unique")

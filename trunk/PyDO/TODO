@@ -1,11 +1,9 @@
 Todo:
-  * some sort of validation framework.
+  * test framework, new tests
   * mysql needs type wrapper converters, test improvements
-  * tests: many more.  creating PyDO classes within the test might
-       be a good idea in many cases.
   * genscripts -- generate modules with classes for every table.  
     (guess relations?)
-  * make it easy to cache the results of table introspection
+
 
 Other databases to support (eventually):
   * firebird

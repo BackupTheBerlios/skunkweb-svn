@@ -1,5 +1,9 @@
 2005-06-05  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/pydo/base.py (_metapydo.__init__): allow cls.guesscache to
+	be declared as a string, which is turned into the cachedir
+	parameter of a default GuessCache.
+
 	* doc/api/Makefile (EPYDOC): call new wrapper script.
 
 	* doc/api/epydoc: wrapper script for epydoc with somewhat
