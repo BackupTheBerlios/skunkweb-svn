@@ -14,7 +14,7 @@ logger.addHandler(logging.StreamHandler(sys.stderr))
 _defaultNamePat=re.compile(r'^test')
 
 def _testsForModule(m, namePat, tags):
-    return _testsForNamespace(vars(m), namePat, *tags)
+    return _testsForNamespace(vars(m), namePat, tags)
 
 def _testsForNamespace(ns, namePat, tags):
     for name, value in sorted(ns.iteritems()):
