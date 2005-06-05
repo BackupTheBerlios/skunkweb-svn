@@ -12,9 +12,9 @@ class OracleResultSet(object):
     the LOB locators get invalidated by a subsequent fetch. To accommodate
     this, field access is mediated via an appropriate handler."""
 
-    def __init__(self, resultset, description):
-        self.resultset = iter(resultset)
-        self.handlers = [self.get_handler(x[1]) for x in description]
+    def __init__(self, cursor):
+        self.cursor = cursor
+        self.handlers = [self.get_handler(x[1]) for x in cursor.description]
     
     @staticmethod
     def get_handler(fieldtype):
@@ -28,7 +28,7 @@ class OracleResultSet(object):
     
     def next(self):
         return [handler(item) for (item, handler) 
-            in izip(self.resultset.next(), self.handlers)]
+            in izip(self.cursor.next(), self.handlers)]
        
 class OracleDBI(DBIBase):
 
@@ -56,7 +56,7 @@ class OracleDBI(DBIBase):
         if c.description is None:
             resultset = None
         else:
-            resultset = OracleResultSet(c, c.description)
+            resultset = OracleResultSet(c)
         if not resultset:
             return c.rowcount
         res = self._convertResultSet(c.description, resultset, qualified)
