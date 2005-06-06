@@ -1,3 +1,7 @@
+2005-06-06  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* tests/runtests.py, tests/config.py: skeleton of test framework.  
+
 2005-06-05  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/testingtesting.py: now selects on basis of tag.
