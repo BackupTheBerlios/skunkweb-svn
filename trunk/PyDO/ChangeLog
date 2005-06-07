@@ -20,6 +20,12 @@
 	unfortunate hack (__all__ in __init__.py confuses epydoc, so I
 	delete it first).
 
+2005-06-05  Hamish Lawson  <hbl@st-andrews.ac.uk>
+
+	* src/pydo/drivers/oracleconn.py: Removed redundant passing of 
+	cursor description to OracleResultSet and renamed 'resultset' 
+	parameter to 'cursor'.
+
 2005-06-04  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/drivers/oracleconn.py, src/pydo/dbi.py (_driverConfig):
