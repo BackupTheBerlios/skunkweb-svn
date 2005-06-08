@@ -1,5 +1,9 @@
 2005-06-08  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* cutting 2.Oa3 release.
+
+	* doc/api/epydoc: fix for building api docs.
+
 	* doc/manual.rst: mentioning the removal of arrayfetch and joins.
 
 	* src/pydo/base.py: removing arrayfetch.
