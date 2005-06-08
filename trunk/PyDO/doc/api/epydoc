@@ -17,11 +17,16 @@ dependencies=['cx_Oracle',
               'MySQLdb',
               'psycopg']
 
+class fakemod(object):
+    def __init__(self, name):
+        self.__name__=name
+
 for m in dependencies:
     try:
         __import__(m)
     except ImportError:
-        sys.modules[m]={}
+        sys.modules[m]=fakemod(m)
+
         
 # run epydoc
 from epydoc.cli import cli
