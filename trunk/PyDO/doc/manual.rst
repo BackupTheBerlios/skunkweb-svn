@@ -550,10 +550,9 @@ Getting Data From Multiple Tables At Once
 .. note:: The techniques for doing this in PyDO2 alpha releases are in
     flux.  2.0a2 supported a number of specialized classes and a
     function, ``arrayfetch``, for performing joins of different kinds,
-    but these have been deprecated in 2.0a3 in favor of ``fetch``,
-    documented below, and will be probably be removed.  ``fetch``,
-    too, is experimental and subject to change during the alpha
-    release cycle.
+    but these have been removed in 2.0a3 in favor of ``fetch``,
+    documented below.  ``fetch``, too, is experimental and subject to
+    change during the alpha release cycle.
 
 The ``fetch`` function makes it possible to query multiple tables, use
 aggregates and obtain other non-table data, while still returning
@@ -735,7 +734,7 @@ most notably:
     method, which returns multiple ``PyDO`` objects of different types
     in a single query. Related functionality was implemented by
     ``arrayfetch()`` and a number of Join classes in the first alpha
-    releases, but as of 2.0a3 they are deprecated in favor of a new
+    releases, but as of 2.0a3 they are removed in favor of a new
     function, simply called ``fetch``.
 11. PyDO1 has a variable ``SYSDATE`` that means the current
     datetime, regardless of the underlying db.  PYDO2 does not

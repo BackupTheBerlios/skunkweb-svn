@@ -1,3 +1,11 @@
+2005-06-08  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* doc/manual.rst: mentioning the removal of arrayfetch and joins.
+
+	* src/pydo/base.py: removing arrayfetch.
+	
+	* src/pydo/joins.py: removing this module completely.
+
 2005-06-06  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* tests/runtests.py, tests/config.py: skeleton of test framework.  
