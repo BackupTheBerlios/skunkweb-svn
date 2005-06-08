@@ -3,6 +3,9 @@
 	* cutting 2.Oa3 release.
 
 	* doc/api/epydoc: fix for building api docs.
+	
+	* tests/README.tests: adding apologetic little note about the sad
+	state of the tests.
 
 	* doc/manual.rst: mentioning the removal of arrayfetch and joins.
 
