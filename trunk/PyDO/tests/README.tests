@@ -1,0 +1,84 @@
+.. -*-rst-*-
+
+README.tests
+++++++++++++
+
+.. note:: This directory is currently a bit of a mess.  The old *.sh, *.sql and
+  *_test.py files are on their way out; a new set of tests will appear
+  in the next release.
+
+
+Test Plan
+---------
+
+We need unit tests for the following items, by module.
+
+dbi
+~~~
+
+- initAlias 
+- delAlias
+- pools
+- threads
+- swapConnection
+- introspection
+
+drivers
+~~~~~~~
+
+- autocommit
+- transactions
+
+base
+~~~~
+
+- schema
+- fields
+- inheritance
+- sequences
+- unique
+- guess_columns
+- guess_tablename
+- update
+- updateSome
+- deleteSome
+- getSome
+  - raw SQL
+  - operators
+  - order by, limit, offset
+- mutable
+- getUnique
+- delete
+- refresh
+- project
+  - string fields
+- guesscache
+- joinTable
+- pickling of PyDO objects
+
+operators
+~~~~~~~~~
+
+- converters
+  - paramstyles
+- sql generation
+
+dbtypes
+~~~~~~~
+
+- dbtypes wrapper classes
+- uniform treatment of dates, times
+
+multifetch
+~~~~~~~~~~
+
+- aliases
+
+fields
+~~~~~~
+
+- ??
+
+
+
+

@@ -95,10 +95,25 @@ def test_exception():
     assert x==1
 
 if __name__=='__main__':
-    tags=sys.argv[1:]
+    import optparse
+    parser=optparse.OptionParser('usage: %prog [options] [tags....]')
+    parser.add_option('-p',
+                      '--pattern',
+                      dest='pattern',
+                      help="pattern to match against to find tests by name",
+                      metavar='PATTERN',
+                      action='store')
+    opts, tags=parser.parse_args(sys.argv[1:])
     logger.setLevel(logging.INFO)
     info('running tests')
-    res=runNamespace(tags)
+    if opts.pattern:
+        try:
+            pat=re.compile(opts.pattern)
+        except re.error:
+            parser.error("error: invalid regular expression: %s" % opts.pattern)
+    else:
+        pat=_defaultNamePat
+    res=runNamespace(tags, namePat=pat)
     sys.exit(res)
     
     

@@ -1,5 +1,7 @@
 2005-06-08  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/testingtesting.py: pass in namePat from commandline.
+
 	* cutting 2.Oa3 release.
 
 	* doc/api/epydoc: fix for building api docs.
