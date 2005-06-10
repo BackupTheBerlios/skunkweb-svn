@@ -1,3 +1,18 @@
+2005-06-10  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* doc/manual.rst: documenting sequence treatment.
+
+	* src/pydo/drivers/oracleconn.py (OracleDBI.getSequence):
+	signature change (useless for oracle).
+
+	* src/pydo/base.py (PyDO._new): call to getSequence uses new signature.
+
+	* src/pydo/dbi.py (DBIBase.getSequence): signature change to
+	accomodate sequence name guessing.
+
+	* src/pydo/drivers/psycopgconn.py (PsycopgDBI.getSequence): infer
+	postgresql sequence names when not specified (suggestion by Adam Ward).
+
 2005-06-08  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/testingtesting.py: pass in namePat from commandline.

@@ -156,7 +156,7 @@ class DBIBase(object):
         return " ".join(filter(None, (order, limit, offset)))
 
 
-    def getSequence(self, name):
+    def getSequence(self, name, field, table):
         """If db has sequences, this should return
         the next value of the sequence named 'name'"""
         pass

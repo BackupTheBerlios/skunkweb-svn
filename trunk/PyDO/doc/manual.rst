@@ -145,10 +145,21 @@ the static factory method ``PyDO.create_field()`` to do so.
 A ``Sequence`` field is used to represent either an auto-increment
 column, for databases like MySQL that use that mechanism, or a
 sequence column, as used in PostgreSQL.  These columns are implicitly
-unique and not null.  A ``Unique`` field is used to represent a column
-that has a single-column uniqueness constraint and is not null.
-Multiple-column not-null uniqueness constraints can also be indicated,
-with the ``unique`` class attribute::
+unique and not null.  For PostgreSQL, you can explicitly declare the
+name of the sequence with the ``sequence`` parameter of the
+``Sequence`` constructor::
+
+   Sequence('id', 'chimpanzee_id_seq')
+
+If you do not, PyDO will infer the name of the sequence from the name
+of the table and field, i.e.::
+
+  $table_$field_seq
+
+A ``Unique`` field is used to represent a column that has a
+single-column uniqueness constraint and is not null.  Multiple-column
+not-null uniqueness constraints can also be indicated, with the
+``unique`` class attribute::
 
    from pydo import PyDO
  

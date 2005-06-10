@@ -425,7 +425,7 @@ class PyDO(dict):
         if not conn.auto_increment:
             for s, sn in cls._sequenced.items():
                 if not fieldData.has_key(s):
-                    fieldData[s] = conn.getSequence(sn)
+                    fieldData[s] = conn.getSequence(sn, s, cls.getTable())
         cols=fieldData.keys()
         vals=[fieldData[c] for c in cols]
         converter=conn.getConverter()

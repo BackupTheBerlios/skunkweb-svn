@@ -63,7 +63,7 @@ class OracleDBI(DBIBase):
         c.close()
         return res
 
-    def getSequence(self, name):
+    def getSequence(self, name, field, table):
         cur=self.conn.cursor()
         sql="select %s.nextval from dual" % name
         if self.verbose:
