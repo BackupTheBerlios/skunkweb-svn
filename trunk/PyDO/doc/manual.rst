@@ -212,10 +212,11 @@ disk if you set ``PyDO.guesscache`` to an instance of ``GuessCache``
 or a compatible object, or to ``1`` or ``True``, in which case a
 default ``GuessCache`` will be used.  ``GuessCache`` stores pickles
 associated with classes in a cache directory, by default one created
-with the name ``pydoguesscache`` inside ``tempfile.gettempdir()``; if
-the schema of one of your objects has changed and you want to refresh
-the cache, simply delete the corresponding cache object and restart
-your application.
+with the name ``$USERNAME_pydoguesscache`` inside
+``tempfile.gettempdir()``, where ``$USERNAME`` is the login of the
+current user; if the schema of one of your objects has changed and
+you want to refresh the cache, simply delete the corresponding cache
+object and restart your application.
 
 Inheritance Semantics
 +++++++++++++++++++++

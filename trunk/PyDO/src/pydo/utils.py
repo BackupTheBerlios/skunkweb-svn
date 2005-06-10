@@ -2,6 +2,10 @@
 utility functions imported by other PyDO modules.
 """
 
+import getpass
+from pydo.log import debug
+
+
 def _tupleize(item):
     """ turns an atom into a tuple with one element,
     and a non-atom into a tuple"""
@@ -84,4 +88,17 @@ def formatTexp(o, a):
     return '%s %s' % (o.getTable(), a)
 
 
+def getuser():
+    user=getpass.getuser()
+    if user:
+        return user
+    try:
+        from win32api import GetUserName
+    except ImportError:
+        debug("can't find username, returning empty string")
+        return ''
+    else:
+        return GetUserName()
+
+        
         

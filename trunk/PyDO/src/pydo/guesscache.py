@@ -3,13 +3,16 @@ import os
 import tempfile
 import time
 
+from pydo.utils import getuser
+
 class GuessCache(object):
     """
     a cache that stores pickles of data associated with a Python class.
     """
     def __init__(self, cachedir=None):
         if cachedir is None:
-            cachedir=os.path.join(tempfile.gettempdir(), 'pydoguesscache')
+            cachedir=os.path.join(tempfile.gettempdir(),
+                                  '_'.join(x for x in (getuser(), 'pydoguesscache') if x))
         self.cachedir=cachedir
         if os.path.exists(cachedir):
             if not os.path.isdir(cachedir):

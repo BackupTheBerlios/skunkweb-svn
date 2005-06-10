@@ -1,5 +1,15 @@
 2005-06-10  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* doc/manual.rst: document adding username to default cachedir.
+
+	* src/pydo/guesscache.py (GuessCache.__init__): cachedir now
+	contains username if available.
+
+	* src/pydo/utils.py (getuser): function to get current username
+	that tries win32api if getpass.getuser fails.
+
+2005-06-10  Jacob Smullyan  <smulloni@smullyan.org>
+
 	* doc/manual.rst: documenting sequence treatment.
 
 	* src/pydo/drivers/oracleconn.py (OracleDBI.getSequence):
