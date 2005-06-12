@@ -1,3 +1,8 @@
+2005-06-12  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* tests: moved old tests to a subdirectory, and added stubs for new 
+	tests. 
+
 2005-06-10  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* doc/manual.rst: document adding username to default cachedir.
