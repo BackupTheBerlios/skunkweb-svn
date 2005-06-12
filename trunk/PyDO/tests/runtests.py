@@ -1,6 +1,7 @@
 #! /usr/bin/env python2.4
 
 import sys
+import re
 import logging
 
 # munge sys.path
@@ -8,7 +9,7 @@ import logging
 sys.path.insert(0, '../src')
 
 import config
-from testingtesting import runNamespace, info, logger
+from testingtesting import runNamespace, info, logger, runModule
 logger.setLevel(logging.INFO)
 from pydo import initAlias, delAlias
 
@@ -24,6 +25,7 @@ from test_operators import *
 if __name__=='__main__':
     drivers, tags=config.readCmdLine(sys.argv[1:])
     res=0
+    import runtests
     for d, connectArgs in drivers.iteritems():
         initAlias(**connectArgs)
         curtags=list(tags)+[d]
@@ -32,7 +34,7 @@ if __name__=='__main__':
         else:
             info("testing with driver: %s", d)
         try:
-            res |= runNamespace(curtags)
+            res |= runModule(runtests, curtags)
         finally:
             delAlias('pydotest')
     sys.exit(res)
