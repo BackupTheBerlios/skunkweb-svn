@@ -3,9 +3,21 @@
 README.tests
 ++++++++++++
 
-.. note:: This directory is currently a bit of a mess.  The old *.sh, *.sql and
-  *_test.py files are on their way out; a new set of tests will appear
-  in the next release.
+To run these tests, copy pydotestrc.sample to ~/.pydotestrc and edit
+to taste, then run::
+   
+   python runtests.py -d <drivers> -t <tags>
+
+You need to specify a driver, or it will attempt to run tests with all
+drivers, and fail if it doesn't find configuration for any of them --
+even if the tests don't require a driver.  You can leave the tag
+option out.
+
+Multiple tags/drivers should be separated by spaces; so if you use
+multiple tags/drivers, use quotations marks around the value::
+
+   python runtests.py -d "mysql sqlite"
+
 
 
 Test Plan

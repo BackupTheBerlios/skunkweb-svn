@@ -1,5 +1,9 @@
 2005-06-12  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* tests/test_dbi.py: first actual tests in the new series.
+
+	* tests/README.tests: some rudimentary instructions.
+
 	* tests/pydotestrc.sample: adding sample rc file for tests.
 
 	* tests: moved old tests to a subdirectory, and added stubs for new 
