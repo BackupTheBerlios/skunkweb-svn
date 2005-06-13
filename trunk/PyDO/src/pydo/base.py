@@ -732,4 +732,28 @@ class PyDO(dict):
             sql.append(conn.orderByString(order, limit, offset))                
         return ''.join(sql), vals
 
-__all__=['PyDO']
+def autoschema(alias, schema=None, guesscache=True):
+    """
+    returns a dictionary of PyDO objects created automatically by
+    schema introspection, keyed by class name.  Typical usage:
+
+      locals().update(autoschema('myalias'))
+
+    The PyDO objects created are extremely bare, but may be enough for
+    quick scripts. 
+    """
+    ns={}
+    db=getConnection(alias)
+    for table in db.listTables(schema):
+        d=dict(guesscache=guesscache,
+               guess_columns=True,
+               connectionAlias=alias,
+               schema=schema,
+               table=table)
+        Table=table.capitalize()
+        obj=type(Table, (PyDO,), d)
+        ns[Table]=obj
+    return ns
+
+
+__all__=['PyDO', 'autoschema']

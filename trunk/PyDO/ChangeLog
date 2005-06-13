@@ -1,3 +1,14 @@
+2005-06-13  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* doc/manual.rst: document autoschema.
+
+	* src/pydo/base.py (autoschema): function that creates barebones
+	PyDO objects for all tables in a schema (for quick scripts).
+
+	* src/pydo/drivers/psycopgconn.py (PsycopgDBI.autocommit): for
+	psycopg2, implement autocommit in terms of isolation_level and
+	set_isolation_level. 
+
 2005-06-12  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* tests/test_dbi.py: first actual tests in the new series.

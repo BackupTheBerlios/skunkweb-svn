@@ -108,6 +108,15 @@ class PsycopgDBI(DBIBase):
        if pool and not hasattr(pool, 'connect'):
           pool=ConnectionPool()
        super(PsycopgDBI, self).__init__(connectArgs, psycopg.connect, pool, verbose)
+
+    if psycopg_version==2:
+        def autocommit():
+            def fget(self):
+                return self.conn.isolation_level
+            def fset(self, val):
+                self.conn.set_isolation_level(val)
+            return fget, fset, None, None
+        autocommit=property(*autocommit())
     
     def getConverter(self):
         return PsycopgConverter(self.paramstyle)

@@ -199,24 +199,39 @@ may be read, but not changed, through the class methods
 ``getFields()``, ``getUniquenessConstraints()``, and
 ``getSequences()``, respectively.
 
-Finally, if you omit the ``fields`` and ``unique`` declarations
-completely and declare the class attribute ``guess_columns``, PyDO
-will attempt to introspect into the database and build the table
-description itself at class creation time.  The declaration only
-affects the class in which it is declared; classes that inherit the
-attribute will not themselves attempt to guess columns.  By default,
-column guessing will require querying the database when the class is
-initialized for every process in which the class is imported; to
-mitigate this potential performance hit, the data can be cached to
-disk if you set ``PyDO.guesscache`` to an instance of ``GuessCache``
-or a compatible object, or to ``1`` or ``True``, in which case a
-default ``GuessCache`` will be used.  ``GuessCache`` stores pickles
-associated with classes in a cache directory, by default one created
-with the name ``$USERNAME_pydoguesscache`` inside
-``tempfile.gettempdir()``, where ``$USERNAME`` is the login of the
-current user; if the schema of one of your objects has changed and
-you want to refresh the cache, simply delete the corresponding cache
-object and restart your application.
+If you omit the ``fields`` and ``unique`` declarations completely and
+declare the class attribute ``guess_columns``, PyDO will attempt to
+introspect into the database and build the table description itself at
+class creation time.  The declaration only affects the class in which
+it is declared; classes that inherit the attribute will not themselves
+attempt to guess columns.  By default, column guessing will require
+querying the database when the class is initialized for every process
+in which the class is imported; to mitigate this potential performance
+hit, the data can be cached to disk if you set ``PyDO.guesscache`` to
+an instance of ``GuessCache`` or a compatible object, or to ``1`` or
+``True``, in which case a default ``GuessCache`` will be used.
+``GuessCache`` stores pickles associated with classes in a cache
+directory, by default one created with the name
+``$USERNAME_pydoguesscache`` inside ``tempfile.gettempdir()``, where
+``$USERNAME`` is the login of the current user; if the schema of one
+of your objects has changed and you want to refresh the cache, simply
+delete the corresponding cache object and restart your application.
+
+Finally, if you are writing a quick script and want basic,
+uncustomized PyDO classes for every table in a schema, the function
+``autoschema`` will generate them for you, and return them to you 
+in a dictionary keyed by class name::
+
+   locals().update(autoschema(alias='myDBAlias',
+                              schema='public',
+                              guesscache=True)
+
+By default, it will use the default ``GuessCache``, and specify no
+schema; you must give an alias (which should be initialized first with
+``initAlias``).  While convenient for scripts, this approach gives you
+no way of adding methods to your PyDO objects or customizing their
+attributes, so isn't well suited for PyDO's main purpose, namely,
+crafting an application's data access layer.
 
 Inheritance Semantics
 +++++++++++++++++++++
