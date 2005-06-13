@@ -13,9 +13,11 @@ def test_initAlias1():
     import pydo.dbi as D
     alias='pomposity'
     D.initAlias(alias, 'anything', 'anything', True, True)
-    assert D._aliases.has_key(alias)
-    D.delAlias(alias)
-    assert not D._aliases.has_key(alias)
+    try:
+        assert D._aliases.has_key(alias)
+    finally:
+        D.delAlias(alias)
+        assert not D._aliases.has_key(alias)
 
 @tag(*dbitags)    
 def test_initAlias2():
@@ -46,12 +48,23 @@ def test_initAlias3():
     connectArgs='blimp'
     D.initAlias(alias, driver, connectArgs)
     connectArgs='potato'
-
     try:
-        D.initAlias(alias, driver, connectArgs)
-    except ValueError:
-        error_raised=True
-    else:
-        error_raised=False
-    assert error_raised, \
-           "ValueError should be raised when a change is made to alias config"
+        try:
+            D.initAlias(alias, driver, connectArgs)
+        except ValueError:
+            error_raised=True
+        else:
+            error_raised=False
+        assert error_raised, \
+               "ValueError should be raised when a change is made to alias config"
+    finally:
+        D.delAlias(alias)
+
+@tag(*dbitags)
+def test_delAlias1():
+    """ calls delAlias for an alias that does not exist. Should succeed."""
+    import pydo.dbi as D
+    D.delAlias('jackandjill')
+
+
+    

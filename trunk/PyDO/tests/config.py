@@ -7,6 +7,7 @@ either from command line or a config file
 
 import optparse
 import os
+import sys
 import traceback
 from pydo.dbi import initAlias, _driverConfig
 
@@ -72,7 +73,7 @@ def readCmdLine(args, usage=None):
         try:
             connectArgs=c[d]
         except:
-            parser.error("no config for driver: %s" % d)
+            print >> sys.stderr, "no config for driver: %s" % d
         else:
             connectArgs['driver']=d
             if opts.verbose is not None:

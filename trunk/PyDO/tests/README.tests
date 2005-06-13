@@ -8,16 +8,14 @@ to taste, then run::
    
    python runtests.py -d <drivers> -t <tags>
 
-You need to specify a driver, or it will attempt to run tests with all
-drivers, and fail if it doesn't find configuration for any of them --
-even if the tests don't require a driver.  You can leave the tag
-option out.
+If you don't specify a driver, it will attempt to run tests with all
+drivers, skipping any that it doesn't find configuration for, even if
+the tests don't require a driver.  You can leave the tag option out.
 
 Multiple tags/drivers should be separated by spaces; so if you use
 multiple tags/drivers, use quotations marks around the value::
 
    python runtests.py -d "mysql sqlite"
-
 
 
 Test Plan
