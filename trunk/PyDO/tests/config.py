@@ -12,6 +12,8 @@ from pydo.dbi import initAlias, _driverConfig
 
 DEFAULT_CONFIG='~/.pydotestrc'
 
+ALLDRIVERS=_driverConfig.keys()
+
 def _readConfigFile(fname=DEFAULT_CONFIG):
     fname=os.path.expanduser(fname)
     d={}
@@ -56,7 +58,7 @@ def readCmdLine(args, usage=None):
         tags=set()
     else:
         tags=set(opts.tags.split())
-    possdrivers=set(_driverConfig)        
+    possdrivers=set(ALLDRIVERS)        
     if not opts.drivers:
         drivers=possdrivers
     else:
@@ -82,3 +84,5 @@ def readCmdLine(args, usage=None):
             retdrivers[d]=connectArgs
 
     return retdrivers, tags
+
+

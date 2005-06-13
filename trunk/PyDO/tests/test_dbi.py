@@ -4,8 +4,8 @@ Tests for the pydo.dbi module.
 """
 
 from testingtesting import tag
-from pydotestutils import alldrivers
-dbitags=alldrivers+['dbi']
+from config import ALLDRIVERS
+dbitags=ALLDRIVERS+['dbi']
 
 @tag(*dbitags)
 def test_initAlias1():
