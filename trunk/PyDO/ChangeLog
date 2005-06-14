@@ -1,3 +1,18 @@
+2005-06-14  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* tests/runtests.py, tests/config.py (readCmdLine): now takes an
+	additional option, --pattern.
+
+	* tests/test_base.py (test_project2): proved its worth by finding
+	a projection bug.  
+
+	* src/pydo/base.py (_metapydo.__init__): fix for projection bug: I
+	was storing projections for each class in what I thought was a
+	separate dictionary, but it was actually being inherited from
+	PyDO!  Now each class gets its very own.
+	(_restrict): now more tolerant of whether fields are field
+	instances or just strings.
+
 2005-06-13  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* doc/manual.rst: document autoschema.

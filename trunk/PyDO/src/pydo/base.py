@@ -16,6 +16,14 @@ def _restrict(flds, coll):
     # handle sets (_unique).  Sets may contain groupings of fieldnames
     # for multi-column unique constraints; this tests each member of
     # the grouping (sets, frozensets, lists, and tuples are tolerated)
+
+    def infld(thing, flds):
+        if thing in flds:
+            return True
+        if hasattr(thing, 'name'):
+            if thing.name in flds:
+                return True
+        return False
     
     if isinstance(coll, set):
         s=set()
@@ -24,7 +32,7 @@ def _restrict(flds, coll):
             # is enforced
             if isinstance(v, (set, frozenset, tuple, list)):
                 for v1 in v:
-                    if v1 not in flds:
+                    if infld(v1, flds):
                         break
                     else:
                         # (added just to make indentation clearer)
@@ -33,12 +41,12 @@ def _restrict(flds, coll):
                     # if we get here, the fields in the
                     # grouping are in the projection
                     s.add(v)
-            elif v in flds:
+            elif infld(v,flds):
                 s.add(v)
         return s
     # It isn't necessary to test for multi-column keys in dicts
     elif isinstance(coll, dict):
-        return dict((x, y) for x, y in coll.iteritems() if x in flds)
+        return dict((x, y) for x, y in coll.iteritems() if infld(x,flds))
 
 class _metapydo(type):
     """metaclass for _pydobase.
@@ -46,6 +54,8 @@ class _metapydo(type):
     """
 
     def __init__(cls, cl_name, bases, namespace):
+        # add a dictionary to store projections for this class.
+        cls._projections={}
         # tablename guessing
         if not namespace.has_key('table') and cls.guess_tablename:
             cls.table=cl_name.lower()
@@ -156,7 +166,6 @@ class PyDO(dict):
     # fields 
 
     # private - don't touch
-    _projections={}
     _is_projection=False
 
     @classmethod

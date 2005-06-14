@@ -7,9 +7,11 @@ either from command line or a config file
 
 import optparse
 import os
+import re
 import sys
 import traceback
 from pydo.dbi import initAlias, _driverConfig
+from testingtesting import _defaultNamePat
 
 DEFAULT_CONFIG='~/.pydotestrc'
 
@@ -48,6 +50,12 @@ def readCmdLine(args, usage=None):
                       help="whether to be verbose",
                       action='store_true',
                       default=None)
+    parser.add_option('-p',
+                      '--pattern',
+                      dest='pattern',
+                      help="pattern to match against to find tests by name",
+                      metavar='PATTERN',
+                      action='store')
     opts, args=parser.parse_args(args)
     try:
         c=_readConfigFile(opts.config)
@@ -84,6 +92,14 @@ def readCmdLine(args, usage=None):
                 parser.error("configuration error: must be a dict, got a %s" % type(connectArgs))
             retdrivers[d]=connectArgs
 
-    return retdrivers, tags
+    if opts.pattern:
+        try:
+            pat=re.compile(opts.pattern)
+        except re.error:
+            parser.error("error: invalid regular expression: %s" % opts.pattern)
+    else:
+        pat=_defaultNamePat    
+
+    return retdrivers, tags, pat
 
 

@@ -23,7 +23,7 @@ from test_operators import *
 
 
 if __name__=='__main__':
-    drivers, tags=config.readCmdLine(sys.argv[1:])
+    drivers, tags, pat=config.readCmdLine(sys.argv[1:])
     res=0
     import runtests
     for d, connectArgs in drivers.iteritems():
@@ -34,7 +34,7 @@ if __name__=='__main__':
         else:
             info("testing with driver: %s", d)
         try:
-            res |= runModule(runtests, curtags)
+            res |= runModule(runtests, curtags, pat)
         finally:
             delAlias('pydotest')
     sys.exit(res)

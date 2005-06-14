@@ -52,13 +52,13 @@ def test_project1():
     assert len(foo.getUniquenessConstraints())==2
 
 def test_project2():
-    # failing mysteriously, but test_project4 isn't!
     class torte2(P.PyDO):
         fields=(P.Sequence('id'),
                 P.Unique('title'),
                 'x',
                 'y',
                 'z')
+    assert not torte2._projections
     foo=torte2.project(P.Field('id'), 'title', 'x')
     assert not foo.getSequences(), "expected no sequences, got: %s" % str(foo.getSequences())
     assert len(foo.getUniquenessConstraints())==1
@@ -71,13 +71,13 @@ def test_project3():
     assert not p.getUniquenessConstraints()
 
 def test_project4():
-    class torte2(P.PyDO):
+    class torte4(P.PyDO):
         fields=(P.Sequence('id'),
                 'title',
                 'x',
                 'y',
                 'z')
-    foo=torte2.project(P.Field('id'), 'title', 'x', 'y')
+    foo=torte4.project(P.Field('id'), 'title', 'x', 'y')
     assert not foo.getSequences(), "expected no sequences, got: %s" % str(foo.getSequences())
     assert len(foo.getUniquenessConstraints())==0
 
