@@ -10,7 +10,6 @@ sys.path.insert(0, '../src')
 
 import config
 from testingtesting import runNamespace, info, logger, runModule
-logger.setLevel(logging.INFO)
 from pydo import initAlias, delAlias
 
 # import the actual tests

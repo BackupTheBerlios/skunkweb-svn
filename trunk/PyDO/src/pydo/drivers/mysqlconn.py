@@ -65,9 +65,12 @@ class MysqlDBI(DBIBase):
         execute(sql)
         res=cur.fetchall()
         fields={}
+        nullableFields=[]
         for row in res:
             name, tipe, nullable, key, default, extra=row
-            if extra=='auto_increment':
+            if nullable:
+                nullableFields.append(name)
+            if (not nullable) and extra=='auto_increment':
                 fields[name]=Sequence(name)
             else:
                 fields[name]=Field(name)
@@ -77,7 +80,7 @@ class MysqlDBI(DBIBase):
         res=cur.fetchall()
         cur.close()
         indices={}
-        blacklist=set()
+        blacklist=set(nullableFields)
         # columns we care about, and their index in the result set:
         # Non_unique:   1
         # Key_name:     2

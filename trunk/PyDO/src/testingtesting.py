@@ -9,7 +9,7 @@ import logging
 logger=logging.getLogger('testingtesting')
 exception=logger.exception
 info=logger.info
-logger.addHandler(logging.StreamHandler(sys.stderr))
+logging.basicConfig(format='%(message)s', level=logging.INFO)
 
 _defaultNamePat=re.compile(r'^test')
 

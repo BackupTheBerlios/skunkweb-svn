@@ -2,6 +2,7 @@
 tests for the pydo.base module.
 
 """
+import logging
 
 from testingtesting import tag
 import config
@@ -111,7 +112,6 @@ def test_project5():
             db.rollback()
         c.close()
 
-
 @tag('sqlite', 'mysql', 'psycopg', 'base')        
 def test_guess_columns1():
     create="""CREATE TABLE test_guess_columns1 (
@@ -124,7 +124,7 @@ def test_guess_columns1():
     UNIQUE (r1, r2)
     )""" % dict(sqlite='INTEGER NOT NULL',
                 psycopg='SERIAL',
-                mysql='INTEGER NOT NULL AUTO INCREMENT')[config.DRIVER]
+                mysql='INTEGER NOT NULL AUTO_INCREMENT')[config.DRIVER]
     db=P.getConnection('pydotest')
     c=db.cursor()
     c.execute(create)
@@ -135,7 +135,9 @@ def test_guess_columns1():
             connectionAlias='pydotest'
 
         cols=testclass.getColumns()
+
         uniq=testclass.getUniquenessConstraints()
+        #logging.debug('uniq: %s', str(uniq))
         seq=testclass.getSequences()
         assert set(cols)==set(('id', 'x', 'y', 'z', 'r1', 'r2'))
         assert seq.keys()==['id']

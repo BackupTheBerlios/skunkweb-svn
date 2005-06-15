@@ -1,5 +1,11 @@
 2005-06-15  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/pydo/drivers/mysqlconn.py (MysqlDBI.describeTable): same fix
+	here -- exclude unique constraints which contain nullable
+	columns. 
+
+	* src/testingtesting.py: logging tweak.
+
 	* src/pydo/drivers/psycopgconn.py (PsycopgDBI.autocommit): fix
 	implementation for psycopg2 (had it exactly backwards).
 	(PsycopgDBI.describeTable): fix for multi-column unique
