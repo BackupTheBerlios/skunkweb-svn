@@ -139,7 +139,6 @@ def test_guess_columns1():
         seq=testclass.getSequences()
         assert set(cols)==set(('id', 'x', 'y', 'z', 'r1', 'r2'))
         assert seq.keys()==['id']
-        print uniq
         assert uniq==frozenset((frozenset(('r1', 'r2')),
                                 frozenset(('x',)),
                                 frozenset(('id',))))
@@ -148,8 +147,7 @@ def test_guess_columns1():
         if db.autocommit:
             c.execute('drop table test_guess_columns1')
         else:
-            #db.rollback()
-            db.commit()
+            db.rollback()
         c.close()                               
 
 
