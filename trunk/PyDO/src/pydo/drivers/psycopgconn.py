@@ -112,9 +112,9 @@ class PsycopgDBI(DBIBase):
     if psycopg_version==2:
         def autocommit():
             def fget(self):
-                return self.conn.isolation_level
+                return self.conn.isolation_level==0
             def fset(self, val):
-                self.conn.set_isolation_level(val)
+                self.conn.set_isolation_level(not val)
             return fget, fset, None, None
         autocommit=property(*autocommit())
     
@@ -234,17 +234,20 @@ class PsycopgDBI(DBIBase):
             if self.verbose:
                 debug("Found column %s" % list(row))
             fields[row[1]] = Field(row[0])
-
         sql = """
         SELECT indkey
         FROM pg_catalog.pg_index i,
         pg_catalog.pg_class c,
-        pg_catalog.pg_namespace n
+        pg_catalog.pg_namespace n,
+        pg_catalog.pg_attribute a
         WHERE i.indrelid = %s::regclass
           AND c.oid=i.indrelid
           AND c.relnamespace=n.oid
           AND n.nspname=%s
           AND i.indisunique
+          AND a.attrelid=c.oid
+          AND a.attnum=indkey[0]
+          AND a.attnotnull
         """
         unique = set()
         if self.verbose:
@@ -257,7 +260,7 @@ class PsycopgDBI(DBIBase):
             if len(L) == 1:
                 fields[L[0]].unique = True
             else:
-                unique.add(frozenset([fields[i] for i in L]))
+                unique.add(frozenset([fields[i].name for i in L]))
 
         sql = """
         SELECT c.relname
@@ -278,7 +281,6 @@ class PsycopgDBI(DBIBase):
                         debug("Found sequence %s on %s" % (row[0], field.name))
                     field.sequence = row[0]
                     break
-
         cur.close()
         d = {}
         for f in fields.values():
