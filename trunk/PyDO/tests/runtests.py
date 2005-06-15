@@ -33,8 +33,10 @@ if __name__=='__main__':
             info("testing with driver: %s, tags: %s", d, ", ".join(tags))
         else:
             info("testing with driver: %s", d)
+        config.DRIVER=d
         try:
             res |= runModule(runtests, curtags, pat)
         finally:
             delAlias('pydotest')
+            del config.DRIVER
     sys.exit(res)

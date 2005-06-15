@@ -17,6 +17,11 @@ multiple tags/drivers, use quotations marks around the value::
 
    python runtests.py -d "mysql sqlite"
 
+You can also specify a regular expression pattern to select tests; it
+will be matched against the names of the test functions::
+
+   python runtests.py -d sqlite -p 'base|frog'
+
 
 Test Plan
 ---------

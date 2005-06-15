@@ -4,9 +4,10 @@ tests for the pydo.base module.
 """
 
 from testingtesting import tag
-from config import ALLDRIVERS
-alltags=ALLDRIVERS + ['base']
+import config
 import pydo as P
+
+alltags=config.ALLDRIVERS + ['base']
 
 def test_inheritance1():
     class nougat(P.PyDO):
@@ -80,6 +81,102 @@ def test_project4():
     foo=torte4.project(P.Field('id'), 'title', 'x', 'y')
     assert not foo.getSequences(), "expected no sequences, got: %s" % str(foo.getSequences())
     assert len(foo.getUniquenessConstraints())==0
+
+@tag(*alltags)
+def test_project5():
+    create="""CREATE TABLE test_project5 (id INTEGER NOT NULL PRIMARY KEY, x INTEGER)"""
+    insert="""INSERT INTO test_project5 (id, x) VALUES (1, 1)"""
+    db=P.getConnection('pydotest')
+    c=db.cursor()
+    c.execute(create)
+    c.execute(insert)
+    try:
+        class bingo(P.PyDO):
+            connectionAlias='pydotest'
+            table='test_project5'
+            fields=(P.Sequence('id'), 'x')
+        r1=bingo.getUnique(id=1)
+        r1.refresh()
+        r2=bingo.project('x').getSome()[0]
+        try:
+            r2.refresh()
+        except ValueError:
+            pass
+        else:
+            assert 0, "projection without unique constraint shouldn't be refreshable!"
+    finally:
+        if db.autocommit:
+            c.execute('drop table test_project5')
+        else:
+            db.rollback()
+        c.close()
+
+
+@tag('sqlite', 'mysql', 'psycopg', 'base')        
+def test_guess_columns1():
+    create="""CREATE TABLE test_guess_columns1 (
+    id %s PRIMARY KEY,
+    x INTEGER NOT NULL UNIQUE,
+    y INTEGER NOT NULL,
+    z INTEGER UNIQUE,
+    r1 INTEGER NOT NULL,
+    r2 INTEGER NOT NULL,
+    UNIQUE (r1, r2)
+    )""" % dict(sqlite='INTEGER NOT NULL',
+                psycopg='SERIAL',
+                mysql='INTEGER NOT NULL AUTO INCREMENT')[config.DRIVER]
+    db=P.getConnection('pydotest')
+    c=db.cursor()
+    c.execute(create)
+    try:
+        class testclass(P.PyDO):
+            guess_columns=True
+            table='test_guess_columns1'
+            connectionAlias='pydotest'
+
+        cols=testclass.getColumns()
+        uniq=testclass.getUniquenessConstraints()
+        seq=testclass.getSequences()
+        assert set(cols)==set(('id', 'x', 'y', 'z', 'r1', 'r2'))
+        assert seq.keys()==['id']
+        assert uniq==frozenset((frozenset(('r1', 'r2')),
+                                frozenset(('x',)),
+                                frozenset(('id',))))
+
+    finally:
+        if db.autocommit:
+            c.execute('drop table test_guess_columns1')
+        else:
+            db.rollback()
+        c.close()                               
+
+
+def test_unique1():
+    class porkbarrel(P.PyDO):
+        fields=(P.Sequence('a'),
+                'b',
+                'c')
+        unique=(('b', 'c'),)
+    u=porkbarrel.getUniquenessConstraints()
+    assert len(u)==2
+    assert frozenset(('b', 'c')) in u
+    assert frozenset(('a',)) in u
+
+
+def test_schema1():
+    class A(P.PyDO):
+        table='froggie'
+        schema='pants'
+    assert A.getTable(False)=='froggie'
+    assert A.getTable(True)=='pants.froggie'
+    assert A.getTable()=='pants.froggie'
+    assert A.table=='froggie'
+    assert A.schema=='pants'
+
+
+    
+    
+
 
 def test_pickle1():
     global zingo

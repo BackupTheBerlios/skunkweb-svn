@@ -143,7 +143,7 @@ class SqliteDBI(DBIBase):
             fields[name]=Sequence(name)
          else:
             fields[name]=Field(name)
-         if not notnull:
+         if not int(notnull):
             nullable.append(name)
             
       # get indexes

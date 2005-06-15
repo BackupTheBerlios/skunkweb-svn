@@ -1,3 +1,10 @@
+2005-06-15  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/drivers/sqliteconn.py (SqliteDBI.describeTable): coerce
+	nullable to an int, as some pysqlite versions don't return an int
+	for the notnull column in pragma table_info (found by
+	test_base.test_guess_columns1). 
+
 2005-06-14  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* tests/runtests.py, tests/config.py (readCmdLine): now takes an
