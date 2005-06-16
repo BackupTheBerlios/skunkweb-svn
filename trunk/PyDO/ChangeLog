@@ -1,5 +1,8 @@
 2005-06-16  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/pydo/base.py (PyDO.joinTable): wasn't testing properly the
+	return value of execute (berlios bug #4297).
+
 	* tests/test_base.py: added tags to everything.
 
 	* src/testingtesting.py (runtests): support for classes as well as

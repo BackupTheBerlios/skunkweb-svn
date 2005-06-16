@@ -237,7 +237,7 @@ class test_new1(Fixture):
         fields=(P.Unique('id'), 'x')
 
     def setup(self):
-        create=""" CREATE TABLE test_new1 (id INTEGER PRINARY KEY NOT NULL,
+        create=""" CREATE TABLE test_new1 (id INTEGER PRIMARY KEY NOT NULL,
         x INTEGER)"""
         c=self.db.cursor()
         c.execute(create)

@@ -578,7 +578,7 @@ class PyDO(dict):
         query=' '.join(query)
 
         results = conn.execute(query, values)
-        if results and isinstance(results, list):
+        if results and isinstance(results, (list, tuple)):
             return map(cls, results)
         else:
             return []
@@ -683,7 +683,7 @@ class PyDO(dict):
                                        limit,
                                        offset)
         results = conn.execute(sql, vals)
-        if results:
+        if results and isinstance(results, (list, tuple)):
             return map(thatObject, results)
         return []
 
