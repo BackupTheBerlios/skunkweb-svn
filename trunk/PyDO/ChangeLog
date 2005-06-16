@@ -1,5 +1,8 @@
 2005-06-16  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* tests/test_base.py: added base_fixture; starting to refactor
+	tests to use it.
+
 	* src/pydo/base.py (PyDO.joinTable): wasn't testing properly the
 	return value of execute (berlios bug #4297).
 

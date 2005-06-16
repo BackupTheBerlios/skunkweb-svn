@@ -7,6 +7,133 @@ import config
 from fixture import Fixture
 import pydo as P
 
+class base_fixture(Fixture):
+    tables=dict(
+        A="""CREATE TABLE A (
+        id %(seqsql)s,
+        name VARCHAR(96) UNIQUE NOT NULL,
+        b_id INTEGER,
+        ta VARCHAR(96) UNIQUE,
+        tb VARCHAR(96),
+        w INTEGER,
+        x INTEGER NOT NULL,
+        y INTEGER NOT NULL,
+        z INTEGER NOT NULL,
+        UNIQUE(w, x),
+        UNIQUE(y, z)
+        )""",
+
+        B="""CREATE TABLE B (
+        id %(seqsql)s,
+        x INTEGER
+        )""",
+        
+        C="""CREATE TABLE C (
+        id %(seqsql)s,
+        x INTEGER)""",
+        
+        A_C="""CREATE TABLE A_C (
+        a_id INTEGER NOT NULL,
+        c_id INTEGER NOT NULL,
+        PRIMARY KEY(a_id, c_id)
+        )""",
+
+        D="""CREATE TABLE D (
+        id INTEGER NOT NULL PRIMARY KEY,
+        x INTEGER
+        )"""
+        )
+
+    usetables=()
+    useObjs=True
+    guess=False
+
+    def setup(self):
+        c=self.db.cursor()
+        d=dict(seqsql=_get_sequence_sql())
+        for table, cr in self.tables.items():
+            if self.usetables and table not in self.usetables:
+                continue
+            cr %= d
+            c.execute(cr)
+            if self.useObjs:
+                self.setupObj(table, self.guess)
+        c.close()
+        self.pre()
+
+
+    def pre(self):
+        pass
+
+    def post(self):
+        pass
+    
+    def setupObj(self, table, guess):
+        if table=='A':
+            class A(P.PyDO):
+                connectionAlias='pydotest'
+                if guess:
+                    guess_columns=True
+                else:
+                    fields=(P.Sequence('id'),
+                            P.Unique('name'),
+                            'b_id',
+                            'ta',
+                            'tb',
+                            'w',
+                            'x',
+                            'y',
+                            'z')
+                    unique=(('y', 'z'),)
+            self.A=A
+        elif table=='B':
+            class B(P.PyDO):
+                connectionAlias='pydotest'
+                if guess:
+                    guess_columns=True
+                else:
+                    fields=(P.Sequence('id'),
+                            'x')
+            self.B=B
+        elif table=='C':
+            class C(P.PyDO):
+                connectionAlias='pydotest'
+                if guess:
+                    guess_columns=True
+                else:
+                    fields=(P.Sequence('id'),
+                            'x')
+            self.C=C
+        elif table=='A_C':
+            class A_C(P.PyDO):
+                connectionAlias='pydotest'
+                if guess:
+                    guess_columns=True
+                else:
+                    fields=('a_id', 'c_id')
+                    unique=(('a_id', 'c_id'),)
+            self.A_C=A_C
+        elif table=='D':
+            class D(P.PyDO):
+                connectionAlias='pydotest'
+                if guess:
+                    guess_columns=True
+                else:
+                    fields=(P.Unique('id'),
+                            'x')
+            self.D=D
+                
+
+    def cleanup(self):
+        c=self.db.cursor()
+        for table in self.tables:
+            if self.usetables and table not in self.usetables:
+                continue
+            c.execute('DROP TABLE %s' % table)
+        c.close()
+        self.post()
+        
+
 alltags=config.ALLDRIVERS + ['base']
 
 def _get_sequence_sql():
@@ -47,36 +174,19 @@ def test_unique1():
     assert len(uniq)==1
     assert uniq[0]==frozenset(('x', 'y'))
 
+class test_unique2(base_fixture):
+    use_tables=['D']
+    tags=alltags
 
-class test_unique2(Fixture):
-    tags=alltags[:]
-    table='test_unique2'
-    def setup(self):
-        create="CREATE TABLE %s(id INTEGER UNIQUE NOT NULL, x INTEGER)" \
-                % self.table
-        c=self.db.cursor()
-        c.execute(create)
-        c.close()
-        class foo(P.PyDO):
-            connectionAlias='pydotest'
-            table='test_unique2'
-            fields=(P.Unique('id'), 'x')
-        self.obj=foo
+    def pre(self):
         for i in range(20):
-            foo.new(id=i, x=100)
+            self.D.new(id=i, x=100)
+        
 
     def run(self):
-        assert self.obj.getUnique(id=15).x==100
-        assert self.obj.getUnique(id=800)==None
-
-
-    def cleanup(self):
-        if self.db.autocommit:
-            c=self.db.cursor()
-            c.execute('drop table %s' % self.table)
-            c.close()
-        else:
-            self.db.rollback()
+        assert self.D.getUnique(id=15).x==100
+        assert self.D.getUnique(id=800)==None
+        
         
 @tag(*alltags)        
 def test_project1():
@@ -124,35 +234,24 @@ def test_project4():
     assert not foo.getSequences(), "expected no sequences, got: %s" % str(foo.getSequences())
     assert len(foo.getUniquenessConstraints())==0
 
-@tag(*alltags)
-def test_project5():
-    create="""CREATE TABLE test_project5 (id INTEGER NOT NULL PRIMARY KEY, x INTEGER)"""
-    insert="""INSERT INTO test_project5 (id, x) VALUES (1, 1)"""
-    db=P.getConnection('pydotest')
-    c=db.cursor()
-    c.execute(create)
-    c.execute(insert)
-    try:
-        class bingo(P.PyDO):
-            connectionAlias='pydotest'
-            table='test_project5'
-            fields=(P.Sequence('id'), 'x')
-        r1=bingo.getUnique(id=1)
+class test_project5(base_fixture):
+    usetables=['D']
+    tags=alltags
+
+    def pre(self):
+        self.D.new(id=1, x=1)
+
+    def run(self):
+        r1=self.D.getUnique(id=1)
         r1.refresh()
-        r2=bingo.project('x').getSome()[0]
+        r2=self.D.project('x').getSome()[0]
         try:
             r2.refresh()
         except ValueError:
             pass
         else:
             assert 0, "projection without unique constraint shouldn't be refreshable!"
-    finally:
-        if db.autocommit:
-            c.execute('drop table test_project5')
-        else:
-            db.rollback()
-        c.close()
-
+            
 @tag('sqlite', 'mysql', 'psycopg', 'base')        
 def test_guess_columns1():
     create="""CREATE TABLE test_guess_columns1 (
@@ -177,7 +276,6 @@ def test_guess_columns1():
         cols=testclass.getColumns()
 
         uniq=testclass.getUniquenessConstraints()
-        #logging.debug('uniq: %s', str(uniq))
         seq=testclass.getSequences()
         assert set(cols)==set(('id', 'x', 'y', 'z', 'r1', 'r2'))
         assert seq.keys()==['id']
@@ -290,5 +388,9 @@ class test_update1(Fixture):
             self.db.rollback()
 
 
-    
-        
+    def run(self):
+        #@@ TBD
+        pass
+
+
+
