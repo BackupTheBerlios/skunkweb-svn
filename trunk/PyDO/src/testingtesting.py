@@ -10,8 +10,9 @@ import logging
 logger=logging.getLogger('testingtesting')
 exception=logger.exception
 info=logger.info
-logging.basicConfig(format='%(message)s', level=logging.INFO)
-
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.INFO)
+logger.propagate=False
 _defaultNamePat=re.compile(r'^test')
 
 def _testsForModule(m, namePat, tags):

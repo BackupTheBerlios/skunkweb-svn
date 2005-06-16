@@ -1,7 +1,9 @@
 2005-06-16  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* tests/test_base.py: added tags to everything.
+
 	* src/testingtesting.py (runtests): support for classes as well as
-	functions.
+	functions.  Also, fix for irritating double-logging.
 
 2005-06-15  Jacob Smullyan  <smulloni@smullyan.org>
 

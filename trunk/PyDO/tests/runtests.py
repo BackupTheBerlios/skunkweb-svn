@@ -9,8 +9,10 @@ import logging
 sys.path.insert(0, '../src')
 
 import config
-from testingtesting import runNamespace, info, logger, runModule
-from pydo import initAlias, delAlias
+from testingtesting import runNamespace, info, runModule
+from pydo import initAlias, delAlias, setLogLevel
+
+setLogLevel(logging.DEBUG)
 
 # import the actual tests
 from test_base import *

@@ -2,8 +2,6 @@
 tests for the pydo.base module.
 
 """
-import logging
-
 from testingtesting import tag
 import config
 from fixture import Fixture
@@ -11,6 +9,13 @@ import pydo as P
 
 alltags=config.ALLDRIVERS + ['base']
 
+def _get_sequence_sql():
+    return dict(sqlite='INTEGER NOT NULL',
+                psycopg='SERIAL',
+                mysql='INTEGER NOT NULL AUTO_INCREMENT')[config.DRIVER]
+
+
+@tag(*alltags)
 def test_inheritance1():
     class nougat(P.PyDO):
         schema='public'
@@ -32,6 +37,7 @@ def test_inheritance1():
     assert ripple.getUniquenessConstraints()==uniq
     assert ripple.getSequences()==dict(id=True)
 
+@tag(*alltags)
 def test_unique1():
     class baba(P.PyDO):
         fields=('x', 'y', 'z')
@@ -43,6 +49,7 @@ def test_unique1():
 
 
 class test_unique2(Fixture):
+    tags=alltags[:]
     table='test_unique2'
     def setup(self):
         create="CREATE TABLE %s(id INTEGER UNIQUE NOT NULL, x INTEGER)" \
@@ -71,7 +78,7 @@ class test_unique2(Fixture):
         else:
             self.db.rollback()
         
-        
+@tag(*alltags)        
 def test_project1():
     class torte(P.PyDO):
         fields=(P.Sequence('id'),
@@ -84,6 +91,7 @@ def test_project1():
     assert len(foo.getColumns())==3
     assert len(foo.getUniquenessConstraints())==2
 
+@tag(*alltags)
 def test_project2():
     class torte2(P.PyDO):
         fields=(P.Sequence('id'),
@@ -96,6 +104,7 @@ def test_project2():
     assert not foo.getSequences(), "expected no sequences, got: %s" % str(foo.getSequences())
     assert len(foo.getUniquenessConstraints())==1
 
+@tag(*alltags)
 def test_project3():
     class A(P.PyDO):
         fields=(P.Sequence('id'), 'x')
@@ -103,6 +112,7 @@ def test_project3():
     assert not p.getSequences()
     assert not p.getUniquenessConstraints()
 
+@tag(*alltags)
 def test_project4():
     class torte4(P.PyDO):
         fields=(P.Sequence('id'),
@@ -153,9 +163,8 @@ def test_guess_columns1():
     r1 INTEGER NOT NULL,
     r2 INTEGER NOT NULL,
     UNIQUE (r1, r2)
-    )""" % dict(sqlite='INTEGER NOT NULL',
-                psycopg='SERIAL',
-                mysql='INTEGER NOT NULL AUTO_INCREMENT')[config.DRIVER]
+    )""" % _get_sequence_sql()
+    
     db=P.getConnection('pydotest')
     c=db.cursor()
     c.execute(create)
@@ -183,7 +192,7 @@ def test_guess_columns1():
             db.rollback()
         c.close()                               
 
-
+@tag(*alltags)
 def test_unique1():
     class porkbarrel(P.PyDO):
         fields=(P.Sequence('a'),
@@ -195,7 +204,7 @@ def test_unique1():
     assert frozenset(('b', 'c')) in u
     assert frozenset(('a',)) in u
 
-
+@tag(*alltags)
 def test_schema1():
     class A(P.PyDO):
         table='froggie'
@@ -206,7 +215,7 @@ def test_schema1():
     assert A.table=='froggie'
     assert A.schema=='pants'
 
-
+@tag(*alltags)
 def test_pickle1():
     global zingo
     class zingo(P.PyDO):
@@ -219,4 +228,67 @@ def test_pickle1():
     orig=cPickle.loads(dump)
     assert orig==zingo
     del zingo
+        
+class test_new1(Fixture):
+    tags=alltags[:]
+    class obj(P.PyDO):
+        table='test_new1'
+        connectionAlias='pydotest'
+        fields=(P.Unique('id'), 'x')
+
+    def setup(self):
+        create=""" CREATE TABLE test_new1 (id INTEGER PRINARY KEY NOT NULL,
+        x INTEGER)"""
+        c=self.db.cursor()
+        c.execute(create)
+        c.close()
+
+    def cleanup(self):
+        if self.db.autocommit:
+            c=self.db.cursor()
+            c.execute('DROP TABLE test_new1')
+            c.close()
+        else:
+            self.db.rollback()
+
+    def run(self):
+        for i in range(100):
+            self.obj.new(id=i, x=100)
+        res=[x.id for x in self.obj.project('id').getSome(order='id')]
+        assert res==range(100)
+        
+        
+class test_update1(Fixture):
+    tags=alltags[:]
+    class obj(P.PyDO):
+        table='test_update1'
+        connectionAlias='pydotest'
+        fields=(P.Sequence('id'),
+                P.Unique('textcol1'),
+                'textcol2',
+                'textcol3')
+        unique=(('textcol2', 'textcol3'),)
+
+    def setup(self):
+        create="""CREATE TABLE test_update1 (
+        id %s,
+        textcol1 VARCHAR(32) UNIQUE NOT NULL,
+        textcol2 VARCHAR(32) NOT NULL,
+        textcol3 VARCHAR(32) NOT NULL,
+        UNIQUE(textcol2, textcol3)
+        )""" % _get_sequence_sql()
+        c=self.db.cursor()
+        c.execute(create)
+        c.close()
+
+    def cleanup(self):
+        if self.db.autocommit:
+            c=self.db.cursor()
+            c.execute('drop table test_update1')
+            c.close()
+        else:
+            self.db.rollback()
+
+
+    
         
