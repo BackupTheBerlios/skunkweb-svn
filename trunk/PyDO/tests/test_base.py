@@ -7,9 +7,18 @@ import config
 from fixture import Fixture
 import pydo as P
 
+import random
+import string
+
+def ranwords(num, length=9):
+    s=set()
+    while len(s)<length:
+        s.add(''.join(random.sample(string.ascii_lowercase, length)))
+    return s
+
 class base_fixture(Fixture):
     tables=dict(
-        A="""CREATE TABLE A (
+        A="""CREATE TABLE a (
         id %(seqsql)s,
         name VARCHAR(96) UNIQUE NOT NULL,
         b_id INTEGER,
@@ -23,22 +32,22 @@ class base_fixture(Fixture):
         UNIQUE(y, z)
         )""",
 
-        B="""CREATE TABLE B (
+        B="""CREATE TABLE b (
         id %(seqsql)s,
         x INTEGER
         )""",
         
-        C="""CREATE TABLE C (
+        C="""CREATE TABLE c (
         id %(seqsql)s,
         x INTEGER)""",
         
-        A_C="""CREATE TABLE A_C (
+        A_C="""CREATE TABLE a_c (
         a_id INTEGER NOT NULL,
         c_id INTEGER NOT NULL,
         PRIMARY KEY(a_id, c_id)
         )""",
 
-        D="""CREATE TABLE D (
+        D="""CREATE TABLE d (
         id INTEGER NOT NULL PRIMARY KEY,
         x INTEGER
         )"""
@@ -125,21 +134,24 @@ class base_fixture(Fixture):
                 
 
     def cleanup(self):
-        c=self.db.cursor()
-        for table in self.tables:
-            if self.usetables and table not in self.usetables:
-                continue
-            c.execute('DROP TABLE %s' % table)
-        c.close()
+        if self.db.autocommit:
+            c=self.db.cursor()
+            for table in self.tables:
+                if self.usetables and table not in self.usetables:
+                    continue
+                c.execute('DROP TABLE %s' % table.lower())
+            c.close()
+        else:
+            self.db.rollback()
         self.post()
         
 
 alltags=config.ALLDRIVERS + ['base']
 
 def _get_sequence_sql():
-    return dict(sqlite='INTEGER NOT NULL',
-                psycopg='SERIAL',
-                mysql='INTEGER NOT NULL AUTO_INCREMENT')[config.DRIVER]
+    return dict(sqlite='INTEGER PRIMARY KEY NOT NULL',
+                psycopg='SERIAL PRIMARY KEY',
+                mysql='INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY')[config.DRIVER]
 
 
 @tag(*alltags)
@@ -175,7 +187,7 @@ def test_unique1():
     assert uniq[0]==frozenset(('x', 'y'))
 
 class test_unique2(base_fixture):
-    use_tables=['D']
+    usetables=['D']
     tags=alltags
 
     def pre(self):
@@ -255,7 +267,7 @@ class test_project5(base_fixture):
 @tag('sqlite', 'mysql', 'psycopg', 'base')        
 def test_guess_columns1():
     create="""CREATE TABLE test_guess_columns1 (
-    id %s PRIMARY KEY,
+    id %s,
     x INTEGER NOT NULL UNIQUE,
     y INTEGER NOT NULL,
     z INTEGER UNIQUE,
@@ -354,43 +366,32 @@ class test_new1(Fixture):
             self.obj.new(id=i, x=100)
         res=[x.id for x in self.obj.project('id').getSome(order='id')]
         assert res==range(100)
-        
-        
-class test_update1(Fixture):
-    tags=alltags[:]
-    class obj(P.PyDO):
-        table='test_update1'
-        connectionAlias='pydotest'
-        fields=(P.Sequence('id'),
-                P.Unique('textcol1'),
-                'textcol2',
-                'textcol3')
-        unique=(('textcol2', 'textcol3'),)
 
-    def setup(self):
-        create="""CREATE TABLE test_update1 (
-        id %s,
-        textcol1 VARCHAR(32) UNIQUE NOT NULL,
-        textcol2 VARCHAR(32) NOT NULL,
-        textcol3 VARCHAR(32) NOT NULL,
-        UNIQUE(textcol2, textcol3)
-        )""" % _get_sequence_sql()
-        c=self.db.cursor()
-        c.execute(create)
-        c.close()
 
-    def cleanup(self):
-        if self.db.autocommit:
-            c=self.db.cursor()
-            c.execute('drop table test_update1')
-            c.close()
-        else:
-            self.db.rollback()
+class test_update1(base_fixture):
+    tags=alltags
+    usetables=['A']
 
+    def pre(self):
+        for i, w in enumerate(ranwords(100)):
+            if i % 2:
+                ta=None
+            else:
+                ta=w.upper()
+            self.A.new(name=w,
+                       ta=ta,
+                       x=i,
+                       y=i+100,
+                       z=40)
 
     def run(self):
-        #@@ TBD
-        pass
+        all=self.A.getSome()
+        for a in all:
+            a.tb='choo choo'
+                       
+        
+        
+
 
 
 

@@ -1,5 +1,8 @@
 2005-06-16  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* doc/manual.rst: note about mysql's case-sensitivity of table
+	names and the guess_tablename feature.
+
 	* tests/test_base.py: added base_fixture; starting to refactor
 	tests to use it.
 

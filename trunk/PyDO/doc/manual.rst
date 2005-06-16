@@ -130,7 +130,8 @@ leave this out if the name of the class is the name of the table; in
 this case, ``cls.table`` will be a name made by coercing the class
 name to lowercase.  If you don't want to allow this behavior, you can
 suppress it by setting the class attribute ``guess_tablename`` to
-``False``.
+``False``.  (Note that this feature is of limited utility for database
+systems like mysql whose table/column names may be case-sensitive.)
 
 The ``fields`` attribute should be a tuple or list of either ``Field``
 instances (of which ``Sequence`` and ``Unique`` are subclasses), or
