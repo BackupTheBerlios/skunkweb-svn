@@ -6,6 +6,7 @@ import logging
 
 from testingtesting import tag
 import config
+from fixture import Fixture
 import pydo as P
 
 alltags=config.ALLDRIVERS + ['base']
@@ -41,6 +42,36 @@ def test_unique1():
     assert uniq[0]==frozenset(('x', 'y'))
 
 
+class test_unique2(Fixture):
+    table='test_unique2'
+    def setup(self):
+        create="CREATE TABLE %s(id INTEGER UNIQUE NOT NULL, x INTEGER)" \
+                % self.table
+        c=self.db.cursor()
+        c.execute(create)
+        c.close()
+        class foo(P.PyDO):
+            connectionAlias='pydotest'
+            table='test_unique2'
+            fields=(P.Unique('id'), 'x')
+        self.obj=foo
+        for i in range(20):
+            foo.new(id=i, x=100)
+
+    def run(self):
+        assert self.obj.getUnique(id=15).x==100
+        assert self.obj.getUnique(id=800)==None
+
+
+    def cleanup(self):
+        if self.db.autocommit:
+            c=self.db.cursor()
+            c.execute('drop table %s' % self.table)
+            c.close()
+        else:
+            self.db.rollback()
+        
+        
 def test_project1():
     class torte(P.PyDO):
         fields=(P.Sequence('id'),

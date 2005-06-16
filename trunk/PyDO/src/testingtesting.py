@@ -4,6 +4,7 @@ a very very simple test framework.
 
 import re
 import sys
+import types
 import logging
 
 logger=logging.getLogger('testingtesting')
@@ -30,15 +31,23 @@ def runtests(tests):
     success=[]
     fail=[]
     for i, t in enumerate(tests):
+        if type(t)==types.TypeType:
+            name=t.__name__
+            t=t()
+            if not callable(t):
+                continue
+        else:
+            name=t.__name__
         i+=1
-        info('running test no %d (%s)', i, t.__name__)
+        info('running test no %d (%s)', i, name)
+
         try:
             t()
         except:
-            exception("test no. %d (%s)  failed", i, t.__name__)
+            exception("test no. %d (%s)  failed", i, name)
             fail.append((t, sys.exc_info()))
         else:
-            info('test %s passed', t.__name__)
+            info('test %s passed', name)
             success.append(t)
     summarize_tests(success, fail)
     if fail:
