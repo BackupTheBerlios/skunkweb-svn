@@ -9,6 +9,7 @@ import pydo as P
 
 import random
 import string
+import sys
 
 def ranwords(num, length=9):
     s=set()
@@ -389,8 +390,70 @@ class test_update1(base_fixture):
         for a in all:
             a.tb='choo choo'
                        
+
+class test_deleteSome1(base_fixture):
+    usetables=('B',)
+
+    def pre(self):
+        for x in xrange(200):
+            self.B.new(x=random.randint(0, 1000))
+
+    def run(self):
+
+        self.B.deleteSome(P.LT(P.FIELD('x'), 500))
+        sql='SELECT COUNT(*) FROM b WHERE x < 500'
+        c=self.db.cursor()
+        c.execute(sql)
+        cnt=c.fetchone()[0]
+        assert cnt==0
+
+
+class test_updateSome1(base_fixture):
+    usetables=('B',)
+
+    def pre(self):
+        for x in xrange(200):
+            self.B.new(x=random.randint(0, 1000))
+        c=self.db.cursor()
+        sql='SELECT COUNT(*) FROM b WHERE x < 500'
+        c.execute(sql)
+        self.count=c.fetchone()[0]
+        c.close()
+
+    def run(self):
+
+        self.B.updateSome(dict(x=None), P.LT(P.FIELD('x'), 500))
+        sql='SELECT COUNT(*) FROM b WHERE x IS NULL'
+        c=self.db.cursor()
+        c.execute(sql)
+        nullcnt=c.fetchone()[0]
+        assert nullcnt==self.count
+
+
+class test_joinTable1(base_fixture):
+    usetables=('A', 'C', 'A_C')
+
+    def pre(self):
+        insert=["""INSERT INTO a (id, b_id, name, x, y, z) VALUES (1, NULL, 'poco a poco', 3, 5, 2)""",
+                """INSERT INTO a (id, b_id, name, x, y, z) VALUES (2, 1, 'mammoth', 30, 20, 1000)""",
+                """INSERT INTO c (id, x) VALUES (1, 100)""",
+                """INSERT INTO a_c (a_id, c_id) VALUES (2, 1)"""]
+        c=self.db.cursor()
+        for i in insert:
+            c.execute(i)
+
+    def run(self):
+        o1=self.A.getUnique(id=1)
+        assert o1 is not None
+        j=o1.joinTable('id', 'a_c', 'a_id', 'c_id', self.C, 'id')
+        assert len(j)==0
+        o2=self.A.getUnique(id=2)
+        assert o2 is not None
+        j=o2.joinTable('id', 'a_c', 'a_id', 'c_id', self.C, 'id')
+        assert len(j)==1
+        assert j[0].id==1
         
-        
+               
 
 
 
