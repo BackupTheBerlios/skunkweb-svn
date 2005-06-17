@@ -393,6 +393,7 @@ class test_update1(base_fixture):
 
 class test_deleteSome1(base_fixture):
     usetables=('B',)
+    tags=alltags
 
     def pre(self):
         for x in xrange(200):
@@ -410,7 +411,8 @@ class test_deleteSome1(base_fixture):
 
 class test_updateSome1(base_fixture):
     usetables=('B',)
-
+    tags=alltags
+    
     def pre(self):
         for x in xrange(200):
             self.B.new(x=random.randint(0, 1000))
@@ -432,6 +434,7 @@ class test_updateSome1(base_fixture):
 
 class test_joinTable1(base_fixture):
     usetables=('A', 'C', 'A_C')
+    tags=alltags
 
     def pre(self):
         insert=["""INSERT INTO a (id, b_id, name, x, y, z) VALUES (1, NULL, 'poco a poco', 3, 5, 2)""",
