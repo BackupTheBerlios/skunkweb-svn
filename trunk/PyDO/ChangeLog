@@ -1,3 +1,7 @@
+2005-06-19  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* tests/test_base.py: two delete tests.
+
 2005-06-16  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* doc/manual.rst: note about mysql's case-sensitivity of table

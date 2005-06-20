@@ -31,8 +31,8 @@ We need unit tests for the following items, by module.
 dbi
 ~~~
 
-- initAlias 
-- delAlias
+- initAlias			X
+- delAlias			X
 - pools
 - threads
 - swapConnection
@@ -47,29 +47,30 @@ drivers
 base
 ~~~~
 
-- schema
+- schema			X
 - fields
-- inheritance
+- inheritance			X
 - sequences
-- unique
-- guess_columns
+- unique			X
+- guess_columns			X
 - guess_tablename
-- update
-- updateSome
-- deleteSome
+- update			X
+- updateSome			X
+- deleteSome			X
 - getSome
   - raw SQL
   - operators
   - order by, limit, offset
 - mutable
-- getUnique
-- delete
+- new				X
+- getUnique			X
+- delete			X
 - refresh
-- project
+- project			X
   - string fields
 - guesscache
-- joinTable
-- pickling of PyDO objects
+- joinTable			X
+- pickling of PyDO objects	X
 
 operators
 ~~~~~~~~~

@@ -432,6 +432,42 @@ class test_updateSome1(base_fixture):
         assert nullcnt==self.count
 
 
+class test_delete1(base_fixture):
+    usetables=('C',)
+    tags=alltags
+
+    def pre(self):
+        self.objs=[self.C.new(x=i) for i in range(100)]
+
+    def run(self):
+        for o in self.objs:
+            i=o.id
+            o.delete()
+            assert not o.mutable
+            o1=self.C.getUnique(id=i)
+            assert o1 is None
+
+class test_delete2(base_fixture):
+    usetables=('C',)
+    tags=alltags
+
+    def pre(self):
+        self.C.new(id=100, x=1)
+
+    def run(self):
+        proj=self.C.project('x')
+        o=proj.getSome(order='id DESC', limit=1)[0]
+        try:
+            o.delete()
+        except ValueError:
+            pass
+        else:
+            assert 0, \
+                   ('expected ValueError to be raised '
+                    'when deleting an object without a '
+                    'unique constraint')
+            
+
 class test_joinTable1(base_fixture):
     usetables=('A', 'C', 'A_C')
     tags=alltags
