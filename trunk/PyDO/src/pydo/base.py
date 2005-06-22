@@ -455,6 +455,9 @@ class PyDO(dict):
         # unwrap any wrapped values in fieldData
         fieldData=dict((k, unwrap(v)) for k,v in fieldData.iteritems())
         if not refetch:
+            # add None for any missing columns
+            for c in cls.getColumns():
+                fieldData.setdefault(c, None)
             return cls(fieldData)
         return cls.getUnique(**fieldData)
 

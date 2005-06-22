@@ -457,9 +457,13 @@ creating, it will be more efficient to use ``newnofetch``.
      argument to ``new()`` will be interpreted as field data and won't
      affect refetch behavior.  
 
+If you don't specify the value of a column when calling ``new()``, and
+there is no refetch, PyDO will assume that the default value is null
+and store ``None`` for that column.
+
 If a class is declared mutable and has a uniqueness constraint, it is
 possible to mutate an undeleted instance of it by calling::
-
+ 
     >>> poem['title']='Sayings of the Robo-Rabbi'
 
 or, equivalently, if ``use_attributes`` is true for the class::
@@ -679,6 +683,27 @@ Because the connections are stored thread-locally, this is
 thread-safe.  Using this technique, one could juggle multiple
 transactions in the same process without using multiple threads.
 
+Transactions
+++++++++++++
+
+The DBI object's ``autocommit`` property reports whether transactions
+have been turned off or not.  By default, most drivers use
+transactions (mysql being the outstanding exception).  Some drivers
+support mutating this property, but as a matter of policy transactions
+are the norm for PyDO.
+
+To commit a transaction, call ``commit()`` on the DBI object, or,
+equivalently, on any PyDO class or instance with the corresponding
+connection alias, which is equivalent to calling
+``obj.getDBI().commit()``.  To rollback, call ``rollback()``, again
+either on the DBI object or on a PyDO object.
+
+.. note:: Although you may call ``commit()`` or ``rollback()`` via a
+   particular class or instance, that is only for convenience and
+   implies no particular isolation of the commit or rollback to that
+   object.  If you create six PyDO objects with the same
+   connectionAlias and commit or rollback one of them, all are
+   affected equally.
 
 Connection Pools
 ++++++++++++++++

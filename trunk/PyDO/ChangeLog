@@ -1,3 +1,24 @@
+2005-06-21  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* tests/fixture.py: moved base_fixture here from test_base.
+
+	* tests/test_multifetch.py (test_fetch1): first fetch test.
+
+	* doc/manual.rst: section on transactions (suggested by Kieran
+	Holland). 
+
+2005-06-20  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* doc/manual.rst: document that None will be stored for columns
+	upon new() if they aren't specified, and there is no refetch.
+
+	* tests/test_base.py: test for new with default values; for
+	refresh, and getSome.
+
+	* src/pydo/base.py (PyDO._new): when creating an object without
+	refetch, add None to the dictionary for any columns that aren't
+	specified in the fieldData.
+
 2005-06-19  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* tests/test_base.py: two delete tests.

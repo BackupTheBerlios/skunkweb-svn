@@ -57,7 +57,7 @@ base
 - update			X
 - updateSome			X
 - deleteSome			X
-- getSome
+- getSome			X
   - raw SQL
   - operators
   - order by, limit, offset
@@ -65,7 +65,7 @@ base
 - new				X
 - getUnique			X
 - delete			X
-- refresh
+- refresh			X
 - project			X
   - string fields
 - guesscache

@@ -4,7 +4,7 @@ tests for the pydo.base module.
 """
 from testingtesting import tag
 import config
-from fixture import Fixture
+from fixture import Fixture, base_fixture, get_sequence_sql
 import pydo as P
 
 import random
@@ -17,142 +17,8 @@ def ranwords(num, length=9):
         s.add(''.join(random.sample(string.ascii_lowercase, length)))
     return s
 
-class base_fixture(Fixture):
-    tables=dict(
-        A="""CREATE TABLE a (
-        id %(seqsql)s,
-        name VARCHAR(96) UNIQUE NOT NULL,
-        b_id INTEGER,
-        ta VARCHAR(96) UNIQUE,
-        tb VARCHAR(96),
-        w INTEGER,
-        x INTEGER NOT NULL,
-        y INTEGER NOT NULL,
-        z INTEGER NOT NULL,
-        UNIQUE(w, x),
-        UNIQUE(y, z)
-        )""",
-
-        B="""CREATE TABLE b (
-        id %(seqsql)s,
-        x INTEGER
-        )""",
-        
-        C="""CREATE TABLE c (
-        id %(seqsql)s,
-        x INTEGER)""",
-        
-        A_C="""CREATE TABLE a_c (
-        a_id INTEGER NOT NULL,
-        c_id INTEGER NOT NULL,
-        PRIMARY KEY(a_id, c_id)
-        )""",
-
-        D="""CREATE TABLE d (
-        id INTEGER NOT NULL PRIMARY KEY,
-        x INTEGER
-        )"""
-        )
-
-    usetables=()
-    useObjs=True
-    guess=False
-
-    def setup(self):
-        c=self.db.cursor()
-        d=dict(seqsql=_get_sequence_sql())
-        for table, cr in self.tables.items():
-            if self.usetables and table not in self.usetables:
-                continue
-            cr %= d
-            c.execute(cr)
-            if self.useObjs:
-                self.setupObj(table, self.guess)
-        c.close()
-        self.pre()
-
-
-    def pre(self):
-        pass
-
-    def post(self):
-        pass
-    
-    def setupObj(self, table, guess):
-        if table=='A':
-            class A(P.PyDO):
-                connectionAlias='pydotest'
-                if guess:
-                    guess_columns=True
-                else:
-                    fields=(P.Sequence('id'),
-                            P.Unique('name'),
-                            'b_id',
-                            'ta',
-                            'tb',
-                            'w',
-                            'x',
-                            'y',
-                            'z')
-                    unique=(('y', 'z'),)
-            self.A=A
-        elif table=='B':
-            class B(P.PyDO):
-                connectionAlias='pydotest'
-                if guess:
-                    guess_columns=True
-                else:
-                    fields=(P.Sequence('id'),
-                            'x')
-            self.B=B
-        elif table=='C':
-            class C(P.PyDO):
-                connectionAlias='pydotest'
-                if guess:
-                    guess_columns=True
-                else:
-                    fields=(P.Sequence('id'),
-                            'x')
-            self.C=C
-        elif table=='A_C':
-            class A_C(P.PyDO):
-                connectionAlias='pydotest'
-                if guess:
-                    guess_columns=True
-                else:
-                    fields=('a_id', 'c_id')
-                    unique=(('a_id', 'c_id'),)
-            self.A_C=A_C
-        elif table=='D':
-            class D(P.PyDO):
-                connectionAlias='pydotest'
-                if guess:
-                    guess_columns=True
-                else:
-                    fields=(P.Unique('id'),
-                            'x')
-            self.D=D
-                
-
-    def cleanup(self):
-        if self.db.autocommit:
-            c=self.db.cursor()
-            for table in self.tables:
-                if self.usetables and table not in self.usetables:
-                    continue
-                c.execute('DROP TABLE %s' % table.lower())
-            c.close()
-        else:
-            self.db.rollback()
-        self.post()
-        
 
 alltags=config.ALLDRIVERS + ['base']
-
-def _get_sequence_sql():
-    return dict(sqlite='INTEGER PRIMARY KEY NOT NULL',
-                psycopg='SERIAL PRIMARY KEY',
-                mysql='INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY')[config.DRIVER]
 
 
 @tag(*alltags)
@@ -275,7 +141,7 @@ def test_guess_columns1():
     r1 INTEGER NOT NULL,
     r2 INTEGER NOT NULL,
     UNIQUE (r1, r2)
-    )""" % _get_sequence_sql()
+    )""" % get_sequence_sql()
     
     db=P.getConnection('pydotest')
     c=db.cursor()
@@ -367,6 +233,24 @@ class test_new1(Fixture):
             self.obj.new(id=i, x=100)
         res=[x.id for x in self.obj.project('id').getSome(order='id')]
         assert res==range(100)
+
+
+class test_new2(base_fixture):
+    usetables=('A',)
+    tags=alltags
+
+    def run(self):
+        res=self.A.newfetch(name='porkhat',
+                            x=4,
+                            y=5,
+                            z=20)
+        assert res.d==33
+        res=self.A.newnofetch(name='pinger',
+                              x=50,
+                              y=100,
+                              z=0)
+        assert res.d==None
+        
 
 
 class test_update1(base_fixture):
@@ -492,7 +376,69 @@ class test_joinTable1(base_fixture):
         assert len(j)==1
         assert j[0].id==1
         
-               
+class test_getSome1(base_fixture):
+    usetables=('A',)
+    tags=alltags
+
+    def pre(self):
+        self.A.new(name='MAX FACTOR',
+                   b_id=5,
+                   d=55,
+                   x=0,
+                   y=1,
+                   z=2)
+
+        self.A.new(name='HORTENSE MAXIMUS',
+                   b_id=60,
+                   d=0,
+                   x=40,
+                   y=50,
+                   z=60)
+
+        self.A.new(name='TENSION EXTREMUS',
+                   b_id=-100,
+                   x=40,
+                   y=-80,
+                   z=6000)
+
+    def run(self):
+        r=self.A.getSome()
+        assert len(r)==3
+        r=self.A.getSome('id <2')
+        assert len(r)==1
+        assert r[0].d==55
+        r=self.A.getSome(P.EQ(P.FIELD('d'), 55))
+        assert len(r)==1
+        assert r[0].x==0
+        r=self.A.getSome(P.OR(P.LT(P.FIELD('y'), 0),
+                              P.LIKE(P.FIELD('name'), '%MAX%')))
+        assert len(r)==3
+        r=self.A.getSome(P.LIKE(P.FIELD('name'), '%TENS%'), order='z DESC')
+        assert len(r)==2
+        assert r[0].z==6000
+        assert r[1].z==60
+
+class test_refresh1(base_fixture):
+    usetables=('A',)
+    tags=alltags
+
+    def pre(self):
+        self.obj=self.A.new(name='bingo junction',
+                            b_id=4,
+                            ta=300,
+                            x=0,
+                            y=30,
+                            z=-1)
+
+    def run(self):
+        assert self.obj.d is None
+        self.obj.refresh()
+        assert self.obj.d==33
+
+        
+
+        
+        
 
 
 
