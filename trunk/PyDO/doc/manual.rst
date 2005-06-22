@@ -112,8 +112,8 @@ some class attributes that describe the table::
               'body')
 
 The ``connectionAlias`` attribute must correspond to an alias
-initialized elsewhere that tells PyDO how to create a database
-connection.
+initialized elsewhere (with the ``initAlias()`` function) that tells
+PyDO how to create a database connection.
 
 If the database supports schemas, like later versions of PostgreSQL,
 the schema name can be specified by setting the ``schema`` attribute.
@@ -223,9 +223,9 @@ uncustomized PyDO classes for every table in a schema, the function
 ``autoschema`` will generate them for you, and return them to you 
 in a dictionary keyed by class name::
 
-   locals().update(autoschema(alias='myDBAlias',
-                              schema='public',
-                              guesscache=True)
+   globals().update(autoschema(alias='myDBAlias',
+                               schema='public',
+                               guesscache=True)
 
 By default, it will use the default ``GuessCache``, and specify no
 schema; you must give an alias (which should be initialized first with

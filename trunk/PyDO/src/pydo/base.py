@@ -749,7 +749,7 @@ def autoschema(alias, schema=None, guesscache=True):
     returns a dictionary of PyDO objects created automatically by
     schema introspection, keyed by class name.  Typical usage:
 
-      locals().update(autoschema('myalias'))
+      globals().update(autoschema('myalias'))
 
     The PyDO objects created are extremely bare, but may be enough for
     quick scripts. 

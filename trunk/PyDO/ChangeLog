@@ -1,3 +1,9 @@
+2005-06-22  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* doc/manual.rst, src/pydo/base.py (autoschema): change
+	"locals().update" to "globals().update" in docstring of autoschema
+	and corresponding manual documentation  (updating locals is bAAAAd.)
+
 2005-06-21  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* tests/fixture.py: moved base_fixture here from test_base.
