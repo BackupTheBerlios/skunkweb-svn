@@ -1,6 +1,5 @@
 from itertools import izip
 from threading import Lock, local
-from marshal import dumps as marshal_dumps
 from collections import deque
 import time
 from pydo.log import *
