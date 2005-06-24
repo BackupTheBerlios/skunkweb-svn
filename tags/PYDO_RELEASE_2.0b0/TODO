@@ -1,0 +1,34 @@
+Todo:
+  * test framework, new tests
+  * mysql needs type wrapper converters, test improvements
+  * genscripts -- generate modules with classes for every table.  
+    (guess relations?)
+
+
+Other databases to support (eventually):
+  * firebird
+  * sqlrelay 
+  * maxdb
+  * gadfly (does anyone use this?)
+  * odbc bindings (mxODBC; Drew's pure python version?) 
+  * oracle -- in progress
+  * ingres
+  * sybase
+  * db2
+
+
+
+..
+   Local Variables:
+   mode: rst
+   indent-tabs-mode: nil
+   sentence-end-double-space: t
+   fill-column: 70
+   End:
+
+
+
+
+  
+
+
