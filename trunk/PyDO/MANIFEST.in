@@ -1,3 +1,4 @@
 include README ChangeLog COPYING LICENSE CLASSIFIERS
+include src/testingtesting.py
 recursive-include tests  *.py *.sql *.sh 
 recursive-include doc *.rst *.html *.css *.py *.sql

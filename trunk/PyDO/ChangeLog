@@ -1,5 +1,7 @@
 2005-06-24  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* MANIFEST.in: fix to include testingtesting.py in tarball.
+
 	* src/pydo/__init__.py (__version__): version number bumped up to
 	2.0b0 in preparation for release.
 
