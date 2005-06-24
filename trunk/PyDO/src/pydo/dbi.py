@@ -394,7 +394,7 @@ class ConnectionPool(object):
             free=self._free
             busy=self._busy
             numconns=len(free)+len(busy)
-            keep=keep_poolsize <= numconns
+            keep=keep_poolsize >= numconns
             busy.remove(conn)
             if keep:
                 free.append(conn)

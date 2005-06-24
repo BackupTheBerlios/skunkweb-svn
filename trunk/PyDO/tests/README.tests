@@ -28,15 +28,22 @@ Test Plan
 
 We need unit tests for the following items, by module.
 
+   Legend
+   ------
+
+   X   Some tests
+   N   No explicit tests, but functionality is tested by other tests
+   D   Complete test coverage
+
 dbi
 ~~~
 
 - initAlias			X
 - delAlias			X
 - pools
-- threads
-- swapConnection
-- introspection
+- threads			X
+- swapConnection		X
+- introspection			N
 
 drivers
 ~~~~~~~
@@ -48,19 +55,19 @@ base
 ~~~~
 
 - schema			X
-- fields
+- fields			N
 - inheritance			X
-- sequences
+- sequences			N
 - unique			X
 - guess_columns			X
-- guess_tablename
+- guess_tablename		N
 - update			X
 - updateSome			X
 - deleteSome			X
 - getSome			X
-  - raw SQL
-  - operators
-  - order by, limit, offset
+  - raw SQL			N
+  - operators			N
+  - order by, limit, offset	N
 - mutable
 - new				X
 - getUnique			X
@@ -77,7 +84,7 @@ operators
 
 - converters
   - paramstyles
-- sql generation
+- sql generation		N
 
 dbtypes
 ~~~~~~~
@@ -88,7 +95,7 @@ dbtypes
 multifetch
 ~~~~~~~~~~
 
-- aliases
+- aliases			X
 
 fields
 ~~~~~~

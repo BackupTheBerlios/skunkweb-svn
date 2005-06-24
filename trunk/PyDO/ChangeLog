@@ -1,6 +1,12 @@
+2005-06-24  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* tests/test_dbi.py (test_pool1): test for connection pool.
+
 2005-06-23  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/dbi.py: removed unused import.
+	(ConnectionPool.release): fix for connection pool (wrong logic for
+	keeping connections).
 
 2005-06-22  Jacob Smullyan  <smulloni@smullyan.org>
 
