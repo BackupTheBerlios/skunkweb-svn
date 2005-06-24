@@ -28,4 +28,4 @@ __all__=getall('pydo.%s' % m for m in \
 del getall
     
 
-__version__='2.0a3'
+__version__='2.0b0'

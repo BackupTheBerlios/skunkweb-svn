@@ -1,5 +1,8 @@
 2005-06-24  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/pydo/__init__.py (__version__): version number bumped up to
+	2.0b0 in preparation for release.
+
 	* tests/test_dbi.py (test_pool1): test for connection pool.
 
 2005-06-23  Jacob Smullyan  <smulloni@smullyan.org>
