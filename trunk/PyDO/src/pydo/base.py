@@ -32,7 +32,7 @@ def _restrict(flds, coll):
             # is enforced
             if isinstance(v, (set, frozenset, tuple, list)):
                 for v1 in v:
-                    if infld(v1, flds):
+                    if not infld(v1, flds):
                         break
                     else:
                         # (added just to make indentation clearer)

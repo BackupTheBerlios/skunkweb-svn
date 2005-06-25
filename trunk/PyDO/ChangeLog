@@ -1,3 +1,12 @@
+2005-06-25  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/base.py: missing a "not" was breaking uniqueness
+	constraints for projections.
+
+	* tests/test_base.py (test_project7.run): test for bug reported by
+	Faber (Fabio Vescarelli) -- uniqueness constraints were getting
+	lost on projections.
+
 2005-06-24  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* MANIFEST.in: fix to include testingtesting.py in tarball.

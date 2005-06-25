@@ -130,6 +130,42 @@ class test_project5(base_fixture):
             pass
         else:
             assert 0, "projection without unique constraint shouldn't be refreshable!"
+
+class test_project6(base_fixture):
+    usetables=['D']
+    tags=alltags
+
+    def pre(self):
+        for i in range(1, 41, 2):
+            self.D.new(id=i, x=i)
+            self.D.new(id=i+1, x=i+1)
+
+    def run(self):
+        o=self.D.getUnique(id=4)
+        assert o.x==4
+        p=self.D.project('id', 'x')
+        x=p.getUnique(id=4)
+        assert x.x==4
+        p1=p.project('id', 'x')
+        y=p1.getUnique(id=4)
+        assert y.x==4
+
+class test_project7(base_fixture):
+    usetables=['A_C']
+    tags=alltags
+
+    def pre(self):
+        for i in range(1, 10):
+            self.A_C.new(a_id=i,
+                         c_id=i+1)
+
+    def run(self):
+        o1=self.A_C.getUnique(a_id=1, c_id=2)
+        assert o1
+        o2=self.A_C.project('a_id', 'c_id').getUnique(a_id=1, c_id=2)
+        assert o2
+        
+        
             
 @tag('sqlite', 'mysql', 'psycopg', 'base')        
 def test_guess_columns1():
