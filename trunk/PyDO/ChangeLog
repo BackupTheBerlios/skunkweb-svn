@@ -1,9 +1,15 @@
 2005-06-25  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* tests/fixture.py: another table/class ("E").
+
+	* tests/test_base.py (test_project8): test for when projections
+	include columns not included in the base class.  Commented out is 
+	Faber's sneaky aggregate trick.
+
 	* src/pydo/base.py: missing a "not" was breaking uniqueness
 	constraints for projections.
-
-	* tests/test_base.py (test_project7.run): test for bug reported by
+ 
+	* tests/test_base.py (test_project7): test for bug reported by
 	Faber (Fabio Vescarelli) -- uniqueness constraints were getting
 	lost on projections.
 

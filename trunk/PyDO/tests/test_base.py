@@ -164,9 +164,40 @@ class test_project7(base_fixture):
         assert o1
         o2=self.A_C.project('a_id', 'c_id').getUnique(a_id=1, c_id=2)
         assert o2
+
+class test_project8(base_fixture):
+    usetables=['E']
+
+    def pre(self):
+        self.E.new(user1='me', user2='you')
+
+    def run(self):
+        o1=self.E.getUnique(id=1)
+        assert o1.user1=='me'
+        assert o1.user2=='you'
+        p1=self.E.project('id', 'user1')
+        o2=p1.getUnique(id=1)
+        assert o2.user1=='me'
+
+        class tmp(P.PyDO):
+            connectionAlias='pydotest'
+            table='E'
+            fields=(P.Sequence('id'),
+                    'user1')
+
+        o3=tmp.getUnique(id=1)
+        assert o3.user1=='me'
+        p2=tmp.project('id', 'user1', 'user2')
+        o4=p2.getUnique(id=1)
+        assert o4.user1=='me'
+        assert o4.user2=='you'
+#       # Faber's aggregate trick, which I'm not sure should be supported
+#        p3=tmp.project('id', 'user1', 'user2', 'count(*) as count')
+#        res=p3.getSome()
+#        assert len(res)==1
+#        assert res[0]['count'] == 1
+
         
-        
-            
 @tag('sqlite', 'mysql', 'psycopg', 'base')        
 def test_guess_columns1():
     create="""CREATE TABLE test_guess_columns1 (

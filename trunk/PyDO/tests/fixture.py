@@ -69,8 +69,13 @@ class base_fixture(Fixture):
         D="""CREATE TABLE d (
         id INTEGER NOT NULL PRIMARY KEY,
         x INTEGER
-        )"""
-        )
+        )""",
+
+        E="""CREATE TABLE e (
+        id %(seqsql)s,
+        user1 VARCHAR(128) NOT NULL,
+        user2 VARCHAR(128) NOT NULL
+        )""")
 
     usetables=()
     useObjs=True
@@ -97,7 +102,7 @@ class base_fixture(Fixture):
         pass
     
     def setupObj(self, table, guess):
-        global A, B, C, A_C, D
+        global A, B, C, A_C, D, E
         if table=='A':
             class A(P.PyDO):
                 connectionAlias='pydotest'
@@ -162,7 +167,17 @@ class base_fixture(Fixture):
                     fields=(P.Unique('id'),
                             'x')
             self.D=D
-                
+        elif table=='E':
+            class E(P.PyDO):
+                connectionAlias='pydotest'
+                if guess:
+                    guess_columns=True
+                else:
+                    fields=(P.Unique('id'),
+                            'user1',
+                            'user2')
+                    
+            self.E=E
 
     def cleanup(self):
         if self.db.autocommit:
