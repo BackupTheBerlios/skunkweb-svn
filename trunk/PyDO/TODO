@@ -1,10 +1,22 @@
-Todo:
-  * test framework, new tests
-  * mysql needs type wrapper converters, test improvements
-  * genscripts -- generate modules with classes for every table.  
-    (guess relations?)
+Todo for 1.0:
+  * more tests, bugfixes
+  * Oracle introspection?
+
+Todo for 1.1:
+  * iterSome, iterfetch (may require Python 2.5 implementing PEP 342,
+    as resource cleanup needs to be done when a generator yielding
+    results is gced).  These would be generator methods, yielding
+    result rows rather than returning a list (like getSome and fetch
+    do).  
+
+  * refactor drivers so that db-specific stuff is separated from dbapi 
+    driver specific stuff; individual drivers would be mixins of one
+    of each.  This would be particularly useful for sqlrelay and odbc;
+    also it would make supporting multiple postgresql/oracle db api
+    drivers easier. 
 
 
+  
 Other databases to support (eventually):
   * firebird
   * sqlrelay 

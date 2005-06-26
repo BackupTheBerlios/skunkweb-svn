@@ -1,5 +1,9 @@
 2005-06-25  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* TODO: put iterSome in the TODO for 1.1.  (It is being deferred
+	because of it may require a generator that can do resource
+	cleanup.)
+
 	* tests/fixture.py: another table/class ("E").
 
 	* tests/test_base.py (test_project8): test for when projections
