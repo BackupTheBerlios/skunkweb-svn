@@ -1,5 +1,9 @@
 2005-06-27  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* doc/manual.rst: remove reference to a non-existent class
+	attribute; cleaned up references to features eliminated in the
+	alpha release phase.
+
 	* tests/test_multifetch.py (test_fetch2): another fetch test.
 
 	* tests/test_guesscache.py (test_guesscache1): test for basic

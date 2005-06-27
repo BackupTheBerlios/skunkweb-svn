@@ -29,8 +29,8 @@ him, the fundamental design remains Csillag's.
 Overview
 --------
 
-.. Note:: PyDO is a Python package (finally named ``pydo`` in this
-    version -- PyDO1 used the package name ``PyDO``, and previous
+.. Note:: PyDO is a Python package (finally named ``pydo`` in 2.0a3
+    and later; PyDO1 used the package name ``PyDO``, and previous
     alpha releases of PyDO2 used first ``PyDO`` and then ``PyDO2``),
     but all the public objects within its submodules (with the
     exception of the drivers) are imported into its top-level
@@ -579,13 +579,6 @@ table name, or a list of names.
 Getting Data From Multiple Tables At Once
 +++++++++++++++++++++++++++++++++++++++++
 
-.. note:: The techniques for doing this in PyDO2 alpha releases are in
-    flux.  2.0a2 supported a number of specialized classes and a
-    function, ``arrayfetch``, for performing joins of different kinds,
-    but these have been removed in 2.0a3 in favor of ``fetch``,
-    documented below.  ``fetch``, too, is experimental and subject to
-    change during the alpha release cycle.
-
 The ``fetch`` function makes it possible to query multiple tables, use
 aggregates and obtain other non-table data, while still returning
 table data coalesced into ``PyDO`` instances.  Its signature is::
@@ -785,10 +778,8 @@ most notably:
     writing.
 10. PyDO2 does not implement PyDO1's original ``scatterFetch()``
     method, which returns multiple ``PyDO`` objects of different types
-    in a single query. Related functionality was implemented by
-    ``arrayfetch()`` and a number of Join classes in the first alpha
-    releases, but as of 2.0a3 they are removed in favor of a new
-    function, simply called ``fetch``.
+    in a single query, but has a new function, ``fetch`` which has a
+    superset of the same functionality.
 11. PyDO1 has a variable ``SYSDATE`` that means the current
     datetime, regardless of the underlying db.  PYDO2 does not
     abstract this, as it seems unnecessary now; you can use
@@ -802,11 +793,10 @@ most notably:
     case-sensitive.  (Thanks to Hamish Lawson for suggesting this
     workaround.) 
 13. The ``newfetch()`` and ``newnofetch()`` methods and the
-    ``refetch`` and ``_refetch_keyword`` class attributes of ``PyDO``
-    objects are new in PyDO2; in PyDO1, the ``refetch`` keyword
-    argument to ``new()`` was hence used much more.  Also, in PyDO1, 
-    ``new()`` was broken for the unlikely case of a column named
-    "refetch". 
+    ``refetch`` class attribute of ``PyDO`` objects are new in PyDO2;
+    in PyDO1, the ``refetch`` keyword argument to ``new()`` was used
+    instead, but was broken for the unlikely case of a column named
+    "refetch".  
 14. The support of schema-qualified table names and optional guessing
     of table name from class name is new in PyDO2.
 15. The optional guessing of field information at runtime, controlled
