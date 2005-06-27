@@ -502,6 +502,28 @@ class test_refresh1(base_fixture):
         self.obj.refresh()
         assert self.obj.d==33
 
+class test_refresh2(base_fixture):
+    usetables=('A', 'B')
+    tags=alltags
+
+    def pre(self):
+        self.B.new(x=4)
+
+    def run(self):
+        obj=self.B.getUnique(id=1)
+        obj.refresh()
+        assert obj.id==1
+        assert obj.x==4
+        n=self.A.new(name='ho hum',
+                     b_id=obj.id,
+                     ta=0,
+                     x=0,
+                     y=0,
+                     z=0)
+
+        assert n.id==1
+    
+
         
 
         
