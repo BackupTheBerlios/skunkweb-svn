@@ -74,8 +74,8 @@ base
 - delete			X
 - refresh			X
 - project			X
-  - string fields
-- guesscache
+  - string fields		X
+- guesscache			X
 - joinTable			X
 - pickling of PyDO objects	X
 

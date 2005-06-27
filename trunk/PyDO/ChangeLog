@@ -1,5 +1,10 @@
 2005-06-27  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* tests/test_multifetch.py (test_fetch2): another fetch test.
+
+	* tests/test_guesscache.py (test_guesscache1): test for basic
+	guesscache functionality.
+
 	* src/pydo/drivers/psycopgconn.py (PsycopgDBI.getSequence): only
 	log that the sequence name is being inferred when self.verbose.
 

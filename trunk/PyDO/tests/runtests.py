@@ -19,6 +19,7 @@ from test_base import *
 from test_dbi import *
 from test_dbtypes import *
 from test_fields import *
+from test_guesscache import *
 from test_multifetch import *
 from test_operators import *
 
