@@ -1,5 +1,8 @@
 2005-06-27  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/pydo/drivers/psycopgconn.py: autocommit implementation for
+	psycopg version 1.
+
 	* tests/test_dbi.py (test_autocommit2): two autocommit tests.
 
 	* doc/manual.rst: remove reference to a non-existent class

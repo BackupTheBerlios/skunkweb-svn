@@ -108,6 +108,9 @@ class PsycopgDBI(DBIBase):
        if pool and not hasattr(pool, 'connect'):
           pool=ConnectionPool()
        super(PsycopgDBI, self).__init__(connectArgs, psycopg.connect, pool, verbose)
+       if psycopg_version<2:
+           # try to keep state
+           self._autocommit=None
 
     if psycopg_version==2:
         def autocommit():
@@ -115,6 +118,16 @@ class PsycopgDBI(DBIBase):
                 return self.conn.isolation_level==0
             def fset(self, val):
                 self.conn.set_isolation_level(not val)
+            return fget, fset, None, None
+        autocommit=property(*autocommit())
+
+    else:
+        def autocommit():
+            def fget(self):
+                return self._autocommit
+            def fset(self, val):
+                self._autocommit=val
+                self.conn.autocommit(val)
             return fget, fset, None, None
         autocommit=property(*autocommit())
     
