@@ -150,7 +150,8 @@ class PsycopgDBI(DBIBase):
         if name==True:
             # not a string; infer the sequence name
             name='%s_%s_seq' % (table, field)
-            debug('inferring sequence name: %s', name)
+            if self.verbose:
+                debug('inferring sequence name: %s', name)
         cur=self.conn.cursor()
         sql="select nextval('%s')" % name
         if self.verbose:

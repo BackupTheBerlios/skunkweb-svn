@@ -466,16 +466,18 @@ class PyDO(dict):
         """return a tuple of column names that will uniquely identify
         a row given the choices from kw
         """
+        ulist=[]
         for unique in cls._unique:
             if isinstance(unique, basestring):
                 if kw.get(unique)!=None:
-                    return (unique,)
+                    ulist.append(unique)
             elif isinstance(unique, (frozenset,list,tuple)):
                 for u in unique:
                     if not kw.has_key(u):
                         break
                 else:
-                    return unique
+                    ulist.extend(list(unique))
+        return tuple(ulist)
 
     @classmethod
     def _uniqueWhere(cls, conn, kw, converter=None):

@@ -1,3 +1,18 @@
+2005-06-27  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/drivers/psycopgconn.py (PsycopgDBI.getSequence): only
+	log that the sequence name is being inferred when self.verbose.
+
+	* tests/test_base.py (test_unique3) test for _matchUnique.
+
+	* src/pydo/base.py (PyDO._matchUnique): fixing brain-dead
+	implementation, which was dropping some unique constraints.
+
+2005-06-26  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* tests/test_base.py (test_refresh2): another refresh test in
+	attempt to find Faber's bug.
+
 2005-06-25  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* TODO: put iterSome in the TODO for 1.1.  (It is being deferred

@@ -65,7 +65,28 @@ class test_unique2(base_fixture):
     def run(self):
         assert self.D.getUnique(id=15).x==100
         assert self.D.getUnique(id=800)==None
-        
+
+class test_unique3(base_fixture):
+    usetables=['A']
+    tags=alltags
+
+    def run(self):
+        tmp=sorted(self.A._matchUnique(dict(id=3,
+                                            name='foo',
+                                            w=40,
+                                            y=40)))
+        assert tmp==['id', 'name']
+        tmp=sorted(self.A._matchUnique(dict(name='nougat',
+                                            w=40,
+                                            x=40,
+                                            y=40)))
+        assert tmp==['name']
+        tmp=sorted(self.A._matchUnique(dict(name='nougat',
+                                            x=40,
+                                            y=40,
+                                            z=40)))
+        assert tmp==['name', 'y', 'z']
+                   
         
 @tag(*alltags)        
 def test_project1():
@@ -181,7 +202,7 @@ class test_project8(base_fixture):
 
         class tmp(P.PyDO):
             connectionAlias='pydotest'
-            table='E'
+            table='e'
             fields=(P.Sequence('id'),
                     'user1')
 
@@ -191,11 +212,11 @@ class test_project8(base_fixture):
         o4=p2.getUnique(id=1)
         assert o4.user1=='me'
         assert o4.user2=='you'
-#       # Faber's aggregate trick, which I'm not sure should be supported
-#        p3=tmp.project('id', 'user1', 'user2', 'count(*) as count')
-#        res=p3.getSome()
-#        assert len(res)==1
-#        assert res[0]['count'] == 1
+#       # Faber's aggregate trick, which I'm not sure should be supported.
+#       p3=tmp.project('id', 'user1', 'user2', 'count(*) as count')
+#       res=p3.getSome()
+#       assert len(res)==1
+#       assert res[0]['count'] == 1
 
         
 @tag('sqlite', 'mysql', 'psycopg', 'base')        
@@ -523,8 +544,36 @@ class test_refresh2(base_fixture):
 
         assert n.id==1
     
+class test_refresh3(base_fixture):
+    usetables=('C',)
+    tags=alltags
 
-        
+    def pre(self):
+        class wrong(P.PyDO):
+            table='c'
+            connectionAlias='pydotest'
+            # this is wrong in two ways;
+            # id is a sequence, and
+            # x isn't unique.
+
+            fields=(P.Unique('id'),
+                    P.Unique('x'))
+        self.wrong=wrong
+
+    def run(self):
+        n=self.wrong.new(x=5)
+        assert n.id is None
+        assert n.x==5
+        try:
+            n.refresh()
+        except ValueError:
+            pass
+        else:
+            assert 0, "refresh should fail"
+
+
+            
+                    
 
         
         
