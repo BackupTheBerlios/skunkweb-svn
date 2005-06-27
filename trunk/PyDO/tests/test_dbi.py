@@ -5,8 +5,9 @@ Tests for the pydo.dbi module.
 import threading
 
 from testingtesting import tag
-from config import ALLDRIVERS
-dbitags=ALLDRIVERS+['dbi']
+import config
+from fixture import base_fixture
+dbitags=config.ALLDRIVERS+['dbi']
 import pydo.dbi as D
 
 @tag(*dbitags)
@@ -118,3 +119,50 @@ def test_pool1():
         assert len(db.pool._free)==1
     finally:
         D.delAlias('pydotestpool')
+
+
+@tag(*dbitags)
+def test_autocommit1():
+    db=D.getConnection('pydotest')
+    if config.DRIVER=='mysql':
+        assert db.autocommit
+    else:
+        assert not db.autocommit
+    
+
+class test_autocommit2(base_fixture):
+    usetables=['C']
+    # don't test mysql for now
+    tags=[x for x in dbitags if x!='mysql']
+
+    def setup(self):
+        base_fixture.setup(self)
+        self.db.commit()
+
+    def post(self):
+        self.db.autocommit=False
+        c=self.db.cursor()
+        c.execute('drop table c')
+        self.db.commit()
+
+    def run(self):
+        assert not self.db.autocommit
+        def subtest(ac):
+            self.C.new(x=4000)
+            i=self.C.getSome(x=4000)
+            assert len(i)==1
+            del i
+            if not ac:
+                self.db.rollback()
+            if not ac:
+                assert len(self.C.getSome(x=4000))==0
+            else:
+                assert len(self.C.getSome(x=4000))==1
+                
+        subtest(False)
+        self.db.autocommit=True
+        try:
+            subtest(True)
+        finally:
+            self.db.autocommit=False
+    

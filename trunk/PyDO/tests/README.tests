@@ -40,16 +40,12 @@ dbi
 
 - initAlias			X
 - delAlias			X
-- pools
+- pools				X
 - threads			X
 - swapConnection		X
 - introspection			N
-
-drivers
-~~~~~~~
-
-- autocommit
-- transactions
+- autocommit			X
+- transactions			N
 
 base
 ~~~~

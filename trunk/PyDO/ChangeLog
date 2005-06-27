@@ -1,5 +1,7 @@
 2005-06-27  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* tests/test_dbi.py (test_autocommit2): two autocommit tests.
+
 	* doc/manual.rst: remove reference to a non-existent class
 	attribute; cleaned up references to features eliminated in the
 	alpha release phase.

@@ -48,8 +48,6 @@ Questions about PyDO can be raised on the `SkunkWeb mailing list`_.
 
 .. _SkunkWeb mailing list: http://lists.sourceforge.net/lists/listinfo/skunkweb-list
 
-**N.B.**: this is an ALPHA release. 
-
 This library is available under either of two licenses: the GNU Public
 License (see COPYING) or a BSD license (see LICENSE).
 
