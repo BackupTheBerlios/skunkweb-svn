@@ -573,7 +573,25 @@ class test_refresh3(base_fixture):
 
 
             
-                    
+class test_group1(base_fixture):
+    usetables=('C',)
+    tags=alltags
+
+    def pre(self):
+        for i in range(4):
+            for c in range(3):
+                self.C.new(x=i)
+
+    def run(self):
+        sql=['x=3 GROUP BY x',
+             'GROUP BY x HAVING x=3']
+        p=self.C.project('x')
+        for s in sql:
+            res=p.getSome(s)
+            assert len(res)==1
+
+        
+    
 
         
         

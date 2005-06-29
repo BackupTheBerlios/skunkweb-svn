@@ -1,3 +1,11 @@
+2005-06-29  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/base.py (PyDO.getSome): tolerate group by statements in
+	sql strings.
+
+	* tests/test_base.py (test_group1): test for toleration of group
+	by statements.
+
 2005-06-27  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/drivers/psycopgconn.py: autocommit implementation for

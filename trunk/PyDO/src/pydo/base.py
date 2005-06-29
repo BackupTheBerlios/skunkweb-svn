@@ -7,6 +7,9 @@ from pydo.dbtypes import unwrap
 from pydo.utils import _tupleize, _setize, formatTexp, _strip_tablename
 
 from itertools import izip
+import re
+
+_group_pat=re.compile(r'\s*group ', re.I)
 
 def _restrict(flds, coll):
     """private method for cleaning a set or dict of any items that aren't
@@ -577,7 +580,10 @@ class PyDO(dict):
         sql, values=cls._processWhere(conn, args, fieldData)
         query=[cls._baseSelect()]
         if sql:
-            query.extend(['WHERE', sql])
+            if _group_pat.match(sql):
+                query.append(sql)
+            else:
+                query.extend(['WHERE', sql])
         if filter(None, (order, limit, offset)):
             query.append(conn.orderByString(order, limit, offset))
         query=' '.join(query)
