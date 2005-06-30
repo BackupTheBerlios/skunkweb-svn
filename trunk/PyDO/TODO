@@ -15,6 +15,15 @@ Todo for 1.1:
     also it would make supporting multiple postgresql/oracle db api
     drivers easier. 
 
+  * column aliases, possibly.  A bit hard to implement.  A field class
+    can do some of it, but currently the name attribute is used for
+    too much.  A distinction needs to be made between cases when you
+    use just an alias, cases when you use both the name and the alias
+    (an AS declaration), and cases where you just use the name.  And
+    in addition to the usage within sql itself, there is the usage
+    within Python, where you want to use the alias everywhere instead
+    of the real name.  This doesn't work particularly well with
+    operators and FIELD('x').
 
   
 Other databases to support (eventually):
