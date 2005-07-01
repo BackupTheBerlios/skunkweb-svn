@@ -1,3 +1,8 @@
+2005-07-01  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* ACKNOWLEDGEMENTS: added Robin Brandt, and added notes detailing
+	contributions. 
+
 2005-06-29  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/base.py (PyDO.getSome): tolerate group by statements in
