@@ -4,32 +4,8 @@ from pydo.operators import BindingConverter
 from pydo.dbtypes import DATE, TIMESTAMP, BINARY, INTERVAL
 from pydo.log import debug
 from pydo.field import Field
-from itertools import izip
 import cx_Oracle
 
-class OracleResultSet(object):
-    """A resultset that for each row reads the content of any LOBs before 
-    the LOB locators get invalidated by a subsequent fetch. To accommodate
-    this, field access is mediated via an appropriate handler."""
-
-    def __init__(self, cursor):
-        self.cursor = cursor
-        self.handlers = [self.get_handler(x[1]) for x in cursor.description]
-    
-    @staticmethod
-    def get_handler(fieldtype):
-        if fieldtype in (cx_Oracle.CLOB, cx_Oracle.BLOB, cx_Oracle.LOB):
-            return lambda item: item.read()
-        else:
-            return lambda item: item
-
-    def __iter__(self):
-        return self
-    
-    def next(self):
-        return [handler(item) for (item, handler) 
-            in izip(self.cursor.next(), self.handlers)]
-       
 class OracleDBI(DBIBase):
 
     paramstyle = 'named'
@@ -56,13 +32,29 @@ class OracleDBI(DBIBase):
         if c.description is None:
             resultset = None
         else:
-            resultset = OracleResultSet(c)
+            lob_types = set((cx_Oracle.CLOB, cx_Oracle.BLOB))
+            field_types = set(d[1] for d in c.description)
+            have_lobs = field_types & lob_types
+            if have_lobs:
+                resultset = [list(self.field_values(row)) for row in c]
+            else:
+                resultset = c.fetchall()
         if not resultset:
             return c.rowcount
         res = self._convertResultSet(c.description, resultset, qualified)
         c.close()
         return res
 
+    @staticmethod
+    def field_values(row):
+        """Produces the value of each item in the row, reading any LOBs before 
+        the LOB locators get invalidated by a subsequent fetch."""
+        for item in row:
+            if hasattr(item, "read"):
+                yield item.read()
+            else:
+                yield item
+                
     def getSequence(self, name, field, table):
         cur=self.conn.cursor()
         sql="select %s.nextval from dual" % name

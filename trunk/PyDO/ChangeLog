@@ -1,3 +1,9 @@
+2005-07-01  Hamish Lawson  <hbl@st-andrews.ac.uk>
+
+	* src/pydo/drivers/oracleconn.py: use fetchall (rather than iterating over
+	cursor) when resultset doesn't contain LOBs; replace OracleResultSet 
+    class with OracleDBI.field_values method.
+
 2005-07-01  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* ACKNOWLEDGEMENTS: added Robin Brandt, and added notes detailing
