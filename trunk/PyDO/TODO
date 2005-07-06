@@ -25,12 +25,6 @@ Todo for 1.1:
     of the real name.  This doesn't work particularly well with
     operators and FIELD('x').
 
-Feature Requests:
-  * let AND and OR accept a single argument.  AND(x) would be
-  equivalent to AND(TRUE, x); OR(x) would be equivalent to OR(FALSE,
-  x). I'm not sure this is worth doing.  I could add utility
-  functions, "andify" and "orify".
-
   
 Other databases to support (eventually):
   * firebird
