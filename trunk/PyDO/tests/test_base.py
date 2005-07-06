@@ -188,6 +188,7 @@ class test_project7(base_fixture):
 
 class test_project8(base_fixture):
     usetables=['E']
+    tags=alltags
 
     def pre(self):
         self.E.new(user1='me', user2='you')

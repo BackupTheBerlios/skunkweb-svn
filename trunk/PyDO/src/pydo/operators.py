@@ -168,11 +168,15 @@ class SQLOperator(tuple):
             return self.converter(val)
         # default converter is repr()
         return repr(val)
+
+    def _repr_single(self):
+        return '(%s %s)' % (op, self._convert(self[1]))
     
     def __repr__(self):
         op=" %s " % self[0]
         if len(self)==2:
-            return "(%s %s)" % (op, self._convert(self[1]))
+            return self._repr_single()
+            #return "(%s %s)" % (op, self._convert(self[1]))
         args=(self._convert(a) for a in self[1:])
         return "(%s)" % op.join(args)
 
@@ -264,7 +268,12 @@ def __makeOperators():
 
 __makeOperators()
 
+# hack to make AND(x) and OR(x) produce something reasonable
+def _repr_single_and_or(self):
+    return self._convert(self[1])
 
+AND._repr_single=_repr_single_and_or
+OR._repr_single=_repr_single_and_or
 
 class BindingConverter(object):
     """A value converter that uses bind variables.

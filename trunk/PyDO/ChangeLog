@@ -1,3 +1,10 @@
+2005-07-05  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/operators.py (_repr_single_and_or): hack so that AND
+	and OR will work with a single argument (berlios bug #4448).
+
+	* tests/test_operators.py: test for AND with a single argument
+	(berlios bug #4448).
 
 2005-07-05  Jacob Smullyan  <smulloni@smullyan.org>
 
