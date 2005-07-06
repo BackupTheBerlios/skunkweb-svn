@@ -18,6 +18,8 @@ class Field(object):
 
     def __get__(self, obj, type_):
         """descriptor method"""
+        if obj is None:
+            return None
         return obj[self.name]
     
     def __set__(self, obj, value):

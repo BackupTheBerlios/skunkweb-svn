@@ -1,3 +1,13 @@
+2005-07-06  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* tests/test_fields.py (test_getattr1): test for
+	getattr(myPyDOSubclass, fieldname).
+
+	* src/pydo/field.py (Field.__get__): deal with the case of obj
+	being None (for the sake of pydoc, which tries to call the
+	descriptor on the class object).  Thanks to Adam Ward for bug
+	report. 
+
 2005-07-05  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/operators.py (_repr_single_and_or): hack so that AND
