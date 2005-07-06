@@ -1,3 +1,11 @@
+
+2005-07-05  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* tests/test_base.py (test_getSome2): test for berlios bug #4445.
+
+	* src/pydo/base.py (PyDO._processWhere): fix for berlios bug #4445:
+	obj.getSome(x=None) should generate SQL "x IS NULL".
+
 2005-07-01  Hamish Lawson  <hbl@st-andrews.ac.uk>
 
 	* src/pydo/drivers/oracleconn.py: use fetchall (rather than iterating over

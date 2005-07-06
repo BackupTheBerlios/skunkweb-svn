@@ -506,6 +506,22 @@ class test_getSome1(base_fixture):
         assert r[0].z==6000
         assert r[1].z==60
 
+class test_getSome2(base_fixture):
+    usetables=('B',)
+    tags=alltags
+
+    def pre(self):
+        for i in range(5):
+            self.B.new(x=None)
+        for i in range(5):
+            self.B.new(x=1)
+
+    def run(self):
+        some=self.B.getSome(x=None)
+        assert len(some)==5
+        
+        
+
 class test_refresh1(base_fixture):
     usetables=('A',)
     tags=alltags

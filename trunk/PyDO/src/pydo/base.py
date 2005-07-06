@@ -2,7 +2,7 @@ from pydo.dbi import getConnection
 from pydo.field import Field
 from pydo.guesscache import GuessCache
 from pydo.exceptions import PyDOError
-from pydo.operators import AND, EQ, FIELD
+from pydo.operators import AND, EQ, FIELD, IS, NULL
 from pydo.dbtypes import unwrap
 from pydo.utils import _tupleize, _setize, formatTexp, _strip_tablename
 
@@ -544,7 +544,10 @@ class PyDO(dict):
             # declared in the class/projection.
             andValues=list(args)
             for k, v in fieldData.items():
-                andValues.append(EQ(FIELD(k), v)) 
+                if v is None or v == NULL:
+                    andValues.append(IS(FIELD(k), NULL))
+                else:
+                    andValues.append(EQ(FIELD(k), v)) 
             andlen=len(andValues)
             if converter is None:
                 converter=conn.getConverter()
