@@ -554,7 +554,7 @@ class PyDO(dict):
             if andlen==0:
                 sql=''
             elif andlen==1:
-                andValues[0].converter=converter
+                andValues[0].setConverter(converter)
                 sql=repr(andValues[0])
             else:
                 sql=repr(AND(converter=converter, *andValues))

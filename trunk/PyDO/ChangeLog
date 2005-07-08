@@ -1,5 +1,12 @@
 2005-07-07  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* tests/test_operators.py (test_converter2): test based on Adam
+	Ward's bug report (berlios #4468).
+
+	* src/pydo/base.py (PyDO._processWhere): other half of bug fix for
+	#4468 -- call setConverter on SQLOperator, not x.converter=c,
+	which doesn't recurse.
+
 	* tests/test_operators.py (test_converter1): test for raw strings
 	with embedded single quotes, with and without a converter.
 	Partial test for berlios bug # 4468.
