@@ -18,4 +18,12 @@ from pydo.operators import *
 def test_AND1():
     assert str(AND(FIELD('x')))=='x'
 
-               
+@tag(*alltags)               
+def test_converter1():
+    op=AND(FIELD('x'), EQ(FIELD('y'), 'fiddler\'s roof'))
+    assert str(op)=="(x AND (y = 'fiddler''s roof'))"
+    c=BindingConverter('qmark')
+    op.setConverter(c)
+    s=str(op)
+    assert s=="(x AND (y = ?))"
+    assert c.values==["fiddler's roof"]

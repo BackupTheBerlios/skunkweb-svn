@@ -85,6 +85,13 @@ appropriate formats and accumulating the values inside the converter.
 
 __all__=['FIELD', 'CONSTANT', 'NULL', 'SET', 'SQLOperator', 'BindingConverter']
 
+def sqlquote(s):
+    for p1, p2 in (("'", "''"),
+                   ('\\', '\\\\')):
+        s=s.replace(p1, p2)
+    return "'%s'" % s
+
+
 class CONSTANT(object):
     """a way to represent a constant or field name in a sql expression"""
 
@@ -124,7 +131,8 @@ class SET(object):
     def _convert(self, val):
         if self.converter:
             return self.converter(val)
-        # default converter is repr()
+        if isinstance(val, basestring):
+            return sqlquote(val)
         return repr(val)
         
     def __repr__(self):
@@ -166,7 +174,8 @@ class SQLOperator(tuple):
     def _convert(self, val):
         if self.converter:
             return self.converter(val)
-        # default converter is repr()
+        if isinstance(val, basestring):
+            return sqlquote(val)        
         return repr(val)
 
     def _repr_single(self):
@@ -176,7 +185,6 @@ class SQLOperator(tuple):
         op=" %s " % self[0]
         if len(self)==2:
             return self._repr_single()
-            #return "(%s %s)" % (op, self._convert(self[1]))
         args=(self._convert(a) for a in self[1:])
         return "(%s)" % op.join(args)
 

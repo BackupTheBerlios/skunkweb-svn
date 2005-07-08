@@ -1,3 +1,11 @@
+2005-07-07  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* tests/test_operators.py (test_converter1): test for raw strings
+	with embedded single quotes, with and without a converter.
+
+	* src/pydo/operators.py (SQLOperator._convert, sqlquote): handles
+	raw strings better when there is no BindingConverter.
+
 2005-07-06  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* tests/test_fields.py (test_getattr1): test for
