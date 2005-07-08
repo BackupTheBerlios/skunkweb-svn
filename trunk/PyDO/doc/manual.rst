@@ -73,6 +73,8 @@ appropriate for PyDO-generated queries to be mixed with raw SQL
 queries in real applications (although that may be hidden in your own
 abstraction layer).
 
+PyDO 2 requires Python 2.4 or later.
+
 Defining Table Classes
 ----------------------
 

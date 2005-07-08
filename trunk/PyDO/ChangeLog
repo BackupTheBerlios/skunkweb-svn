@@ -1,3 +1,8 @@
+2005-07-08  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* doc/manual.rst: at a user's request, adding a mention to the
+	manual that PyDO requires Python 2.4.  (berlios bug #4472)
+
 2005-07-07  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* tests/test_operators.py (test_converter2): test based on Adam
