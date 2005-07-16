@@ -86,7 +86,22 @@ class test_unique3(base_fixture):
                                             y=40,
                                             z=40)))
         assert tmp==['name', 'y', 'z']
-                   
+
+class test_unique4(base_fixture):
+    usetables=['A']
+    tags=alltags
+
+    def pre(self):
+        tmp=self.A.new(name='hooey',
+                       x=1,
+                       y=1,
+                       z=1)
+        self.tmpid=tmp.id
+
+    def run(self):
+        res=self.A.getUnique(id=self.tmpid, name='froggie')
+        assert res is None
+
         
 @tag(*alltags)        
 def test_project1():
