@@ -1,5 +1,11 @@
 2005-07-16  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* tests/test_base.py (test_update2): update test with out-of-sync
+	object.
+
+	* src/pydo/base.py (PyDO._update_raw): fail if update doesn't
+	affect one row.
+
 	* tests/test_base.py (test_unique4): test that all information
 	passed to getUnique is used (related to discussion of berlios bug
 	#4530).

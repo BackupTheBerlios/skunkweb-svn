@@ -377,7 +377,27 @@ class test_update1(base_fixture):
         all=self.A.getSome()
         for a in all:
             a.tb='choo choo'
-                       
+
+class test_update2(base_fixture):
+    usetables=['A']
+    tags=alltags
+
+    def pre(self):
+        self.A.new(name='froggie',
+                   x=1,
+                   y=1,
+                   z=1)
+
+    def run(self):
+        instance1=self.A.getUnique(name='froggie')
+        instance2=self.A.getUnique(name='froggie')
+        instance1.name='jones'
+        try:
+            instance2.x=45
+        except P.PyDOError:
+            pass
+        else:
+            assert 0, "should have failed to update out-of-date instance"
 
 class test_deleteSome1(base_fixture):
     usetables=('B',)

@@ -286,7 +286,7 @@ class PyDO(dict):
                                              ", ".join(sqlbuff),
                                              where)
         result=conn.execute(sql, values)
-        if result > 1:
+        if result != 1:
             raise PyDOError, "updated %s rows instead of 1" % result        
 
     @classmethod
