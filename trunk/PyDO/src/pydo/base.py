@@ -163,6 +163,7 @@ class PyDO(dict):
     schema=None
     refetch=False
     guesscache=None
+    _ignore_update_rowcount=False
     
     ## not defined by default, but if you aren't using guess_columns
     ## you'll want to define it at some point in your class hierarchy
@@ -287,7 +288,12 @@ class PyDO(dict):
                                              where)
         result=conn.execute(sql, values)
         if result != 1:
-            raise PyDOError, "updated %s rows instead of 1" % result        
+            # hack/hook to enable updateable views to work that don't
+            # return a correct rowcount
+            if self._ignore_update_rowcount:
+                pass
+            else:
+                raise PyDOError, "updated %s rows instead of 1" % result        
 
     @classmethod
     def updateSome(cls, adict, *args, **fieldData):

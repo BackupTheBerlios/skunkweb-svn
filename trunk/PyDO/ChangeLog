@@ -1,5 +1,12 @@
 2005-07-16  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* doc/manual.rst: document _ignore_update_rowcount.
+
+	* src/pydo/base.py (PyDO): adding _ignore_update_rowcount
+	attribute so that if the driver doesn't return a correct rowcount
+	-- for instance, for an updateable view, as I've seen with
+	postgres -- update can still be made to work.
+
 	* tests/test_base.py (test_update2): update test with out-of-sync
 	object.
 

@@ -479,7 +479,12 @@ Multiple updates can be done together via ``update()``::
 
 Each mutation will cause an UPDATE statement to be executed on the
 underlying database. If you attempt to mutate an immutable ``PyDO``
-instance, a ``PyDOError`` will be raised.
+instance, a ``PyDOError`` will be raised.  A ``PyDOError`` will also
+be raised if the number of rows affected, as returned by the database
+driver, is not equal to 1.  If the driver returns something other than
+1 for a successful update in a particular case (for instance, for an
+updateable view), set the class attribute ``_ignore_update_rowcount``
+to ``True``.
 
 It is also possible to update potentially many rows at once with the
 class method ``updateSome()``::
