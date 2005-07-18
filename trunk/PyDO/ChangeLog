@@ -1,3 +1,8 @@
+2005-07-17  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/drivers/psycopgconn.py: added support for new module
+	name for psycopg2 ("psycopg2" as of 2.0b4).
+
 2005-07-16  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* doc/manual.rst: document _ignore_update_rowcount.

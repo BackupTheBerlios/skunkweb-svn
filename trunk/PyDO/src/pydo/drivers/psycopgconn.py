@@ -17,7 +17,10 @@ from pydo.field import Field
 import time
 import datetime
 
-import psycopg
+try:
+    import psycopg2 as psycopg
+except ImportError:
+    import psycopg
 
 if psycopg.__version__[:3] >= '1.9':
     #psycopg version two.
