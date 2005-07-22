@@ -1,3 +1,25 @@
+2005-07-22  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* doc/manual.rst: adding note about table name guessing and
+	inheritance. 
+
+	* tests/test_base.py (test_inheritance2): checking that base
+	classes are being processed by the metaclass in the right order.
+
+	* src/pydo/base.py (_metapydo.__init__): new table name
+	inheritance semantics (proposed by Hamish Lawson).
+
+	* tests/test_base.py (test_guess_tablename1): test implementation
+	of new table name inheritance semantics.
+
+2005-07-21  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/base.py (PyDO._uniqueWhere): tighter error handling for
+	unique constraints -- raise ValueError if a NULL is passed to
+	getUnique() or similar methods.  This ensures that meaningless SQL
+	won't be generated (WHERE x=NULL) and gives a clearer error
+	message. 
+
 2005-07-17  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/drivers/psycopgconn.py: added support for new module

@@ -43,6 +43,46 @@ def test_inheritance1():
     assert ripple.getUniquenessConstraints()==uniq
     assert ripple.getSequences()==dict(id=True)
 
+
+@tag(*alltags)
+def test_inheritance2():
+    FIELDS1=('nincompoop', P.Unique('id'))
+    FIELDS2=('imbecile', 'id')
+    
+    class foo(object):
+        fields=FIELDS1
+
+    class goo(object):
+        fields=FIELDS2
+
+    class phoo1(foo, goo):
+        pass
+
+    class phoo2(goo, foo):
+        pass
+
+    assert phoo1.fields==FIELDS1
+    assert phoo2.fields==FIELDS2
+
+    class foo(P.PyDO):
+        fields=FIELDS1
+
+    class goo(P.PyDO):
+        fields=FIELDS2
+
+    class phoo1(foo, goo):
+        pass
+
+    class phoo2(goo, foo):
+        pass
+
+    assert phoo1.fields==FIELDS1
+    assert phoo1.getUniquenessConstraints(), "phoo1 should have a unique key"
+    assert phoo2.fields==FIELDS2
+    assert not phoo2.getUniquenessConstraints(), "phoo2 shouldn't have a unique key"
+
+    
+
 @tag(*alltags)
 def test_unique1():
     class baba(P.PyDO):
@@ -234,7 +274,31 @@ class test_project8(base_fixture):
 #       assert len(res)==1
 #       assert res[0]['count'] == 1
 
+
+@tag(*alltags)
+def test_guess_tablename1():
+    class base(P.PyDO):
+        guess_tablename=True
+
+    class A(base):
+        pass
+
+    class B(A):
+        pass
+
+    class C(base):
+        table="donut"
+
+    class D(C):
+        pass
+
+    assert base.table=='base'
+    assert A.table=='a'
+    assert B.table=='b'
+    assert C.table=='donut'
+    assert D.table=='donut'
         
+    
 @tag('sqlite', 'mysql', 'psycopg', 'base')        
 def test_guess_columns1():
     create="""CREATE TABLE test_guess_columns1 (

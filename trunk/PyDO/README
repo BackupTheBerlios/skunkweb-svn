@@ -32,7 +32,7 @@ PyDO 2 has several enhancements:
      now supported by the PyDO.project() method.
 
    * PyDO classes can now introspect into the database at runtime to
-     obtain field information.
+     obtain field information (not yet implemented for Oracle driver).
 
    * Overall, the API has been tightened and the code restructured.
 

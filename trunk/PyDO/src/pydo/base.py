@@ -60,8 +60,15 @@ class _metapydo(type):
         # add a dictionary to store projections for this class.
         cls._projections={}
         # tablename guessing
-        if not namespace.has_key('table') and cls.guess_tablename:
+        if namespace.get('table') is not None:
+            # table has been explicitly declared, so
+            # turn off guess_tablename for subclasses
+            if not namespace.has_key('guess_tablename'):
+                cls.guess_tablename=False
+        elif cls.guess_tablename:
+            # leave guess_tablename for subclasses
             cls.table=cl_name.lower()
+
         # field guessing
         if namespace.get('guess_columns', False):
             if cls.guesscache == True:
@@ -101,6 +108,7 @@ class _metapydo(type):
         # handle inheritance of fields and unique declarations.
         # skipping object and dict is a trivial optimization,
         # because we know those classes won't be relevant
+
         revbases=[x for x in bases[::-1] if x not in (object, dict)]
 
         cls._fields={}
@@ -478,7 +486,7 @@ class PyDO(dict):
         ulist=[]
         for unique in cls._unique:
             if isinstance(unique, basestring):
-                if kw.get(unique)!=None:
+                if kw.has_key(unique): 
                     ulist.append(unique)
             elif isinstance(unique, (frozenset,list,tuple)):
                 for u in unique:
@@ -497,6 +505,10 @@ class PyDO(dict):
         if not unique:
             raise ValueError, 'No way to get unique row! %s %s' % \
                   (str(kw), unique)
+        for u in unique:
+            if kw[u] is None:
+                raise ValueError, "NULL value encountered for field declared unique: %s" % u
+            
         if converter is None:
             converter=conn.getConverter()        
         if len(unique)==1:

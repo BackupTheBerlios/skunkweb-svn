@@ -135,6 +135,11 @@ suppress it by setting the class attribute ``guess_tablename`` to
 ``False``.  (Note that this feature is of limited utility for database
 systems like mysql whose table/column names may be case-sensitive.)
 
+.. note:: If you declare the table explicitly in a class, the
+  ``guess_tablename`` attribute is set to ``False`` (unless you
+  simultaneously set it also) so that subclasses will
+  inherit the declared table name.  
+
 The ``fields`` attribute should be a tuple or list of either ``Field``
 instances (of which ``Sequence`` and ``Unique`` are subclasses), or
 data -- strings (which should be column names), dicts, or tuples --
