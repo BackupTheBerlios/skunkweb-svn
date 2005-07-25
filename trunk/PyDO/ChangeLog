@@ -1,5 +1,7 @@
 2005-07-25  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/pydo/__init__.py (__version__): upping version for beta1.
+
 	* tests/test_base.py (test_unique5): renamed test, which shared
 	name with another.
 
