@@ -338,7 +338,7 @@ def test_guess_columns1():
         c.close()                               
 
 @tag(*alltags)
-def test_unique1():
+def test_unique5():
     class porkbarrel(P.PyDO):
         fields=(P.Sequence('a'),
                 'b',
