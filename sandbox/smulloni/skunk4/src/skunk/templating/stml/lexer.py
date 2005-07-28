@@ -82,6 +82,9 @@ p_NONWS=re.compile(r'[^\s]')
 p_PI=re.compile(r'(.*?)\?:>')
 p_PRE_PI=re.compile(r'\s*pre\s+(on|off)\s*')
 
+# whether to preserve formatting by default
+DEFAULT_PRE=0
+
 def _lineno(offset, linebrks):
     """
     internal function to determine the line number
@@ -128,7 +131,7 @@ def lex(s):
     """
     tokenizes the STML string s, returning a generator which yields successive tokens.
     """
-    pre=1
+    pre=DEFAULT_PRE
     state=s_TEXT
     offset=0
     l=len(s)
@@ -336,11 +339,11 @@ def dump_tokens(s):
 __all__=['lex',
          'dump_tokens',
          'STMLToken',
-         't_TEXT',
-         't_START_TAG',
-         't_END_TAG',
-         't_TAGNAME',
-         't_TAGWORD',
-         't_EQUALS',
-         't_EXPR',
-         't_QUOTED_STRING']
+          't_TEXT',
+          't_START_TAG',
+          't_END_TAG',
+          't_TAGNAME',
+          't_TAGWORD',
+          't_EQUALS',
+          't_EXPR',
+          't_QUOTED_STRING']
