@@ -707,7 +707,33 @@ class test_group1(base_fixture):
             assert len(res)==1
 
         
-    
+class test_foreignkey1(base_fixture):
+    usetables=('A', 'B')
+    tags=alltags
+
+    def pre(self):
+        class Afk(self.A):
+            table='a'
+            B=P.ForeignKey('b_id', 'id', self.B)
+
+        self.Afk=Afk
+        b1=self.B.new(x=44)
+        b2=self.B.new(x=88)
+        Afk.new(name='aardvark',
+                b_id=b1.id,
+                x=1,
+                y=2,
+                z=3)
+
+    def run(self):
+        a=self.Afk.getUnique(name='aardvark')
+        b=a.B
+        assert isinstance(b, self.B)
+        assert b.x==44
+        b2=self.B.getSome(x=88)[0]
+        assert b2
+        a.B=b2
+        assert a.b_id==b2.id
 
         
         

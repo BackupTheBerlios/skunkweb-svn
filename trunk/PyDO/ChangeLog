@@ -1,3 +1,11 @@
+2005-07-28  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* tests/test_base.py (test_foreignkey1) test of ForeignKey
+	descriptor. 
+
+	* src/pydo/base.py (ForeignKey): a descriptor that makes it easy
+	to create foreign key properties.
+
 2005-07-25  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/__init__.py (__version__): upping version for beta1.

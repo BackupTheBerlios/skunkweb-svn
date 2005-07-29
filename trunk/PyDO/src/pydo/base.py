@@ -506,7 +506,7 @@ class PyDO(dict):
             raise ValueError, 'No way to get unique row! %s %s' % \
                   (str(kw), unique)
         for u in unique:
-            if kw[u] is None:
+            if kw[u] in (None, NULL):
                 raise ValueError, "NULL value encountered for field declared unique: %s" % u
             
         if converter is None:
@@ -795,4 +795,36 @@ def autoschema(alias, schema=None, guesscache=True):
     return ns
 
 
-__all__=['PyDO', 'autoschema']
+
+class ForeignKey(object):
+    """ descriptor that enables succinct creation of foreign key attributes.
+
+    """
+    def __init__(self, field, foreignKey, kls):
+        """
+        @type field: string
+        @param field: the column in this PyDO class which references the key of another table
+        @type foreignKey: string
+        @param foreignKey: the column in the other PyDO class being referenced
+        @type kls: PyDO
+        @param kls: the other PyDO class
+        """
+        self.field=field
+        self.foreignKey=foreignKey
+        self.kls=kls
+
+    def __get__(self, obj, type_):
+        x=getattr(obj, self.field, None)
+        if not x is None:
+            return self.kls.getUnique(**{self.foreignKey : x})
+
+    def __set__(self, obj, value):
+        if not isinstance(value, self.kls):
+            raise ValueError, "value passed is a %s, not an instance of %s" \
+                  % (type(value), self.kls.__name__)
+        if value in (None, NULL):
+            obj[self.field]=None
+        else:
+            obj[self.field]=value[self.foreignKey]
+
+__all__=['PyDO', 'autoschema', 'ForeignKey']
