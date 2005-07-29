@@ -4,7 +4,7 @@ from pydo.guesscache import GuessCache
 from pydo.exceptions import PyDOError
 from pydo.operators import AND, EQ, FIELD, IS, NULL
 from pydo.dbtypes import unwrap
-from pydo.utils import _tupleize, _setize, formatTexp, _strip_tablename
+from pydo.utils import _tupleize, _setize, formatTexp, _strip_tablename, every
 
 from itertools import izip
 import re
@@ -798,33 +798,66 @@ def autoschema(alias, schema=None, guesscache=True):
 
 class ForeignKey(object):
     """ descriptor that enables succinct creation of foreign key attributes.
+    Both single-column and multi-column foreign key associations are supported.
+
+    Example usage:
+
+    class A(PyDO):
+        fields=(Sequence('id'),
+                'b_fkey',
+                'c_fkey1',
+                'c_fkey2')
+        B=ForeignKey('b_fkey', 'id', B)
+        C=ForeignKey(('c_fkey1', 'c_fkey2'), ('key1', 'key2'), C)
+
+    a=A.getUnique(id=1)
+    a.B # returns B.getUnique(id=a.b_fkey)
+    a.C # returns C.getUnique(key1=a.c_fkey1, key2=a.c_fkey2)
+    a.C=my_C_instance # updates a with new values for c_fkey1 and c_fkey2 
+    a.B=None # equivalent to a.b_fkey=None
 
     """
-    def __init__(self, field, foreignKey, kls):
+    def __init__(self, this_side, that_side, kls):
         """
-        @type field: string
-        @param field: the column in this PyDO class which references the key of another table
-        @type foreignKey: string
-        @param foreignKey: the column in the other PyDO class being referenced
+        @type this_side: string or sequence
+        @param this_side: name(s) of the column(s) in this PyDO class
+             which references the key of another table
+        @type that_side: string or sequence
+        @param that_side: name(s) of the column(s) in the other PyDO class
+             being referenced
         @type kls: PyDO
         @param kls: the other PyDO class
         """
-        self.field=field
-        self.foreignKey=foreignKey
+        if isinstance(this_side, basestring):
+            this_side=(this_side,)
+        if isinstance(that_side, basestring):
+            that_side=(that_side,)
+        if len(this_side) != len(that_side):
+            raise ValueError, \
+                  "lengths of keys do not match: %d "\
+                  "(length of %s) != %d (length of %s)" \
+                  % (len(this_side), str(this_side),
+                     len(that_side), str(that_side))
+        self.this_side=this_side            
+        self.that_side=that_side
         self.kls=kls
 
     def __get__(self, obj, type_):
-        x=getattr(obj, self.field, None)
-        if not x is None:
-            return self.kls.getUnique(**{self.foreignKey : x})
+        d=dict((x, obj[y]) for x, y in zip(self.that_side, self.this_side))
+        if not every(None, d.itervalues()):
+            return self.kls.getUnique(**d)
 
     def __set__(self, obj, value):
-        if not isinstance(value, self.kls):
-            raise ValueError, "value passed is a %s, not an instance of %s" \
-                  % (type(value), self.kls.__name__)
         if value in (None, NULL):
-            obj[self.field]=None
+            obj.update(dict((f, None) for f in self.this_side))
         else:
-            obj[self.field]=value[self.foreignKey]
+            if not isinstance(value, self.kls):
+                raise ValueError, "value passed is a %s, not an instance of %s" \
+                      % (type(value), self.kls.__name__)
+            else:
+                obj.update(dict((this, value[that]) \
+                                for this, that in zip(self.this_side,
+                                                      self.that_side)))
+
 
 __all__=['PyDO', 'autoschema', 'ForeignKey']

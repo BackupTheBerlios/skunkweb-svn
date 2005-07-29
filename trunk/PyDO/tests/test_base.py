@@ -712,21 +712,17 @@ class test_foreignkey1(base_fixture):
     tags=alltags
 
     def pre(self):
-        class Afk(self.A):
-            table='a'
-            B=P.ForeignKey('b_id', 'id', self.B)
-
-        self.Afk=Afk
+        self.A.B=P.ForeignKey('b_id', 'id', self.B)
         b1=self.B.new(x=44)
         b2=self.B.new(x=88)
-        Afk.new(name='aardvark',
-                b_id=b1.id,
-                x=1,
-                y=2,
-                z=3)
+        self.A.new(name='aardvark',
+                   b_id=b1.id,
+                   x=1,
+                   y=2,
+                   z=3)
 
     def run(self):
-        a=self.Afk.getUnique(name='aardvark')
+        a=self.A.getUnique(name='aardvark')
         b=a.B
         assert isinstance(b, self.B)
         assert b.x==44
