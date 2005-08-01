@@ -860,4 +860,47 @@ class ForeignKey(object):
                                                       self.that_side)))
 
 
-__all__=['PyDO', 'autoschema', 'ForeignKey']
+def OneToMany(this_side, that_side, kls):
+    """
+    function to define an accessor to a 1-to-many relation.
+    """
+    if isinstance(this_side, basestring):
+        this_side=(this_side,)
+    if isinstance(that_side, basestring):
+        that_side=(that_side,)
+    if len(this_side) != len(that_side):
+        raise ValueError, \
+              "lengths of keys do not match: %d "\
+              "(length of %s) != %d (length of %s)" \
+              % (len(this_side), str(this_side),
+                 len(that_side), str(that_side))
+    zipped=zip(that_side, this_side)
+
+    def getMany(self, *args, **kwargs):
+        eq=[EQ(FIELD(x), self[y]) for x, y in zipped]
+        if args and isinstance(args[0], basestring):
+            # combining a string requires awkward special casing...
+            conn=self.getDB()
+            converter=conn.converter
+            sql, values=self._processWhere(conn, eq, {}, converter=converter)
+            extrasql, extravalues=self._processWhere(conn, args, kwargs, converter=converter)
+            # merge sql strings
+            sql=' AND '.join((sql, extrasql))
+            # merge values
+            if isinstance(values, dict):
+                if not isinstance(extravalues, dict):
+                    raise ValueError, "expected dictionary of bind variables!"
+                values.update(extravalues)
+                newargs=(sql, values)
+            else:
+                values=tuple(values)+tuple(extravalues)
+                newargs=(sql,)+values
+            del converter
+            return kls.getSome(*newargs)
+        
+        else:
+            return kls.getSome(*(tuple(eq)+args), **kwargs)
+    return getMany
+
+
+__all__=['PyDO', 'autoschema', 'ForeignKey', 'OneToMany']

@@ -1,3 +1,15 @@
+2005-08-01  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* tests/fixture.py (base_fixture): added new table ("F") for
+	OneToMany and ForeignKey tests with multi-column keys.
+
+	* tests/test_base.py (test_one_to_many1, test_one_to_many2): tests
+	for OneToMany. (test_foreignkey2): test for ForeignKey with
+	multi-column FK.
+
+	* src/pydo/base.py (OneToMany): a utility for creating accessor
+	methods for one-to-many associations.
+
 2005-07-28  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* tests/test_base.py (test_foreignkey1) test of ForeignKey

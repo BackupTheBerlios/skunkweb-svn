@@ -10,6 +10,7 @@ import pydo as P
 import random
 import string
 import sys
+import itertools
 
 def ranwords(num, length=9):
     s=set()
@@ -731,9 +732,71 @@ class test_foreignkey1(base_fixture):
         a.B=b2
         assert a.b_id==b2.id
 
-        
-        
+class test_foreignkey2(base_fixture):
+    usetables=('A_C', 'F')
+    tags=alltags
 
+    def pre(self):
+        self.F.A_C=P.ForeignKey(('a_id', 'c_id'), ('a_id', 'c_id'), self.A_C)
+        self.A_C.new(a_id=1, c_id=1)
+        self.f=self.F.new(a_id=1, c_id=1)
+
+    def run(self):
+        assert self.f.A_C.a_id==1
+        assert self.f.A_C.c_id==1
+        self.f.A_C=None
+        
+        
+class test_one_to_many1(base_fixture):
+    usetables=('A', 'B')
+    tags=alltags
+
+    def pre(self):
+        self.B.getA=P.OneToMany('id', 'b_id', self.A)
+        n=itertools.count().next
+        self.b1=b1=self.B.new(x=n())
+        self.b2=b2=self.B.new(x=n())
+        self.A.new(name='aardvark',
+                   b_id=b1.id,
+                   x=n(),
+                   y=n(),
+                   z=n())
+        self.A.new(name='gonzo',
+                   b_id=b1.id,
+                   x=n(),
+                   y=n(),
+                   z=n())
+        self.A.new(name='hoboken',
+                   b_id=b1.id,
+                   x=n(),
+                   y=n(),
+                   z=n())
+
+    def run(self):
+        some=self.b1.getA()
+        assert len(some)==3
+        nuttin=self.b2.getA()
+        assert len(nuttin)==0
+    
+
+class test_one_to_many2(base_fixture):
+    usetables=('A_C', 'F')
+    tags=alltags
+
+    def pre(self):
+        self.A_C.getF=P.OneToMany(('a_id', 'c_id'), ('a_id', 'c_id'), self.F)
+        self.ac1=self.A_C.new(a_id=1, c_id=1)
+        self.ac2=self.A_C.new(a_id=2, c_id=2)
+        for i in range(4):
+            self.F.new(a_id=1, c_id=1)
+        for i in range(3):
+            self.F.new(a_id=2, c_id=2)
+
+    def run(self):
+        tmp=self.ac1.getF()
+        assert len(tmp)==4
+        tmp=self.ac2.getF()
+        assert len(tmp)==3
 
 
 
