@@ -67,8 +67,23 @@ class OracleDBI(DBIBase):
         return res[0]
 
     def listTables(self, schema=None):
-        """list the tables in the database schema"""
-        raise NotImplementedError
+        """lists the tables in the database schema"""
+        if schema is None:
+            schema = 'PUBLIC'
+        sql = """
+            SELECT t.object_name
+            FROM sys.all_objects t
+            WHERE t.owner = :schema AND t.object_type IN ('TABLE', 'VIEW')
+            """
+        cur = self.conn.cursor()
+        if self.verbose:
+            debug("SQL: %s", (sql,))
+        cur.execute(sql, schema=schema)
+        res = cur.fetchall()
+        cur.close()
+        if not res:
+            return []
+        return sorted(x[0] for x in res)
 
     def describeTable(self, table, schema=None):
         """for the given table, returns a 2-tuple: a dict of Field objects

@@ -1,3 +1,7 @@
+2005-08-03  Hamish Lawson  <hbl@st-andrews.ac.uk>
+
+	* src/pydo/drivers/oracleconn.py: Added listTables
+
 2005-08-01  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* doc/manual.rst: document ForeignKey, OneToMany, and ManyToMany. 
@@ -131,7 +135,7 @@
 
 	* src/pydo/drivers/oracleconn.py: use fetchall (rather than iterating over
 	cursor) when resultset doesn't contain LOBs; replace OracleResultSet 
-    class with OracleDBI.field_values method.
+	class with OracleDBI.field_values method.
 
 2005-07-01  Jacob Smullyan  <smulloni@smullyan.org>
 
