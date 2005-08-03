@@ -108,7 +108,6 @@ class base_fixture(Fixture):
         pass
     
     def setupObj(self, table, guess):
-        global A, B, C, A_C, D, E, F
         if table=='A':
             class A(P.PyDO):
                 connectionAlias='pydotest'
@@ -205,4 +204,5 @@ class base_fixture(Fixture):
             c.close()
         else:
             self.db.rollback()
+
         self.post()

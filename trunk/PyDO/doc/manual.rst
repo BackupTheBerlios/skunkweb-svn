@@ -545,24 +545,48 @@ Joins
 Representing Joins Between Tables
 +++++++++++++++++++++++++++++++++
 
-To represent a one-to-one join between classes ``A`` and ``B``, add an
-instance method to class ``A`` that calls ``B.getUnique()``::
+To represent a one-to-one join between classes ``A`` and ``B``, you
+might add instance methods to class ``A``, e.g.::
 
     def getB(self):
         return B.getUnique(id=self.b_id)
 
-To represent a one-to-many join, do the same, but with
-``B.getSome()``::
+    def setB(self, item):
+        if item is None:
+            self.b_id=None
+        else:
+            self.b_id=item.id
 
-    def getBs(self):
-        return B.getSome(a_id=self.id)
+    B=property(getB, setB)
+
+PyDO provides an equivalent shortcut::
+
+   B=ForeignKey('b_id', 'id', B)
+
+Similarly, to represent a one-to-many join, you could write your own
+accessor method, calling ``B.getSome()``::
+
+    def getBs(self, *args, **kwargs):
+        return B.getSome(a_id=self.id, *args, **kwargs)
+
+Again, PyDO provides a terser alternative::
+
+    getBs=OneToMany('id', 'a_id', B)
+
+The result is the same -- ``getBs`` will be an instance method that
+takes positional and keyword arguments like ``getSome()``.  
 
 To represent a many-to-many join between ``A`` and ``B`` through
-junction table ``J``, add an instance method that calls
+junction table ``J``, you either add an instance method that calls
 ``joinTable()``::
 
-    def getBs(self):
-        return self.joinTable('id', 'J', 'a_id', 'b_id', B, 'id')
+    def getBs(self, *args, **kwargs):
+        return self.joinTable('id', 'J', 'a_id', 'b_id', 
+                              B, 'id', *args, **kwargs)
+
+or again use an equivalent shortcut, which is::
+
+    getBs=ManyToMany('id', 'J', 'a_id', 'b_id', B, 'id')
 
 ``joinTable()`` takes the following arguments:
 
@@ -587,6 +611,11 @@ column name keyword arguments.  Also, if you wish to pass in
 additional tables to the select, you can do so with the
 ``extraTables`` keyword argument, with which you can pass a single
 table name, or a list of names.
+
+``ManyToMany`` takes the same arguments as ``joinTable`` in the same
+order, except for the optional positional and keyword arguments, which
+can be passed when the bound method that results from using
+``ManyToMany`` is called.
 
 Getting Data From Multiple Tables At Once
 +++++++++++++++++++++++++++++++++++++++++
@@ -813,6 +842,8 @@ most notably:
     of table name from class name is new in PyDO2.
 15. The optional guessing of field information at runtime, controlled
     by the ``guess_columns`` attribute, is a new feature in PyDO2.
+16. ``autoschema`` is new in PyDO2.
+17. ``ForeignKey``, ``OneToMany`` and ``ManyToMany`` are new in PyDO2.
 
 
 

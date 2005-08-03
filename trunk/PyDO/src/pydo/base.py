@@ -902,5 +902,26 @@ def OneToMany(this_side, that_side, kls):
             return kls.getSome(*(tuple(eq)+args), **kwargs)
     return getMany
 
+def ManyToMany(this_side,
+               this_pivot_side,
+               that_pivot_side,
+               pivot_table,
+               that_side,
+               kls):
+    # conversions are already done inside joinTable
+    def getMany(self, *args, **kwargs):
+        return self.joinTable(this_side,
+                              this_pivot_side,
+                              that_pivot_side,
+                              pivot_table,
+                              that_side,
+                              kls,
+                              *args,
+                              **kwargs)
+    return getMany
+                              
+        
+        
 
-__all__=['PyDO', 'autoschema', 'ForeignKey', 'OneToMany']
+
+__all__=['PyDO', 'autoschema', 'ForeignKey', 'OneToMany', 'ManyToMany']

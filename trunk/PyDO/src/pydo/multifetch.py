@@ -89,9 +89,11 @@ def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
     objs=[x for x in resultSpec if not isinstance(x, basestring)]
     # check that all objs have the same connectionAlias
     caliases=tuple(frozenset(o.connectionAlias for o in objs))
-    if len(caliases)!=1:
+    if len(caliases)>1:
         raise ValueError, \
               "objects passed to fetch must have same connection alias"
+    elif len(caliases)==0:
+        raise ValueError, "must supply some object in result spec"
     dbi=objs[0].getDBI()    
 
     tables = ', '.join(x.getTable() for x in objs)

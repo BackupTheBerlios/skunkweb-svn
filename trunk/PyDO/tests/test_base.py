@@ -800,3 +800,30 @@ class test_one_to_many2(base_fixture):
 
 
 
+class test_many_to_many1(base_fixture):
+    """
+    this is the same as test_joinTable1, but rewritten to use ManyToMany.
+    """
+    usetables=('A', 'C', 'A_C')
+    tags=alltags
+
+    def pre(self):
+        self.A.getC=P.ManyToMany('id', 'a_c', 'a_id', 'c_id', self.C, 'id')
+        insert=["""INSERT INTO a (id, b_id, name, x, y, z) VALUES (1, NULL, 'poco a poco', 3, 5, 2)""",
+                """INSERT INTO a (id, b_id, name, x, y, z) VALUES (2, 1, 'mammoth', 30, 20, 1000)""",
+                """INSERT INTO c (id, x) VALUES (1, 100)""",
+                """INSERT INTO a_c (a_id, c_id) VALUES (2, 1)"""]
+        c=self.db.cursor()
+        for i in insert:
+            c.execute(i)
+
+    def run(self):
+        o1=self.A.getUnique(id=1)
+        assert o1 is not None
+        j=o1.getC()
+        assert len(j)==0
+        o2=self.A.getUnique(id=2)
+        assert o2 is not None
+        j=o2.getC()
+        assert len(j)==1
+        assert j[0].id==1    

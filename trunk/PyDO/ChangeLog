@@ -1,5 +1,14 @@
 2005-08-01  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* doc/manual.rst: document ForeignKey, OneToMany, and ManyToMany. 
+
+	* doc/examples/pim.py: updated to use ForeignKey and ManyToMany.
+
+	* src/pydo/base.py (ManyToMany): utility for creating accessor
+	methods for many-to-many joins.
+
+	* tests/test_base.py (test_many_to_many1): test for ManyToMany.
+
 	* tests/fixture.py (base_fixture): added new table ("F") for
 	OneToMany and ForeignKey tests with multi-column keys.
 
