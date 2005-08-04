@@ -275,6 +275,20 @@ class test_project8(base_fixture):
 #       assert len(res)==1
 #       assert res[0]['count'] == 1
 
+class test_project9(base_fixture):
+    usetables=['E']
+    tags=alltags
+
+    def pre(self):
+        self.E.new(user1='me', user2='you')
+
+    def run(self):
+        p1=self.E.project('user1', mutable=False)
+        assert p1.mutable==False
+        p2=self.E.project('user1', mutable=True)
+        assert p2.mutable==True
+        res=p1.getSome()
+        assert len(res)==1
 
 @tag(*alltags)
 def test_guess_tablename1():

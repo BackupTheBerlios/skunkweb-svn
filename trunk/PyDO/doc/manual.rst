@@ -286,6 +286,10 @@ include in the projection::
 
    myProjection=MyBaseClass.project('id', 'title')
 
+The ``project()`` method also accepts the keyword argument
+``mutable``, which if provided will override the ``mutable`` attribute
+of the base class.
+
 The return value is a subclass of ``myBaseClass`` with the fields
 ``id`` and ``title``. This class is cached, so if you call
 ``project()`` again with the same arguments you'll get a reference to

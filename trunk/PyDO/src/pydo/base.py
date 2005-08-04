@@ -225,10 +225,19 @@ class PyDO(dict):
 
 
     @classmethod
-    def project(cls, *fields):
+    def project(cls, *fields, **kwargs):
         # also accept passing in a list or tuple (backwards compatibility)
         if len(fields)==1 and isinstance(fields[0], (list, tuple)):
             fields=fields[0]
+            
+        # only kwarg accepted currently is "mutable", but this is open
+        # to later expansion
+        acceptable=frozenset(('mutable',))
+        diff=frozenset(kwargs)-acceptable
+        if diff:
+            raise ValueError, "unrecognized keyword arguments: %s" \
+                  % ', '.join(str(x) for x in diff)
+        mutable=kwargs.get('mutable', cls.mutable)
         s=[]
         for f in fields:
             if isinstance(f, Field):
@@ -242,12 +251,17 @@ class PyDO(dict):
             else:
                 raise ValueError, "weird thing in field list: %s" % f
         s.sort()
+        if kwargs:
+            s.append('0')
+            s.append('_'.join(sorted('%s_%s' % x for x in kwargs.items())))        
         t=tuple(s)
         if cls._projections.has_key(t):
             return cls._projections[t]
+
         klsname='projection_%s__%s' % (cls.__name__,
                                        '_'.join(s))
         kls=type(klsname, (cls,), dict(fields=fields,
+                                       mutable=mutable,
                                        table=cls.getTable(False),
                                        _is_projection=True))
         cls._projections[t]=kls

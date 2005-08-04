@@ -1,7 +1,21 @@
+
+2005-08-04  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* doc/manual.rst: document the new keyword argument of the
+	project() method.
+
+	* src/pydo/base.py (PyDO.project): accept keyword arguments
+	(currently only "mutable").
+
+	* tests/test_base.py (test_project9): test for projections that
+	override mutability of base class.
+
+
 2005-08-03  Hamish Lawson  <hbl@st-andrews.ac.uk>
 
 	* src/pydo/drivers/oracleconn.py: Added listTables
 
+	
 2005-08-01  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* doc/manual.rst: document ForeignKey, OneToMany, and ManyToMany. 
