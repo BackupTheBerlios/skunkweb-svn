@@ -3,6 +3,8 @@ Tests for the pydo.dbi module.
 
 """
 import threading
+import time
+from pydo.utils import every
 
 from testingtesting import tag
 import config
@@ -119,6 +121,46 @@ def test_pool1():
         assert len(db.pool._free)==1
     finally:
         D.delAlias('pydotestpool')
+
+@tag(*dbitags)
+def test_pool2():
+    stuff=D._aliases['pydotest'].copy()
+    D.initAlias('pydotestpool',
+                stuff['driver'],
+                stuff['connectArgs'],
+                # keep_poolsize actually doesn't matter here
+                D.ConnectionPool(max_poolsize=0, keep_poolsize=4),
+                stuff['verbose'])
+    hold=True
+    threads=[]    
+    class mythread(threading.Thread):
+        def run(self):
+            mydb=D.getConnection('pydotestpool')
+            self.connid=id(mydb.conn)
+            while hold:
+                time.sleep(0.1)
+
+    for i in range(10):
+        t=mythread()
+        threads.append(t)
+        t.start()
+    # we don't want any threads to terminate until
+    # all threads have been initialized; otherwise,
+    # some connections might get reused.
+    ready=lambda t: hasattr(t, 'connid')
+    while 1:
+        if every(True, (ready(t) for t in threads)):
+            break
+        time.sleep(0.1)
+
+    # let the threads die
+    hold=False
+    for t in threads:
+        t.join()
+    connids=[t.connid for t in threads]
+    # assertion means: no connection has been handed out
+    # to a plural number of simultaneously active threads
+    assert len(connids)== len(set(connids))
 
 
 @tag(*dbitags)

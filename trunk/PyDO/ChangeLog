@@ -1,3 +1,7 @@
+2005-08-08  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* tests/test_dbi.py (test_pool2): test that pool gives different
+	connections for different (active) threads.
 
 2005-08-04  Jacob Smullyan  <smulloni@smullyan.org>
 
@@ -13,8 +17,7 @@
 
 2005-08-03  Hamish Lawson  <hbl@st-andrews.ac.uk>
 
-	* src/pydo/drivers/oracleconn.py: Added listTables
-
+	* src/pydo/drivers/oracleconn.py: Added listTables.
 	
 2005-08-01  Jacob Smullyan  <smulloni@smullyan.org>
 
