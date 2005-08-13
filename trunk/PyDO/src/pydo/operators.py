@@ -283,6 +283,13 @@ def _repr_single_and_or(self):
 AND._repr_single=_repr_single_and_or
 OR._repr_single=_repr_single_and_or
 
+def _repr_single_isnull(self):
+    return "(%s %s)" % (self._convert(self[1]), self[0])
+
+# hack for ISNULL and NOTNULL
+ISNULL._repr_single=_repr_single_isnull
+NOTNULL._repr_single=_repr_single_isnull
+
 class BindingConverter(object):
     """A value converter that uses bind variables.
     

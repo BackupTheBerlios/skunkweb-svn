@@ -2,7 +2,9 @@
 
 	* src/pydo/operators.py (SQLOperator._repr_single): peculiar
 	thinko.
-	
+	(__repr_single_isnull): fix for ISNULL and NOTNULL, which were
+	broken. 
+
 2005-08-08  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* tests/test_dbi.py (test_pool2): test that pool gives different
