@@ -1,6 +1,8 @@
 Todo for 1.0:
   * more tests, bugfixes
   * Oracle introspection?
+  * autocommit broken for mysql and psycopg version < 2; probably 
+    broken for oracle and mssql (ok in sqlite).
 
 Todo for 1.1:
   * iterSome, iterfetch (may require Python 2.5 implementing PEP 342,

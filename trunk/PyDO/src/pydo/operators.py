@@ -179,7 +179,7 @@ class SQLOperator(tuple):
         return repr(val)
 
     def _repr_single(self):
-        return '(%s %s)' % (op, self._convert(self[1]))
+        return '(%s %s)' % (self[0], self._convert(self[1]))
     
     def __repr__(self):
         op=" %s " % self[0]
