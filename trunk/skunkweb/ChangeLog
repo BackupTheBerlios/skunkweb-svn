@@ -1,3 +1,7 @@
+2005-08-16  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* pylibs/AE/Cache.py (_fixPath): fix for docroot escaping.
+
 2005-05-10  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
 
 	* SkunkWeb/Services/sessionHandler/PsycopgSessionStore.py:

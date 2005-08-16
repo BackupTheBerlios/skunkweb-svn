@@ -5,7 +5,7 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-#$Id: Cache.py,v 1.27 2004/09/02 19:15:45 smulloni Exp $
+#$Id$
 
 #### REMINDER; defer time is the stampeding herd preventer that says
 #### Gimme a bit of time to render this thing before you go ahead and do it
@@ -288,8 +288,8 @@ def _fixPath(root, path):
     concat='%s/%s' % (root, path)
     norm=_normpath(concat)
     if norm < root:
-        # trying to escape root, return un-normpathed thing
-        return concat
+        # trying to escape root, return root
+        return root
     return norm
 
 
