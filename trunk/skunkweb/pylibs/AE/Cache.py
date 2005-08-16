@@ -289,8 +289,8 @@ def _fixPath(root, path):
         return root
     if not path.startswith('/'):
         path='/%s' % path
-    path=normpath(path)
-    return normpath('%s%s' % (root, path))
+    path=_normpath(path)
+    return _normpath('%s%s' % (root, path))
 
 ### The real disk access routines
 #set so we have a tempfile prefix specific to the pid, host, etc.
