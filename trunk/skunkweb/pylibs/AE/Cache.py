@@ -285,18 +285,17 @@ def _getCompileCache(name, srcModTime, version):
 
 def _fixPath(root, path):
     ## some insurance that we don't escape a given root
-    concat='%s/%s' % (root, path)
-    norm=_normpath(concat)
-    if norm < root:
-        # trying to escape root, return root
+    if not path:
         return root
-    return norm
-
+    if not path.startswith('/'):
+        path='/%s' % path
+    path=normpath(path)
+    return normpath('%s%s' % (root, path))
 
 ### The real disk access routines
 #set so we have a tempfile prefix specific to the pid, host, etc.
 def initTempStuff():
-    global _tempPrefix
+    global _tempPrefix 
     _tempPrefix = '%s_%d' % (socket.gethostname(), os.getpid())
     
 def _writeDisk(path, data):
