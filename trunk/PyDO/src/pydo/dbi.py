@@ -7,6 +7,15 @@ from pydo.operators import BindingConverter
 from pydo.exceptions import PyDOError
 from pydo.utils import _strip_tablename, _import_a_class
 
+exception_names=('DataError',
+                 'DatabaseError',
+                 'Error',
+                 'IntegrityError',
+                 'InterfaceError',
+                 'InternalError',
+                 'NotSupportedError',
+                 'OperationalError',
+                 'ProgrammingError')
 
 class DBIBase(object):
     """base class for db connection wrappers.
@@ -19,6 +28,7 @@ class DBIBase(object):
     def __init__(self,
                  connectArgs,
                  connectFunc,
+                 dbapiModule,
                  pool=None,
                  verbose=False):
         """
@@ -34,6 +44,11 @@ class DBIBase(object):
         self.pool=pool
         self.verbose=verbose
         self._local=local()
+        self.dbapiModule=dbapiModule
+        self._initExceptions()
+    
+    def _initExceptions(self):
+        self.exceptions=dict((e, getattr(self.dbapiModule, e)) for e in exception_names)
 
     def autocommit():
         def fget(self):

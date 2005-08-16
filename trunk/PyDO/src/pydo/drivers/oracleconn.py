@@ -15,7 +15,11 @@ class OracleDBI(DBIBase):
     def __init__(self, connectArgs, pool=None, verbose=False):
        if pool and not hasattr(pool, 'connect'):
           pool = ConnectionPool()
-       super(OracleDBI, self).__init__(connectArgs, cx_Oracle.connect, pool, verbose)
+       super(OracleDBI, self).__init__(connectArgs,
+                                       cx_Oracle.connect,
+                                       cx_Oracle,
+                                       pool,
+                                       verbose)
 
     def execute(self, sql, values=(), qualified=False):
         """Executes the statement with the values and does conversion

@@ -1,3 +1,13 @@
+2005-08-18  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/drivers/: use new base class constructor for all
+	drivers.
+
+	* src/pydo/dbi.py (DBIBase.__init__): constructor now expects a
+	direct reference to the dbapi module.
+	(DBIBase._initExceptions): create a dictionary of standard dbapi
+	exceptions. 
+
 2005-08-12  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/operators.py (SQLOperator._repr_single): peculiar

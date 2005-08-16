@@ -23,7 +23,11 @@ class MysqlDBI(DBIBase):
     def __init__(self, connectArgs, pool=None, verbose=False):
         if pool and not hasattr(pool, 'connect'):
             pool=ConnectionPool()
-        super(MysqlDBI, self).__init__(connectArgs, MySQLdb.connect, pool, verbose)
+        super(MysqlDBI, self).__init__(connectArgs,
+                                       MySQLdb.connect,
+                                       MySQLdb,
+                                       pool,
+                                       verbose)
     
     def getAutoIncrement(self, name):
         try:

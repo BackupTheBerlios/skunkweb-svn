@@ -110,7 +110,11 @@ class PsycopgDBI(DBIBase):
     def __init__(self, connectArgs, pool=None, verbose=False):
        if pool and not hasattr(pool, 'connect'):
           pool=ConnectionPool()
-       super(PsycopgDBI, self).__init__(connectArgs, psycopg.connect, pool, verbose)
+       super(PsycopgDBI, self).__init__(connectArgs,
+                                        psycopg.connect,
+                                        psycopg,
+                                        pool,
+                                        verbose)
        if psycopg_version<2:
            # try to keep state
            self._autocommit=None

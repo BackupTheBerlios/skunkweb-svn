@@ -81,7 +81,11 @@ class MssqlDBI(DBIBase):
    def __init__(self, connectArgs, pool=None, verbose=False):
       if pool and not hasattr(pool, 'connect'):
          pool=ConnectionPool()
-      super(MssqlDBI, self).__init__(connectArgs, adodbapi.connect, pool, verbose)
+      super(MssqlDBI, self).__init__(connectArgs,
+                                     adodbapi.connect,
+                                     adodbapi,
+                                     pool,
+                                     verbose)
       #
       # The DBI code seems to be looking for an
       #  autocommit attribute of the underlying
