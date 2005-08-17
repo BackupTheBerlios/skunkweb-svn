@@ -20,14 +20,15 @@ class MysqlConverter(BindingConverter):
 
 class MysqlDBI(DBIBase):
     auto_increment=True
-    def __init__(self, connectArgs, pool=None, verbose=False):
+    def __init__(self, connectArgs, pool=None, verbose=False, initFunc=None):
         if pool and not hasattr(pool, 'connect'):
             pool=ConnectionPool()
         super(MysqlDBI, self).__init__(connectArgs,
                                        MySQLdb.connect,
                                        MySQLdb,
                                        pool,
-                                       verbose)
+                                       verbose,
+                                       initFunc)
     
     def getAutoIncrement(self, name):
         try:

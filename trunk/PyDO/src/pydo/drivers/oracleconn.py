@@ -12,14 +12,15 @@ class OracleDBI(DBIBase):
     
     autocommit = None
     
-    def __init__(self, connectArgs, pool=None, verbose=False):
+    def __init__(self, connectArgs, pool=None, verbose=False, initFunc=None):
        if pool and not hasattr(pool, 'connect'):
           pool = ConnectionPool()
        super(OracleDBI, self).__init__(connectArgs,
                                        cx_Oracle.connect,
                                        cx_Oracle,
                                        pool,
-                                       verbose)
+                                       verbose,
+                                       initFunc)
 
     def execute(self, sql, values=(), qualified=False):
         """Executes the statement with the values and does conversion

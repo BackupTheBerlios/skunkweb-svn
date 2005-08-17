@@ -107,14 +107,15 @@ class PsycopgConverter(BindingConverter):
 
 class PsycopgDBI(DBIBase):
     
-    def __init__(self, connectArgs, pool=None, verbose=False):
+    def __init__(self, connectArgs, pool=None, verbose=False, initFunc=None):
        if pool and not hasattr(pool, 'connect'):
           pool=ConnectionPool()
        super(PsycopgDBI, self).__init__(connectArgs,
                                         psycopg.connect,
                                         psycopg,
                                         pool,
-                                        verbose)
+                                        verbose,
+                                        initFunc)
        if psycopg_version<2:
            # try to keep state
            self._autocommit=None

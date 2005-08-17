@@ -30,7 +30,8 @@ class DBIBase(object):
                  connectFunc,
                  dbapiModule,
                  pool=None,
-                 verbose=False):
+                 verbose=False,
+                 initFunc=None):
         """
         constructor.
         * connectArgs are arguments passed directly to the underlying
@@ -43,6 +44,7 @@ class DBIBase(object):
         self.connectFunc=connectFunc        
         self.pool=pool
         self.verbose=verbose
+        self.initFunc=initFunc
         self._local=local()
         self.dbapiModule=dbapiModule
         self._initExceptions()
@@ -105,9 +107,9 @@ class DBIBase(object):
 
     def _connect(self):
         if self.pool:
-            return self.pool.connect(self.connectFunc, self.connectArgs)
+            return self.pool.connect(self.connectFunc, self.connectArgs, self.initFunc)
         else:
-            return _real_connect(self.connectFunc, self.connectArgs)
+            return _real_connect(self.connectFunc, self.connectArgs, self.initFunc)
 
     def getConverter(self):
         """returns a converter instance."""
@@ -218,10 +220,10 @@ def _real_connect(connfunc, connargs, initFunc=None):
         initFunc(conn)
     return conn
 
-def _connect(driver, connectArgs, pool=None, verbose=False):
+def _connect(driver, connectArgs, pool=None, verbose=False, initFunc=None):
     if isinstance(driver, basestring):
         driver=_get_driver_class(driver)
-    return driver(connectArgs, pool, verbose)
+    return driver(connectArgs, pool, verbose, initFunc)
 
 
 
@@ -233,7 +235,7 @@ def _get_driver_class(name):
         return cls
     return _loadedDrivers[name]
              
-def initAlias(alias, driver, connectArgs, pool=None, verbose=False):
+def initAlias(alias, driver, connectArgs, pool=None, verbose=False, init=None):
     """initializes a connection alias with the stated connection arguments.
     
     It can cause confusion to let this be called repeatedly; you might
@@ -247,10 +249,21 @@ def initAlias(alias, driver, connectArgs, pool=None, verbose=False):
     before initAlias.
     
     """
+    if isinstance(init, basestring):
+        sql=init
+        def init(conn):
+            c=conn.cursor()
+            c.execute(sql)
+            c.close()
+    elif init and not callable(init):
+        raise ValueError, \
+              "init must be either None, a string, or callable, got %s" % type(init)
+        
     data=dict(driver=driver,
               connectArgs=connectArgs,
               pool=pool,
-              verbose=verbose)
+              verbose=verbose,
+              initFunc=init)
     _connlock.acquire()
     try:
         old=_aliases.get(alias)
@@ -348,12 +361,13 @@ class ConnectionPool(object):
         self._retries=retries
         self._lock=Lock()
 
-    def connect(self, connectFunc, connectArgs):
+    def connect(self, connectFunc, connectArgs, initFunc=None):
         return self._connect(connectFunc,
                              connectArgs,
+                             initFunc,
                              self._retries)
 
-    def _connect(self, connectFunc, connectArgs, retries):
+    def _connect(self, connectFunc, connectArgs, initFunc, retries):
         """internal method; don't call it"""
         max_poolsize=self._max_poolsize
             
@@ -384,11 +398,11 @@ class ConnectionPool(object):
                     else:
                         # All are in use and we are allowed to create more.
                         # Do so.
-                        c=_real_connect(connectFunc, connectArgs)
+                        c=_real_connect(connectFunc, connectArgs, initFunc)
                         busy.append(c)
                 else:
                     # unlimited headroom, create new connection
-                    c=_real_connect(connectFunc, connectArgs)
+                    c=_real_connect(connectFunc, connectArgs, initFunc)
                     busy.append(c)
         finally:
             self._lock.release()
@@ -402,7 +416,7 @@ class ConnectionPool(object):
                 del c
         # wait and then retry
         time.sleep(self._delay)             
-        return self._connect(connectFunc, connectArgs, retries-1)
+        return self._connect(connectFunc, connectArgs, initFunc, retries-1)
 
     def release(self, conn):
         keep_poolsize=self._keep_poolsize

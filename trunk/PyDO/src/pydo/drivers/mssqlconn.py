@@ -78,14 +78,15 @@ class MssqlConverter(BindingConverter):
 class MssqlDBI(DBIBase):
    auto_increment=True
 
-   def __init__(self, connectArgs, pool=None, verbose=False):
+   def __init__(self, connectArgs, pool=None, verbose=False, initFunc=None):
       if pool and not hasattr(pool, 'connect'):
          pool=ConnectionPool()
       super(MssqlDBI, self).__init__(connectArgs,
                                      adodbapi.connect,
                                      adodbapi,
                                      pool,
-                                     verbose)
+                                     verbose,
+                                     initFunc)
       #
       # The DBI code seems to be looking for an
       #  autocommit attribute of the underlying
