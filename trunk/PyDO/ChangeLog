@@ -1,4 +1,12 @@
-2005-08-18  Jacob Smullyan  <smulloni@smullyan.org>
+2005-08-17  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/dbi.py (_real_connect): preparation for on-connect
+	custom initializers.
+
+	* doc/manual.rst: document dbiObj.exceptions and
+	dbiObj.dbapiModule. 
+
+2005-08-16  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/drivers/: use new base class constructor for all
 	drivers.

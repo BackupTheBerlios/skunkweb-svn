@@ -687,16 +687,17 @@ make an actual database connection::
   initAlias(alias, driver, connectArgs, pool=False, verbose=False)
 
 ``driver`` must be the name of a driver registered with PyDO; the
-built-in ones are currently "mysql", "psycopg", and "sqlite".
-``connectArgs`` are arguments to pass to the underlying DBAPI driver's
-``connect()`` function; you can pass a tuple of positional args, a
-dictionary of keyword args, or a single object that will be treated
-like a tuple of length 1. ``pool`` is an optional connection pool; if
-you want one, you can either pass a ``ConnectionPool`` instance or
-something with a compatible ``connect()`` method, or a true value, in
-which case a default ``ConnectionPool`` will be created.  By default
-no pool is used.  ``verbose`` is whether or not to log the generated
-SQL; by default no logging is done.
+built-in ones are currently "mysql", "psycopg", "sqlite", "mssql", and
+"oracle".  ``connectArgs`` are arguments to pass to the underlying
+DBAPI driver's ``connect()`` function; you can pass a tuple of
+positional args, a dictionary of keyword args, or a single object that
+will be treated like a tuple of length 1. ``pool`` is an optional
+connection pool; if you want one, you can either pass a
+``ConnectionPool`` instance or something with a compatible
+``connect()`` method, or a true value, in which case a default
+``ConnectionPool`` will be created.  By default no pool is used.
+``verbose`` is whether or not to log the generated SQL; by default no
+logging is done.
 
 The class method ``PyDO.getDBI()`` returns a database interface object
 (an instance of a driver-specific ``pydo.dbi.DBIBase`` subclass),
@@ -720,6 +721,11 @@ the DBI object's ``swapConnection()`` method::
 Because the connections are stored thread-locally, this is
 thread-safe.  Using this technique, one could juggle multiple
 transactions in the same process without using multiple threads.
+
+The dbapi module that underlies a given DBI object is available as
+``DBIobj.dbapiModule``; the standard dbapi-mandated exceptions defined
+in that module are available in a dictionary, ``DBIobj.exceptions``,
+keyed by name.
 
 Transactions
 ++++++++++++

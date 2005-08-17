@@ -207,13 +207,16 @@ _loadedDrivers = {}
 _aliases= {}
 _connlock=Lock()
 
-def _real_connect(connfunc, connargs):
+def _real_connect(connfunc, connargs, initFunc=None):
     if isinstance(connargs, dict):
-        return connfunc(**connargs)
+        conn=connfunc(**connargs)
     elif isinstance(connargs, tuple):
-        return connfunc(*connargs)
+        conn=connfunc(*connargs)
     else:
-        return connfunc(connargs)
+        conn=connfunc(connargs)
+    if initFunc:
+        initFunc(conn)
+    return conn
 
 def _connect(driver, connectArgs, pool=None, verbose=False):
     if isinstance(driver, basestring):
