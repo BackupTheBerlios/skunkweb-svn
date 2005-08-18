@@ -87,16 +87,8 @@ class MssqlDBI(DBIBase):
                                      pool,
                                      verbose,
                                      initFunc)
-      #
-      # The DBI code seems to be looking for an
-      #  autocommit attribute of the underlying
-      #  db driver, even though the spec doesn't
-      #  seem to suggest it's mandatory. Since
-      #  I think SQL Server does do what the
-      #  code is expecting from autocommit,
-      #  turn the attribute on here.
-      #
-      self.conn.autocommit = True
+
+      autocommit = False
 
    def getConverter(self):
       return MssqlConverter(self.paramstyle)

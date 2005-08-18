@@ -130,17 +130,18 @@ class PsycopgDBI(DBIBase):
         autocommit=property(*autocommit())
 
     else:
-        def autocommit():
-            def fget(self):
-                return self._autocommit
-            def fset(self, val):
-                self._autocommit=val
-                if val:
-                    self.conn.autocommit()
-                else:
-                    self.conn.autocommit(0)
-            return fget, fset, None, None
-        autocommit=property(*autocommit())
+##         def autocommit():
+##             def fget(self):
+##                 return self._autocommit
+##             def fset(self, val):
+##                 self._autocommit=val
+##                 if val:
+##                     self.conn.autocommit()
+##                 else:
+##                     self.conn.autocommit(0)
+##             return fget, fset, None, None
+##        autocommit=property(*autocommit())
+        autocommit=False
     
     def getConverter(self):
         return PsycopgConverter(self.paramstyle)

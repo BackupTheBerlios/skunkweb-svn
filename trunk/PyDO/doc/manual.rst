@@ -730,11 +730,11 @@ keyed by name.
 Transactions
 ++++++++++++
 
-The DBI object's ``autocommit`` property reports whether transactions
-have been turned off or not.  By default, most drivers use
-transactions (mysql being the outstanding exception).  Some drivers
-support mutating this property, but as a matter of policy transactions
-are the norm for PyDO.
+The DBI object's ``autocommit`` property reports whether the drivers
+uses transactions (in which case, its value is false).  By default,
+most drivers use transactions (mysql being the outstanding exception).
+Some drivers support mutating this property, but as a matter of policy
+transactions are the norm for PyDO.
 
 To commit a transaction, call ``commit()`` on the DBI object, or,
 equivalently, on any PyDO class or instance with the corresponding
@@ -771,6 +771,13 @@ number of seconds it will delay if it needs to retry getting a
 connection, because the pool has reached its maximum size; ``retries``
 is the number of times to retry before giving up and raising a
 ``PyDOError``. 
+
+When a connection is returned to a pool, any outstanding transaction
+is rolled back.  Committing or rolling back also causes connections to
+be returned to the pool, so normally nothing special needs to be done
+to return it or manage the pool.  If transactions are not being used,
+however, you'll need to manually return the connection to the pool by
+calling ``dbiObj.endConnection()``.
 
 
 A Complete Example

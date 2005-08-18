@@ -1,9 +1,26 @@
+2005-08-18  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/dbi.py (DBIBase.endConnection): method equivalent to
+	del self.conn.  Also removed autocommit -- the implementation in
+	use only worked for sqlite -- and stopped referring to autocommit
+	in internal dbi code, so it is no longer a performance hit and its
+	accuracy is not critical.  Therefore, execute() no longer returns
+	connections to the pool for autocommit -- hence the endConnection()
+	method.   
+
+	* src/pydo/drivers (all drivers): fiddled with autocommit to make
+	the tests run.  The property is not functional except for sqlite
+	and psycopg version 2.
+
+	* doc/manual.rst: document DBIBase.endConnection().
+
 2005-08-17  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/dbi.py (DBIBase): adding initFunc parameter to
 	base DBI class constructor and connect(); (_real_connect,
 	initAlias): initFunc parameter to _real_connect and init parameter
-	to initAlias.
+	to initAlias. (initAlias): accept list or tuple of strings for
+	init parameter, as well as string and callable.
 
 	* src/pydo/drivers: (all concrete DBI classes): adding
 	initFunc parameter to drivers.

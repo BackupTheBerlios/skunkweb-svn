@@ -166,5 +166,11 @@ class SqliteDBI(DBIBase):
                unique.add(unset)
       c.close()
       return fields, unique
-      
 
+   def autocommit():
+      def fget(self):
+         return self.conn.autocommit
+      def fset(self, val):
+         self.conn.autocommit=val
+      return fget, fset, None, None
+   autocommit=property(*autocommit())

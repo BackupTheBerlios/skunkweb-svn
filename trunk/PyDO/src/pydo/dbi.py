@@ -48,17 +48,10 @@ class DBIBase(object):
         self._local=local()
         self.dbapiModule=dbapiModule
         self._initExceptions()
+
     
     def _initExceptions(self):
         self.exceptions=dict((e, getattr(self.dbapiModule, e)) for e in exception_names)
-
-    def autocommit():
-        def fget(self):
-            return self.conn.autocommit
-        def fset(self, val):
-            self.conn.autocommit=val
-        return fget, fset, None, None
-    autocommit=property(*autocommit())
 
     def conn():
         def fget(self):
@@ -86,6 +79,11 @@ class DBIBase(object):
         c=self._local.__dict__.get('connection')
         self._local.connection=connection
         return c
+
+    def endConnection(self):
+        """ disassociate from the current connection, which may be
+        deleted or returned to a pool."""
+        del self.conn
         
     def commit(self):
         """commits a transaction"""
@@ -135,9 +133,9 @@ class DBIBase(object):
             return c.rowcount
         res=self._convertResultSet(c.description, resultset, qualified)
         c.close()
-        if self.autocommit and self.pool:
-            # release connection
-            del self.conn
+        #if self.autocommit and self.pool:
+        #    # release connection
+        #    del self.conn
         return res
     
     @staticmethod
@@ -250,10 +248,19 @@ def initAlias(alias, driver, connectArgs, pool=None, verbose=False, init=None):
     
     """
     if isinstance(init, basestring):
-        sql=init
         def init(conn):
             c=conn.cursor()
             c.execute(sql)
+            c.close()
+    elif isinstance(init, (list, tuple)):
+        for s in init:
+            if not isinstance(s, basestring):
+                raise ValueError, "expected string, got %s" % s
+        sql=init
+        def init(conn):
+            c=conn.cursor()
+            for s in sql:
+                c.execute(s)
             c.close()
     elif init and not callable(init):
         raise ValueError, \
@@ -436,10 +443,10 @@ class ConnectionPool(object):
 
     def onRelease(self, realConn):
         """anything you want to do to a connection when it is returned
-        (default: rollback if not autocommit)"""
+        (default: rollback)"""
         try:
-            if not realConn.autocommit:
-                realConn.rollback()
+            #if not realConn.autocommit:
+            realConn.rollback()
         except:
             # psycopg 2 doesn't seems to support autocommit, which
             # seems bogus to me...
