@@ -248,6 +248,7 @@ def initAlias(alias, driver, connectArgs, pool=None, verbose=False, init=None):
     
     """
     if isinstance(init, basestring):
+        sql=init
         def init(conn):
             c=conn.cursor()
             c.execute(sql)

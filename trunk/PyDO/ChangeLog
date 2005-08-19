@@ -1,4 +1,6 @@
 2005-08-19  Jacob Smullyan  <smulloni@smullyan.org>
+	* src/pydo/dbi.py (initAlias): typo -- forgot to assign to "sql".
+	Thanks Matt B.
 	
 	* src/pydo/base.py (PyDO._processWhere): fix for updateSome bug --
 	when passing a sql string to processWhere with a converter, values
