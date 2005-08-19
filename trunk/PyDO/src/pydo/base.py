@@ -567,9 +567,26 @@ class PyDO(dict):
                 raise ValueError, "cannot pass keyword args when including sql string"
             sql=args[0]
             values=args[1:]
-
             if len(values)==1 and isinstance(values[0], dict):
                 values=values[0]
+            # the converter may conceivably contain values as well;
+            # merging them in this case is not foolproof, but can be done
+            # is some cases.
+            if converter:
+                origVals=converter.values
+                if origVals:
+                    if isinstance(values, dict):
+                        if isinstance(origVals, dict):
+                            origVals.update(values)
+                            values=origVals
+                        else:
+                            # two different bind formats are being used, that's a no-no.
+                            raise ValueError, "incompatible bind variable format"
+                    else:
+                        if isinstance(origVals, dict):
+                            raise ValueError, "incompatible bind variable format"
+                        assert isinstance(origVals, (list, tuple))
+                        values=list(origVals)+list(values)
         else:
             # N.B. -- we don't call _validateFields here, as we permit
             # fields expressed as keyword arguments that aren't 

@@ -519,6 +519,52 @@ class test_updateSome1(base_fixture):
         assert nullcnt==self.count
 
 
+class test_updateSome2(base_fixture):
+    usetables=('B',)
+    tags=alltags
+    
+    def pre(self):
+        for x in xrange(200):
+            self.B.new(x=random.randint(0, 1000))
+        c=self.db.cursor()
+        sql='SELECT COUNT(*) FROM b WHERE x < 500'
+        c.execute(sql)
+        self.count=c.fetchone()[0]
+        c.close()
+
+    def run(self):
+
+        self.B.updateSome(dict(x=2000), P.LT(P.FIELD('x'), 500))
+        sql='SELECT COUNT(*) FROM b WHERE x = 2000'
+        c=self.db.cursor()
+        c.execute(sql)
+        newcnt=c.fetchone()[0]
+        assert newcnt==self.count
+
+
+class test_updateSome3(base_fixture):
+    usetables=('B',)
+    tags=alltags
+    
+    def pre(self):
+        for x in xrange(200):
+            self.B.new(x=random.randint(0, 1000))
+        c=self.db.cursor()
+        sql='SELECT COUNT(*) FROM b WHERE x < 500'
+        c.execute(sql)
+        self.count=c.fetchone()[0]
+        c.close()
+
+    def run(self):
+
+        self.B.updateSome(dict(x=2000), "x < %s", 500)
+        sql='SELECT COUNT(*) FROM b WHERE x = 2000'
+        c=self.db.cursor()
+        c.execute(sql)
+        newcnt=c.fetchone()[0]
+        assert newcnt==self.count                
+
+
 class test_delete1(base_fixture):
     usetables=('C',)
     tags=alltags
