@@ -805,6 +805,23 @@ class test_foreignkey2(base_fixture):
         assert self.f.A_C.a_id==1
         assert self.f.A_C.c_id==1
         self.f.A_C=None
+
+
+class test_foreignkey3(base_fixture):
+    usetables=('A_C', 'F')
+    tags=alltags
+
+    def pre(self):
+        global A_C
+        A_C=self.A_C
+        self.F.A_C=P.ForeignKey(('a_id', 'c_id'), ('a_id', 'c_id'), 'test_base.A_C')
+        self.A_C.new(a_id=1, c_id=1)
+        self.f=self.F.new(a_id=1, c_id=1)
+
+    def run(self):
+        assert self.f.A_C.a_id==1
+        assert self.f.A_C.c_id==1
+        self.f.A_C=None        
         
         
 class test_one_to_many1(base_fixture):
@@ -868,7 +885,7 @@ class test_many_to_many1(base_fixture):
     tags=alltags
 
     def pre(self):
-        self.A.getC=P.ManyToMany('id', 'a_c', 'a_id', 'c_id', self.C, 'id')
+        self.A.getC=P.ManyToMany('id', 'a_c', 'a_id', 'c_id', self.C,  'id')
         insert=["""INSERT INTO a (id, b_id, name, x, y, z) VALUES (1, NULL, 'poco a poco', 3, 5, 2)""",
                 """INSERT INTO a (id, b_id, name, x, y, z) VALUES (2, 1, 'mammoth', 30, 20, 1000)""",
                 """INSERT INTO c (id, x) VALUES (1, 100)""",

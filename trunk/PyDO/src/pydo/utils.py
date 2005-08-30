@@ -3,6 +3,7 @@ utility functions imported by other PyDO modules.
 """
 
 import getpass
+import sys
 from pydo.log import debug
 
 
@@ -57,6 +58,16 @@ def _import_a_class(fqcn):
             raise ValueError, "impossible to import: %s" % fqcn
     else:
         raise ValueError, "impossible to import: %s" % fqcn
+
+
+def string_to_obj(s, numframes=1):
+    f=sys._getframe(numframes)
+    g=f.f_globals
+    try:
+        return g[s]
+    except KeyError:
+        return _import_a_class(s)
+    
 
     
 def every(val, iter):

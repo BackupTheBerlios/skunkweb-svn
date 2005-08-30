@@ -4,7 +4,8 @@ from pydo.guesscache import GuessCache
 from pydo.exceptions import PyDOError
 from pydo.operators import AND, EQ, FIELD, IS, NULL
 from pydo.dbtypes import unwrap
-from pydo.utils import _tupleize, _setize, formatTexp, _strip_tablename, every
+from pydo.utils import (_tupleize, _setize, formatTexp,
+                        _strip_tablename, every, string_to_obj)
 
 from itertools import izip
 import re
@@ -871,7 +872,15 @@ class ForeignKey(object):
                      len(that_side), str(that_side))
         self.this_side=this_side            
         self.that_side=that_side
-        self.kls=kls
+        self._kls=kls
+
+    def kls():
+        def fget(self):
+            if isinstance(self._kls, basestring):
+                return string_to_obj(self._kls, 3)
+            return self._kls
+        return fget
+    kls=property(kls())
 
     def __get__(self, obj, type_):
         d=dict((x, obj[y]) for x, y in zip(self.that_side, self.this_side))
@@ -907,7 +916,13 @@ def OneToMany(this_side, that_side, kls):
                  len(that_side), str(that_side))
     zipped=zip(that_side, this_side)
 
+
     def getMany(self, *args, **kwargs):
+        if isinstance(kls, basestring):
+            # resolve it to a class
+            realkls=string_to_obj(kls, 2)
+        else:
+            realkls=kls
         eq=[EQ(FIELD(x), self[y]) for x, y in zipped]
         if args and isinstance(args[0], basestring):
             # combining a string requires awkward special casing...
@@ -927,26 +942,31 @@ def OneToMany(this_side, that_side, kls):
                 values=tuple(values)+tuple(extravalues)
                 newargs=(sql,)+values
             del converter
-            return kls.getSome(*newargs)
+            return realkls.getSome(*newargs)
         
         else:
-            return kls.getSome(*(tuple(eq)+args), **kwargs)
+            return realkls.getSome(*(tuple(eq)+args), **kwargs)
     return getMany
 
 def ManyToMany(this_side,
+               pivot_table,
                this_pivot_side,
                that_pivot_side,
-               pivot_table,
-               that_side,
-               kls):
+               kls,
+               that_side):
     # conversions are already done inside joinTable
     def getMany(self, *args, **kwargs):
+        if isinstance(kls, basestring):
+            # resolve it to a class
+            realkls=string_to_obj(kls, 2)
+        else:
+            realkls=kls
         return self.joinTable(this_side,
+                              pivot_table,
                               this_pivot_side,
                               that_pivot_side,
-                              pivot_table,
-                              that_side,
-                              kls,
+                              realkls,
+                              that_side,                              
                               *args,
                               **kwargs)
     return getMany

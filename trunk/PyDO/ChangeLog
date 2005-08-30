@@ -1,3 +1,16 @@
+2005-08-27  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* doc/manual.rst: document the acceptance of strings in
+	associations.
+
+	* src/pydo/base.py (ManyToMany, ForeignKey, OneToMany): now
+	accepts strings instead of PyDO classes to facilitate forward
+	declarations of associations; ManyToMany fixed.
+
+2005-08-26  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/utils.py (string_to_obj): evil magic function.
+
 2005-08-19  Jacob Smullyan  <smulloni@smullyan.org>
 	* src/pydo/dbi.py (initAlias): typo -- forgot to assign to "sql".
 	Thanks Matt B.

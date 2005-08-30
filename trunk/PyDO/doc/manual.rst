@@ -567,6 +567,18 @@ PyDO provides an equivalent shortcut::
 
    B=ForeignKey('b_id', 'id', B)
 
+If the class ``B`` hasn't been defined yet, but will be defined later
+in the same module, you can use its name as a string::
+
+   B=ForeignKey('b_id', 'id', 'B')
+
+And if it is defined in a different module, you can give its fully
+qualified name::
+
+   B=ForeignKey('b_id', 'id', 'somePackage.someModule.B')
+
+When using a string, the actual class is looked up at runtime.
+
 Similarly, to represent a one-to-many join, you could write your own
 accessor method, calling ``B.getSome()``::
 
@@ -578,7 +590,8 @@ Again, PyDO provides a terser alternative::
     getBs=OneToMany('id', 'a_id', B)
 
 The result is the same -- ``getBs`` will be an instance method that
-takes positional and keyword arguments like ``getSome()``.  
+takes positional and keyword arguments like ``getSome()``.  Again,
+``B`` can be either a class or a string representing that class.
 
 To represent a many-to-many join between ``A`` and ``B`` through
 junction table ``J``, you either add an instance method that calls
@@ -603,7 +616,7 @@ or again use an equivalent shortcut, which is::
 ``thatSideColumns``
     column(s) that correspond to the foreign key column to ``thatAttrNames``. 
 ``thatObject``
-    the destination object
+    the destination object (or its class name)
 ``thatAttrNames``
     attribute(s) in destination object to join to
 
@@ -620,6 +633,7 @@ table name, or a list of names.
 order, except for the optional positional and keyword arguments, which
 can be passed when the bound method that results from using
 ``ManyToMany`` is called.
+
 
 Getting Data From Multiple Tables At Once
 +++++++++++++++++++++++++++++++++++++++++
