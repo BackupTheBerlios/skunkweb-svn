@@ -255,7 +255,8 @@ class PsycopgDBI(DBIBase):
         cur = self.conn.cursor()
         if self.verbose:
             debug("SQL: %s", (sql,))
-        cur.execute(sql, (table,schema))
+        qtable="%s.%s" % (schema, table)
+        cur.execute(sql, (qtable,schema))
         for row in cur.fetchall():
             if self.verbose:
                 debug("Found column %s" % list(row))
@@ -278,7 +279,7 @@ class PsycopgDBI(DBIBase):
         unique = set()
         if self.verbose:
             debug("SQL: %s", (sql,))
-        cur.execute(sql, (table,schema))
+        cur.execute(sql, (qtable,schema))
         for row in cur.fetchall():
             L = [int(i) for i in row[0].split(' ')]
             if self.verbose:

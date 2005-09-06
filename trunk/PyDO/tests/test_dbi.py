@@ -11,6 +11,7 @@ import config
 from fixture import base_fixture
 dbitags=config.ALLDRIVERS+['dbi']
 import pydo.dbi as D
+import pydo as P
 
 @tag(*dbitags)
 def test_initAlias1():
@@ -207,4 +208,25 @@ class test_autocommit2(base_fixture):
             subtest(True)
         finally:
             self.db.autocommit=False
+    
+class test_describeTable1(base_fixture):
+    tags=('dbi', 'psycopg',)
+
+    def setup(self):
+        sql=["CREATE SCHEMA testytesty",
+             "CREATE TABLE testytesty.foo (id SERIAL PRIMARY KEY, name TEXT NOT NULL)"]
+        c=self.db.cursor()
+        for s in sql:
+            c.execute(s)
+        c.close()
+
+    def run(self):
+        class foo(P.PyDO):
+            connectionAlias='pydotest'
+            schema='testytesty'
+            guess_columns=True
+        s=sorted(foo.getColumns())
+        assert s==['id', 'name']
+             
+        
     

@@ -1,3 +1,11 @@
+2005-09-06  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* tests/test_dbi.py (test_describeTable1): psycopg-only test for
+	describeTable with non-default schema.
+
+	* src/pydo/drivers/psycopgconn.py (PsycopgDBI.describeTable): 
+	fix for when the schema is not 'public'.
+
 2005-08-27  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* doc/manual.rst: document the acceptance of strings in
