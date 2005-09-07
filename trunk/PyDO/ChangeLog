@@ -1,5 +1,10 @@
 2005-09-06  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/pydo/__init__.py (__version__): upping to 2.0b2.
+
+	* src/pydo/base.py (PyDO._new): for postgresql's sake, now call
+	dbi.getSequence with the schema-qualified table name.
+
 	* tests/test_dbi.py (test_describeTable1): psycopg-only test for
 	describeTable with non-default schema.
 
