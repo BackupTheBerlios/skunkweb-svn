@@ -297,7 +297,7 @@ def delAlias(alias):
     finally:
         _connlock.release()
 
-def getConnection(alias):
+def getConnection(alias, create=True):
     """get a connection given a connection alias"""
     _connlock.acquire()
     try:
@@ -306,6 +306,8 @@ def getConnection(alias):
         except KeyError:
             raise ValueError, "alias %s not recognized" % alias
         if not conndata.has_key('connection'):
+            if not create:
+                return None
             res=_connect(**conndata)
             conndata['connection']=res
             return res

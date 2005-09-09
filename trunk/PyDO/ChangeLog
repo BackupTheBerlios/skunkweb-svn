@@ -1,5 +1,10 @@
 2005-09-09  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/pydo/dbi.py (getConnection): added optional argument,
+	"create", defaulting to True, so that it is possible to call
+	getConnection(alias, 0) and get None if there is no connection
+	around, which you might want sometimes.
+
 	* src/pydo/operators.py (_repr_between): fix for BETWEEN operator.
 
 2005-09-06  Jacob Smullyan  <smulloni@smullyan.org>
