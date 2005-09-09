@@ -248,7 +248,7 @@ def __makeOperators():
                ('REGEX', '~'),
                ('IREGEX', '~*'),
                ('SIMILAR', 'SIMILAR'),
-               ('BETWEEN', 'BETWEEN'),
+
                ('OVERLAPS', 'OVERLAPS'),
                ('IN', 'IN'),
                ('IS', 'IS'),
@@ -290,12 +290,20 @@ def _repr_single_isnull(self):
 ISNULL._repr_single=_repr_single_isnull
 NOTNULL._repr_single=_repr_single_isnull
 
-# hack for BETWEEN
-def _repr_between(self):
-    args=[self._convert(a) for a in self[1:]]
-    return "(%s %s AND %s)" % (self[0], args[0], args[1])
+# special-case BETWEEN
+class BETWEEN(PolyadicOperator):
+    operator='BETWEEN'
 
-BETWEEN.__repr__=_repr_between
+    def __init__(self, val1, val2, val3, **kw):
+        super(BETWEEN, self).__init__(self, val1, val2, val3, **kw)
+
+    def __repr__(self):
+        return "(%s %s %s AND %s)" % (self._convert(self[1]),
+                                      self[0],
+                                      self._convert(self[2]),
+                                      self._convert(self[3]))
+
+__all__.append("BETWEEN")
 
 class BindingConverter(object):
     """A value converter that uses bind variables.
