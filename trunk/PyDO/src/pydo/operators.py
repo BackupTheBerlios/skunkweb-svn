@@ -290,6 +290,13 @@ def _repr_single_isnull(self):
 ISNULL._repr_single=_repr_single_isnull
 NOTNULL._repr_single=_repr_single_isnull
 
+# hack for BETWEEN
+def _repr_between(self):
+    args=[self._convert(a) for a in self[1:]]
+    return "(%s %s AND %s)" % (self[0], args[0], args[1])
+
+BETWEEN.__repr__=_repr_between
+
 class BindingConverter(object):
     """A value converter that uses bind variables.
     

@@ -1,3 +1,7 @@
+2005-09-09  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/operators.py (_repr_between): fix for BETWEEN operator.
+
 2005-09-06  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/__init__.py (__version__): upping to 2.0b2.
