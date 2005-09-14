@@ -1,3 +1,7 @@
+2005-09-14  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* SkunkWeb/Services/templating/UrlBuilder.py: url function now htmlquotes.
+
 2005-08-16  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* pylibs/AE/Cache.py (_fixPath): fix for docroot escaping.
