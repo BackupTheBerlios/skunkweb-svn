@@ -877,7 +877,7 @@ class ForeignKey(object):
     def kls():
         def fget(self):
             if isinstance(self._kls, basestring):
-                return string_to_obj(self._kls, 3)
+                return string_to_obj(self._kls)
             return self._kls
         return fget
     kls=property(kls())
@@ -920,7 +920,7 @@ def OneToMany(this_side, that_side, kls):
     def getMany(self, *args, **kwargs):
         if isinstance(kls, basestring):
             # resolve it to a class
-            realkls=string_to_obj(kls, 2)
+            realkls=string_to_obj(kls)
         else:
             realkls=kls
         eq=[EQ(FIELD(x), self[y]) for x, y in zipped]
@@ -958,7 +958,7 @@ def ManyToMany(this_side,
     def getMany(self, *args, **kwargs):
         if isinstance(kls, basestring):
             # resolve it to a class
-            realkls=string_to_obj(kls, 2)
+            realkls=string_to_obj(kls)
         else:
             realkls=kls
         return self.joinTable(this_side,

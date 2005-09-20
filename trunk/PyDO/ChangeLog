@@ -1,3 +1,10 @@
+2005-09-19  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/base.py (ForeignKey, ManyToMany, OneToMany): using
+	modified string_to_obj, no longer specify frame number.
+
+	* src/pydo/utils.py (string_to_obj): now walks stack frames.
+
 2005-09-09  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/dbi.py (getConnection): added optional argument,

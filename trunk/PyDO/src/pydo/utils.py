@@ -60,14 +60,21 @@ def _import_a_class(fqcn):
         raise ValueError, "impossible to import: %s" % fqcn
 
 
-def string_to_obj(s, numframes=1):
-    f=sys._getframe(numframes)
-    g=f.f_globals
-    try:
-        return g[s]
-    except KeyError:
-        return _import_a_class(s)
-    
+def string_to_obj(s, numframes=0):
+    while 1:
+        try:
+            f=sys._getframe(numframes)
+        except ValueError:
+            break
+        else:
+            l=f.f_locals
+            g=f.f_globals
+            try:
+                return l.get(s, g[s])
+            except KeyError:
+                numframes+=1
+               
+    return _import_a_class(s)
 
     
 def every(val, iter):
