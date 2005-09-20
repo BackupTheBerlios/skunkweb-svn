@@ -1,3 +1,8 @@
+2005-09-20  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* pylibs/skunk/computils.py: convenience functions for dealing
+	with AE.
+
 2005-09-14  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* SkunkWeb/Services/templating/UrlBuilder.py: url function now htmlquotes.
