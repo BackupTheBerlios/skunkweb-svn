@@ -1,0 +1,112 @@
+Reload is broken for socketmgr, because the connection list is lost.
+This can be made a constructor argument, but generally configuration
+needs to be integrated now so that it can be re-read on HUP.  Then
+reset() can really reset, rather than just clearing connections out
+and leaving some other module with the job of fixing them up again.
+THIS IS DONE.
+
+-- 
+
+I'd like it if the config system could have qualified namespaces:
+
+   server.connections=['whatever']
+   sessions.something_or_other=4
+
+It would help to keep things organized.  Otherwise, it is necessary to
+use naming conventions, or have chaos.  However, I don't see a way of
+doing this with the current implementation of load().  Even replacing
+or supplementing load, there is still the problem of scoping across
+the secondary namespaces; you'd need to introduce special object that
+would stand in for that namespace and do the right thing to what it
+includes for the scope; or let those objects only exist for access and
+scope in a flat namespace with mangled names.
+
+-- 
+
+The socket server should ideally support SSL sockets, but I don't think
+I'll waste time on it, since apache is the way to go for this at the
+moment.  If Python had a superific SSL thing going on, I'd plug it in,
+but it doesn't seem to.
+
+--
+
+The base server class for skunkweb itself needs to be approached.
+What does it need to do?
+
+   1. provide hooks that support applications.  This isn't anything
+      like requestHandler or wsgi, yet, but any plumbing necessary to
+      support them.
+   2. load configuration.  Although if something else does, and hands
+      it off to the server class, that's OK.
+
+So, a sketch of the whole application structure:
+
+   1. bootstrap.  Read configuration files, create configuration
+      object, load services, start server.
+   
+Actually, that is it.  The main thing missing is specifying exactly
+how configuration is loaded and accessed, and what a service is and
+how it plugs into the server.  Before figuring that out, what does the
+request handling service do?
+
+Request handler is currently a general service that doesn't
+necessarily deal with HTTP.  However, if there are any significant
+costs associated with this, they should be dropped.  The service
+should be optimized for its usual use as an app server.  (However,
+directly serving http should continue to be supported, even if it
+isn't feature-complete.)
+
+Built on top of request handler: a web service, which supports wsgi;
+httpd; aecgi (rename this!); remote protocols, etc.  
+
+--
+
+Should socketmgr call shutdown on the socket before closing?
+
+--
+
+The current requestHandler should be thought through with WSGI in
+mind.  Writing a general purpose server framework is sort of
+pointless, since no one is going to use it, including me.  Let's
+assume that everything is either HTTP or something like AECGI or WSGI
+that encapsulates HTTP data.  (As before, the client communication
+protocol is separate from the internal protocol.)
+
+Can all of the requestHandling stuff be turned into one WSGI pipeline?
+If so, should all the hooks be used at all?  
+
+Internal redirects should be possible.
+
+-- 
+
+I believe hooks can be used with WSGI.  The pipeline as such consists
+of a bunch of hooks.  Hooks can contain WSGI callables.  After each
+callable, its work is evaluated (how?) and a determination is made
+whether to continue with the hook or to execute another hook.  The
+shape of the pipeline is determined dynamically, then, and can involve
+looping or other constructs. 
+
+--
+
+All of the global stuff should go in a thread-local object,
+skunkweb.Context.  The context object should all the low-lying wsgi
+stuff, the output stream in use, higher-level connection interfaces, 
+and skunkweb and application configuration.
+
+Refactoring:
+
+   * it might be possible to remove the component factory and simply use globals.  
+     On the other hand, that might not be necessary.
+   * string components perhaps should not require that OUTPUT be in the namespace;
+     it could be imported from the context.  (Perhaps if a fully qualified name is used,
+     it will be imported and treated like an output stream?)
+
+First goal -- write a templating service that uses the new engine and
+integrates into the old skunkweb.  A skunk package would be installed
+in the main python site-packages.  This package will eventually grow
+until it can entirely replace skunk3.  This approach suggests that an
+earlier release is possible.
+
+-- 
+
+Instead of a deferral queue, permit a callback for when it needs to be refreshed.
