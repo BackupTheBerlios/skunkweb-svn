@@ -57,7 +57,7 @@ class Cache(object):
         if policy.calculate or policy.defer:
             debug("callargs are %r", callargs)
             val=callee(**callargs)
-            # the callee has a change to determine
+            # the callee has a chance to determine
             # the expiration by sending it out of band,
             # through an "expiration" attribute.
             # otherwise, value passed to this method will
