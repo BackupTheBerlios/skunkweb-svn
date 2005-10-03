@@ -17,6 +17,5 @@ setup(author="Jacob Smullyan",
                 'skunk.net.server',
                 'skunk.util',
                 'skunk.web',
-                'skunk.web.services',
-                'skunk.web.services.requestHandler'],
+                'skunk.web.services']
       package_dir={'' : 'src'})
