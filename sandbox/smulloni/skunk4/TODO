@@ -77,6 +77,36 @@ If so, should all the hooks be used at all?
 
 Internal redirects should be possible.
 
+-- 
 
+I believe hooks can be used with WSGI.  The pipeline as such consists
+of a bunch of hooks.  Hooks can contain WSGI callables.  After each
+callable, its work is evaluated (how?) and a determination is made
+whether to continue with the hook or to execute another hook.  The
+shape of the pipeline is determined dynamically, then, and can involve
+looping or other constructs. 
 
+--
 
+All of the global stuff should go in a thread-local object,
+skunkweb.Context.  The context object should all the low-lying wsgi
+stuff, the output stream in use, higher-level connection interfaces, 
+and skunkweb and application configuration.
+
+Refactoring:
+
+   * it might be possible to remove the component factory and simply use globals.  
+     On the other hand, that might not be necessary.
+   * string components perhaps should not require that OUTPUT be in the namespace;
+     it could be imported from the context.  (Perhaps if a fully qualified name is used,
+     it will be imported and treated like an output stream?)
+
+First goal -- write a templating service that uses the new engine and
+integrates into the old skunkweb.  A skunk package would be installed
+in the main python site-packages.  This package will eventually grow
+until it can entirely replace skunk3.  This approach suggests that an
+earlier release is possible.
+
+-- 
+
+Instead of a deferral queue, permit a callback for when it needs to be refreshed.
