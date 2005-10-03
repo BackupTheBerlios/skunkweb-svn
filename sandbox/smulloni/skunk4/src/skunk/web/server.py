@@ -104,5 +104,6 @@ def init(*configFiles):
     # revv 'er up
     _svr=Server(configFiles)
     _svr.mainloop()
+
     
-__all__=['Server']    
+__all__=['Server', 'init']    

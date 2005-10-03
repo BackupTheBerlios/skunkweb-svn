@@ -3,12 +3,19 @@ from skunk.web.services.requestHandler import (Protocol,
                                                RequestFailed)
 from skunk.web.protocol import _http_statuses, HaveConnection, HandleConnection
 from skunk.web.config import Configuration, mergeDefaults
+from skunk.util.logutil import loginit
 
 import re
 import socket
 from urllib import unquote
 import rfc822
 import cStringIO
+
+# log methods
+loginit(make_all=False)
+
+
+## @@@ FIX ME -- use urlparse instead (??)
 
 # the below takes a url and looks for the following nice goodies:
 # path (anything before the following)
@@ -27,15 +34,15 @@ pathRE=re.compile(r"(?P<path>[^;?#]*)" \
                   r"(?:#(?P<info>.*))?")
 
 # key in the sessionDict under the which the current httpVersion is kept
-constants.HTTP_VERSION="httpVersion"
+HTTP_VERSION="httpVersion"
 
 # pretty unlikely that anything else will care about this, but
 # just in case, as it does go into the sessionDict
-constants.CONNECTION_CLOSE='connectionClose'
+CONNECTION_CLOSE='connectionClose'
 
 class BadRequestException(Exception): pass
 
-class HTTPMethodRequestParser:
+class HTTPMethodRequestParser(object):
     """
     base class that for method-specific request marshallers,
     responsible for reading in the request and building the
@@ -58,7 +65,7 @@ class HTTPMethodRequestParser:
         """
         raise NotImplementedError
 
-    def _getHeaders(self, socketFile):
+    def getHeaders(self, socketFile):
         """
         read all the headers, up until the first line with just a CRLF.
         """
@@ -73,24 +80,25 @@ class HTTPMethodRequestParser:
                 raw_headers.append(header)
         return _getHeaderDict(raw_headers)
 
-    def _getContentLengthDelimitedRequestBody(self, socketFile, headers):
+    ## @@@ FIX ME no need for this to be a method!
+    def getContentLengthDelimitedRequestBody(self, socketFile, headers):
         """
         reads the request body for the case where a content-length
         is declared in the request-headers.  Does not handle chunked
         encoding or multipart/byteranges.
         """
         if not headers.has_key("Content-Length"):
-            DEBUG(HTTPD, "no content length in headers")
+            debug("no content length in headers")
             return -1
         try:
             contentLength=int(headers['Content-Length'])
         except ValueError:
-            DEBUG(HTTPD, "content-length cannot be parsed: %s"
-                  % headers['Content-Length'])
+            debug("content-length cannot be parsed: %s", headers['Content-Length'])
             return -1
         return socketFile.read(contentLength)
 
-    def _getChunkedRequestBody(self, socketFile, headers):
+    ## @@@@ no need for this to be a method either!
+    def getChunkedRequestBody(self, socketFile, headers):
         
         #  (quote from RFC 2068, section 19.4.6)
         
@@ -123,7 +131,7 @@ class HTTPMethodRequestParser:
         if chunk_sizeStr.isdigit():
             chunk_size=int(chunk_sizeStr, 16)
         else:
-            DEBUG(HTTPD, "invalid chunk size: %s" % chunk_sizeStr)
+            debug("invalid chunk size: %s", chunk_sizeStr)
             return -1
         while chunk_size>0:
             chunk_data=socketFile.read(chunk_size)
@@ -131,7 +139,7 @@ class HTTPMethodRequestParser:
             length+=chunk_size
             # read CRLF
             if socketFile.read(2)!="\r\n":
-                DEBUG(HTTPD, "invalid chunk size -- expected CRLF")
+                debug("invalid chunk size -- expected CRLF")
                 return -1
             chunk_size=int(socketFile.readline().strip(), 16)
         line=socketFile.readline()
@@ -143,16 +151,16 @@ class HTTPMethodRequestParser:
         return entity_body
 
 # It isn't clear to me that I would ever get one of these, although I might send them.
-##    def _getMultipartByteRangesRequestBody(self, socketFile, headers):
+##    def getMultipartByteRangesRequestBody(self, socketFile, headers):
 ##        # TO BE DO
 ##        return -1
 
-    def _getEnv(self,
-                sock,
-                methodName,
-                requestURI,
-                httpVersion,
-                headers): 
+    def getEnv(self,
+               sock,
+               methodName,
+               requestURI,
+               httpVersion,
+               headers): 
         
         # parse the requestURI
         match=pathRE.match(requestURI)
@@ -165,7 +173,8 @@ class HTTPMethodRequestParser:
         else:
             serverPort=sockname[1]
             peeraddress, peerport=sock.getpeername()
-        
+
+        ## @@@ EXAMINE THIS
         env={ 'GATEWAY_INTERFACE': 'CGI/1.1',
               # possibly the following should come from somewhere else
               'SERVER_NAME' : Configuration.ServerName,
@@ -218,8 +227,8 @@ class DisembodiedHandler(HTTPMethodRequestParser):
                        methodName,
                        requestURI,
                        httpVersion):
-        headers=self._getHeaders(socketFile)
-        env=self._getEnv(sock,
+        headers=self.getHeaders(socketFile)
+        env=self.getEnv(sock,
                         methodName,
                         requestURI,
                         httpVersion,
@@ -240,18 +249,18 @@ class PotentiallyBodaciousHandler(HTTPMethodRequestParser):
                        methodName,
                        requestURI,
                        httpVersion):
-        headers=self._getHeaders(socketFile)
+        headers=self.getHeaders(socketFile)
         stdin=''
         if headers.get('Transfer-Encoding', '').lower()=='chunked':
-            stdin=self._getChunkedRequestBody(socketFile, headers)
+            stdin=self.getChunkedRequestBody(socketFile, headers)
         elif headers.get('Content-Length', 0)>0:
-            stdin=self._getContentLengthDelimitedRequestBody(socketFile,
-                                                             headers)
+            stdin=self.getContentLengthDelimitedRequestBody(socketFile,
+                                                            headers)
 
         else:
             page=preemptive_http_error(httpVersion, 501, "Not Implemented")
             raise PreemptiveResponse, page
-        env=self._getEnv(sock,
+        env=self.getEnv(sock,
                         methodName,
                         requestURI,
                         httpVersion,
@@ -264,7 +273,7 @@ class PotentiallyBodaciousHandler(HTTPMethodRequestParser):
 # for the terminateSession() method of HTTPProtocol to read and
 # obey.
 def _seekTerminus(conn, sessionDict):
-    httpVersion=sessionDict.get(constants.HTTP_VERSION, '')
+    httpVersion=sessionDict.get(HTTP_VERSION, '')
     connHeader=conn.requestHeaders.get('Connection', '')
     if httpVersion=='HTTP/1.0':            
         close = connHeader!='Keep-Alive'        
@@ -274,8 +283,8 @@ def _seekTerminus(conn, sessionDict):
         close=1
     if close:
         conn.responseHeaders['Connection']='Close'
-    sessionDict[constants.CONNECTION_CLOSE]=close
-    DEBUG(HTTPD, "setting connectionClose flag: %d" % close)
+    sessionDict[CONNECTION_CLOSE]=close
+    debug("setting connectionClose flag: %d", close)
 
 def _healHeaders(raw):
     """
@@ -291,13 +300,12 @@ def _healHeaders(raw):
             joined.append(h)
     return joined
 
+## @@@ FIX ME -- use python implementation (or port the c code)
 import skunklib
 _fixHeaderName=skunklib.normheader
 
 def _getHeaderDict(headerLines):
     headers={}
-    DEBUG(HTTPD, "headerLines: %s" % headerLines)
-    DEBUG(HTTPD, "healed: %s" % _healHeaders(headerLines))
     for h in _healHeaders(headerLines):
 
         name, value=map(lambda x: x.strip(), h.split(":", 1))
@@ -429,7 +437,7 @@ class HTTPProtocol(Protocol):
                                       "No handler for method %s" % method)
             raise PreemptiveResponse, page
         # check httpVersion.  We support 1.0 and 1.1.
-        sessionDict[constants.HTTP_VERSION]=httpVersion
+        sessionDict[HTTP_VERSION]=httpVersion
         requestData=handler.marshalRequest(sock,
                                            sockfile,
                                            method,
@@ -447,7 +455,7 @@ class HTTPProtocol(Protocol):
         return '-'.join([i.capitalize() for i in s.split('-')])
 
     def marshalResponse(self, response, sessionDict):
-        httpVersion=sessionDict.get(constants.HTTP_VERSION, '')
+        httpVersion=sessionDict.get(HTTP_VERSION, '')
         respp = rfc822.Message(cStringIO.StringIO(response))
         status = respp.getheader('status')
         server = respp.getheader('server')
@@ -456,6 +464,7 @@ class HTTPProtocol(Protocol):
         else:
             del respp['status']
         if not server:
+            ## @@@ FIX
             respp['server'] = 'SkunkWeb %s' % Configuration.SkunkWebVersion
         resl = ["%s %s" % (httpVersion, status)]
         for k in respp.keys():
@@ -465,12 +474,13 @@ class HTTPProtocol(Protocol):
         return "%s\r\n\r\n%s" % ("\r\n".join(resl), respp.fp.read())
         
     def marshalException(self, exc_text, sessionDict):
+        ## @@@ FIX
         res=RequestFailed(constants.WEB_JOB, exc_text, sessionDict)
         if res:
             return res
         else:
             # dummy up a 500. 
-            httpVersion=sessionDict.get(constants.HTTP_VERSION, '')
+            httpVersion=sessionDict.get(HTTP_VERSION, '')
             return '\r\n'.join([('%s 500 Internal Server Error' % httpVersion).strip(),
                                 'Content-Type: text/plain',
                                 'Content-Length: %d' % len(exc_text),
@@ -478,11 +488,13 @@ class HTTPProtocol(Protocol):
                                 exc_text])
 
     def keepAliveTimeout(self, sessionDict):
-        if sessionDict.get(constants.CONNECTION_CLOSE, 1):
+        if sessionDict.get(CONNECTION_CLOSE, 1):
             return -1
         else:
+            
             return Configuration.HTTPKeepAliveTimeout
 
+## @@@ FIX
 jobGlob=constants.WEB_JOB+'*'
 HaveConnection.addFunction(_seekTerminus, jobGlob)
 
