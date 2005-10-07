@@ -1,3 +1,8 @@
+2005-10-07  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/multifetch.py (iterfetch): fixed silly error that
+	prevented pyformat or named style parameter passing from working.
+
 2005-09-19  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/base.py (ForeignKey, ManyToMany, OneToMany): using

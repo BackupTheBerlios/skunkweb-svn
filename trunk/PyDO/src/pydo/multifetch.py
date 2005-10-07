@@ -113,7 +113,7 @@ def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
                                                 TABLES=tables,
                                                 COLUMNS=columns)
     c=dbi.cursor()
-    if len(values)==1 and isinstance(values, dict):
+    if len(values)==1 and isinstance(values[0], dict):
         values=values[0]
     if dbi.verbose:
         debug('SQL: %s', sql)
