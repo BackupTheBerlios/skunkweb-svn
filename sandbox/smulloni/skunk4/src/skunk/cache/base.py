@@ -7,6 +7,8 @@ from skunk.cache.exceptions import NotInCache, UnCacheable
 from threading import RLock
 import warnings
 
+from skunk.date.timeutil import convert as time_convert
+
 _lookup_lock=RLock()
 _callable_lookup={}
 
@@ -54,6 +56,8 @@ class Cache(object):
         # the canonical name and cache key are needed both for
         # retrieve and store; just get them once
         debug("policy is %r", policy)
+        if expiration is not None:
+            expiration=time_convert(expiration)
 
         args, kwargs=self._unpack_callargs(callargs)
 
@@ -74,7 +78,7 @@ class Cache(object):
                 entry.retrieved=time()
                 if policy.defer and ondefer:
                     ondefer(callee, callargs, expiration)
-                    return entry
+                return entry
 
         if policy.calculate or policy.defer:
             val=callee(*args, **kwargs)
@@ -85,6 +89,8 @@ class Cache(object):
             
             now=time()
             expiration=getattr(callee, 'expiration', expiration) or 0
+            if expiration:
+                expiration=time_convert(expiration)
             entry=CacheEntry(val,
                              created=now,
                              retrieved=now,

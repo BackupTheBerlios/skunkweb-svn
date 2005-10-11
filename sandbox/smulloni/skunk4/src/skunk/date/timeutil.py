@@ -18,8 +18,6 @@ try:
 except ImportError:
     _have_dateutil=0
 
-
-
 class TimeException(ValueError):
     pass
 
@@ -45,6 +43,14 @@ def _to_ticks(x):
         return x.ticks()
     raise ValueError, "unrecognized type: %s" % x
 
+def convert(thing, curdate=None):
+    if isinstance(thing, basestring):
+        try:
+            return convertDuration(thing, curdate)
+        except TimeException:
+            pass
+    return convertUntil(thing, curdate)
+
 def convertDuration(duration, curdate=None):
     """
     >>> import time; t=time.time()
@@ -55,6 +61,9 @@ def convertDuration(duration, curdate=None):
 
 def convertUntil(until, curdate=None):
     curdate=_to_ticks(curdate)
+
+    if isinstance(until, (int, long)):
+        return until
     
     if isinstance(until, basestring):
 	result = _untilString(until, curdate)    
@@ -203,6 +212,8 @@ def _parse_ISO(datestr):
             continue
     raise TimeException, datestr
              
+
+__all__=['convert']
 
 if __name__=='__main__':
     import doctest, timeutil
