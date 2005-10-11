@@ -1,0 +1,96 @@
+Things in skunk3 that can go away:
+
+   in pylibs:
+      Authenticator
+      BasicAuth
+      Config 
+      ConfigLoader
+      Cycler
+      ErrorHandler
+      Firebird
+      IOTO
+      LineWrap
+      SkunkExcept 
+      containers
+      cronjob
+      ecs
+      iu
+      mmint
+      pargen
+      prompt
+      psp
+      scope
+      skunkdoc
+      skunklib
+      spreadcache
+      static
+      string8859
+      strnatcmp
+      tableutils
+      tarlib
+      uuid
+      wizard
+      xmlrpchandler
+      xmlutils
+
+replaced by PyDO2:
+      PsycopgCache
+      PyDO 
+      PyPgSQLcache 
+      MySQL 
+      Oracle 
+      PostgreSql
+
+retain (transformed, renamed, reimplemented):
+      DT (replaced by stoat or its progeny)
+      Date (replaced by skunk.date)
+      ProcessMgr (replaced by skunk.net.processmgr)
+      SocketMan (replaced by skunk.net.socketmgr)
+      vfs (in skunk.vfs)
+      signal_plus (in skunk4)
+      ccvalidate (useful)      
+
+maybe retain?
+      aesencrypt (keep as a util?
+      argextract (keep as a util?)
+      armor (keep as a util?)
+      fcgi (maybe in main distrib, because fastcgi needs it)
+      formlib (but must be refactored to use sxmlgen)
+
+SkunkWeb services to keep/reimplement:
+      auth -- ?
+      httpd      
+      remote/remote_client  -- ?
+      requesthandler
+      rewrite
+      scgi
+      fastcgi
+      aecgi
+      extcgi
+      pycgi (combine the last two)
+      session
+      templating
+      userdir
+      web
+      dbcache (pydo-based)
+
+
+
+Important differences between skunk3 and skunk4:
+    * mod_skunkweb is release separately.
+    * distutils install for libraries; no more autoconf.
+    * a utility script installs a particular application instance with 
+      its own configuration.
+    * wsgi used internally as a way of keeping managing request/response;
+      hook structure for services, however, are not organized as a pipeline
+      dynamically, not statically.
+    * the entire requesthandling apparatus is a wsgi application, and hence
+      can be embedded in a different server/bootloader.
+    * a multi-process wsgi server is provided.
+    * more support for mvc, object publishing.
+    * looser coupling between component/cache libraries and the rest of the
+      application.
+
+    
+      
+
