@@ -1,4 +1,7 @@
-from distutils.core import setup, Extension
+import ez_setup
+ez_setup.use_setuptools()
+
+from setuptools import setup, Extension
 
 description="SkunkWeb Web Application Server Libraries"
 
@@ -9,13 +12,19 @@ setup(author="Jacob Smullyan",
       name="SkunkWeb",
       url="http://skunkweb.org/",
       version="4.0a",
-      ext_modules=[Extension('skunk.util.signal_plus',
-                             ['src/skunk/util/signal_plus.c'])],
-      packages=['skunk',
-                'skunk.config',
-                'skunk.net',
-                'skunk.net.server',
-                'skunk.util',
-                'skunk.web',
-                'skunk.web.services']
+      zip_safe=True,
+      keywords="cache skunkweb",
+#      ext_modules=[Extension('skunk.util.signal_plus',
+#                             ['src/skunk/util/signal_plus.c'])],
+      namespace_packages=['skunk'],
+      packages=['skunk', 'skunk.cache'],
+
+# others later....      
+#                'skunk.config',
+#                'skunk.net',
+#                'skunk.net.server',
+#                'skunk.util',
+#                'skunk.web',
+#                'skunk.web.services']
+#                ]
       package_dir={'' : 'src'})

@@ -66,9 +66,6 @@ DEFER=CachePolicy(RETRIEVE_ALWAYS,
                   True,
                   True)
 
-# for AE's DEFER, you'd use an OLD, and then, depending on whether the
-# returned value was calculated and stored or not, a FORCE later. So
-# we need to know the status of store, at least.
 
 _codes={'yes'   : YES,
         'no'    : NO,
