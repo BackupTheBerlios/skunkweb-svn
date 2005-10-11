@@ -1,69 +1,90 @@
 from md5 import new as md5_new
-from cPickle import dumps as cPickle_dumps
-from cPickle import PickleError
+from cPickle import PickleError, dumps as cPickle_dumps
 import sys
-import time
+from time import time
 from skunk.cache.log import debug
 from skunk.cache.exceptions import NotInCache, UnCacheable
+from threading import RLock
+import warnings
 
+_lookup_lock=RLock()
 _callable_lookup={}
 
 class Cache(object):
     """
     abstract base class for cache implementations.
     """
+
+    @staticmethod
+    def _unpack_callargs(callargs):
+        if callargs in (None, [], (), {}):
+            return (), {}
+        elif isinstance(callargs, dict):
+            return (), callargs
+        elif isinstance(callargs, (list, tuple)):
+            if not len(callargs)==2:
+                raise ValueError, \
+                      "list or tuple of callargs must be of length 2, instead got length %d" \
+                      % len(callargs)
+            args, kwargs=callargs
+            if not isinstance(args, (list, tuple)):
+                raise ValueError, "expected list or tuple for args, got %r" % type(args)
+            if not isinstance(kwargs, dict):
+                raise ValueError, "expected dict for kwargs, got %r" % type(kwargs)
+            return args, kwargs
+        else:
+            raise ValueError, """\
+            callargs must be either a dict of keyword arguments
+            or a 2-tuple, (positional arguments (list or tuple),
+            keyword arguments (dict))."""
+    
+    
     def call(self,
              callee,
              callargs,
              policy,
              expiration=None,
-             deferralQueue=None):
+             ondefer=None):
         """
         invokes the callee with callargs through the cache, with the
         given cache policy.  This is the main user-space method.  It
         returns a CacheEntry instance.  The entry will only be
         guaranteed to have storage if policy.store is true.
         """
-        # the canonical name and cache key are
-        # needed both for retrieve and store;
-        # just get them once
+        # the canonical name and cache key are needed both for
+        # retrieve and store; just get them once
         debug("policy is %r", policy)
 
-        if policy.defer and deferralQueue is None:
-            raise ValueError, "cannot use cache policy DEFER without a deferral queue"
+        args, kwargs=self._unpack_callargs(callargs)
 
+        if policy.defer and ondefer is None:
+            warnings.warn("cache policy DEFER in use without a deferral callback")
+        
         if policy.retrieve or policy.store:
             cn=self.getCanonicalName(callee)
-            ck=self.getCacheKey(callargs)            
+            ck=self.getCacheKey((args, kwargs), False)            
         
         if policy.retrieve:
-            # has the callee changed since
-            # last checked?
+            # has the callee changed since last checked?
             self.validateCallable(callee, cn)
             
             # get the cache entry if it exists
             entry=self._retrieve(cn, ck)
             if entry and policy.accept(entry):
-                entry.retrieved=time.time()
-                return entry
-
-        if policy.defer:
-            assert deferralQueue is not None
-            if entry:
-                deferralQueue.append((callee, callargs, expiration))
-                return entry
-            # else fall through to calculate
+                entry.retrieved=time()
+                if policy.defer and ondefer:
+                    ondefer(callee, callargs, expiration)
+                    return entry
 
         if policy.calculate or policy.defer:
-            debug("callargs are %r", callargs)
-            val=callee(**callargs)
-            # the callee has a chance to determine
-            # the expiration by sending it out of band,
-            # through an "expiration" attribute.
-            # otherwise, value passed to this method will
+            val=callee(*args, **kwargs)
+            # the callee has a chance to determine the expiration by
+            # sending it out of band, through an "expiration"
+            # attribute.  otherwise, value passed to this method will
             # be used.
-            expiration=getattr(callee, 'expiration', expiration)
-            now=time.time()
+            
+            now=time()
+            expiration=getattr(callee, 'expiration', expiration) or 0
             entry=CacheEntry(val,
                              created=now,
                              retrieved=now,
@@ -113,12 +134,20 @@ class Cache(object):
         try:
             rec=_callable_lookup[canonicalName]
         except KeyError:
-            _callable_lookup[canonicalName]=(i, h, d, f)
+            _lookup_lock.acquire()
+            try:
+                _callable_lookup[canonicalName]=(i, h, d, f)
+            finally:
+                _lookup_lock.release()
         else:
             if (i, h, d, f)!=rec:
                 # invalidate cache for this canonicalName
                 self.invalidate(canonicalName)
-                _callable_lookup[canonicalName]=(i, h, d, f)
+                _lookup_lock.acquire()
+                try:
+                    _callable_lookup[canonicalName]=(i, h, d, f)
+                finally:
+                    _lookup_lock.release()
         
     def invalidate(self, canonicalName):
         """
@@ -153,7 +182,9 @@ class Cache(object):
                       "or both __module__ and __name__"
                 
 
-    def getCacheKey(self, callargs):
+    def getCacheKey(self, callargs, unpack=True):
+        if unpack:
+            callargs=self._unpack_callargs(callargs)
         try:
             return md5_new(cPickle_dumps(callargs)).hexdigest()
         except PickleError, pe:
@@ -174,6 +205,13 @@ class Cache(object):
         sub-classes should implement this.
         """        
         raise NotImplemented
+
+    def pack(self):
+        """
+        cleans up the underlying storage for the cache
+        """
+        pass
+        
                  
 
 class CacheEntry(object):
@@ -181,7 +219,7 @@ class CacheEntry(object):
                  value,
                  created=None,
                  retrieved=None,
-                 expiration=None,
+                 expiration=0,
                  stored=None):
         self.value=value
         self.created=created

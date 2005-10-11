@@ -36,18 +36,14 @@ class CachePolicy(object):
 
     def accept(self, cacheEntry, expiration=None):
         if self.retrieve==RETRIEVE_UNEXPIRED:
-            e=cacheEntry.expiration
             if expiration:
-                # max? or just straight assignment? **REVISIT**
-                # e=expiration
-                e=max(e, expiration)
-            if e is not None and e <= time():
-                return False
-            return True
-        elif self.retrieve==RETRIEVE_ALWAYS:
-            return True
+                e=max(cacheEntry.expiration, expiration)
+            else:
+                e=cacheEntry.expiration
+            return e > time()
         else:
-            return False
+            return self.retrieve==RETRIEVE_ALWAYS
+
         
 NO=CachePolicy(RETRIEVE_NEVER,
                True,
