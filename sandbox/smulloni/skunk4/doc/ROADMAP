@@ -1,0 +1,33 @@
+.. -*-mode: rst-*-
+
+This is confusing, because I have a lot of code to refactor, and a lot
+to glue together.
+
+My most immediate need is to be able to separate out the cache,
+component and templating libraries, possibly to use them with skunk3
+(only because getting all of skunk4 together is too much to do).  To
+do this, I need:
+
+  * to let string components once more write to stdout (using
+    thread-local thingie).
+
+  * to use thread-local globals for all the crap that is currently put
+    in a so-called "factory" in the components library.
+
+  * to get deferred components to work (put the calls in a queue,
+    possibly replace the queue in the api with a callback).
+
+  * write a skunk3 integration service.
+
+For skunk4, the actual server is different:
+
+  * still uses hooks; same basic architecture of the server.
+  * connection data is stored in wsgi format as a thread-local
+    global.  Any CONNECTION-type object is an api that someone imports
+    to access that data.  
+  * the actual server instances are distinguished by their conf files; nothing
+    to install.
+  * mvc service built-in.
+
+
+
