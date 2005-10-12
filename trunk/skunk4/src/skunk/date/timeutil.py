@@ -62,7 +62,7 @@ def convertDuration(duration, curdate=None):
 def convertUntil(until, curdate=None):
     curdate=_to_ticks(curdate)
 
-    if isinstance(until, (int, long)):
+    if isinstance(until, (int, long, float)):
         return until
     
     if isinstance(until, basestring):
