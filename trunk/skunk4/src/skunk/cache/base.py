@@ -39,8 +39,7 @@ class Cache(object):
             callargs must be either a dict of keyword arguments
             or a 2-tuple, (positional arguments (list or tuple),
             keyword arguments (dict))."""
-    
-    
+
     def call(self,
              callee,
              callargs,

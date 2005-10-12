@@ -11,4 +11,4 @@ from skunk.cache.base import *
 from skunk.cache.policy import *
 from skunk.cache.memoryCache import *
 from skunk.cache.diskCache import *
-
+from skunk.cache.decorator import *
