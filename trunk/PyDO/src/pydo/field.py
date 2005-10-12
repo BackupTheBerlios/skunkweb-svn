@@ -5,6 +5,12 @@ class Field(object):
     """represents a column in a database table."""
 
     __slots__=('name', 'sequence', 'unique')
+
+    def __getstate__(self):
+        return self.name, self.sequence, self.unique
+
+    def __setstate__(self, state):
+        self.name, self.sequence, self.unique=state
     
     def __init__(self,
                  name,

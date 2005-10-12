@@ -1,3 +1,10 @@
+2005-10-12  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/operators.py, src/pydo/fields.py: define __getstate__
+	and __setstate__ for objects with slots.
+
+	* setup.py: now use setuptools.
+
 2005-10-07  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/multifetch.py (iterfetch): fixed silly error that

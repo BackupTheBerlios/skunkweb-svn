@@ -1,4 +1,8 @@
-from distutils.core import setup
+import ez_setup
+ez_setup.use_setuptools()
+
+from setuptools import setup
+
 import sys
 sys.path.insert(0, 'src')
 from pydo import __version__ as version
@@ -30,5 +34,6 @@ setup(author='Drew Csillag',
       name='PyDO',
       url='http://skunkweb.org/pydo2.html',
       version=version,
+      zip_safe=True,
       packages=['pydo', 'pydo.drivers'],
       package_dir={'' : 'src'})

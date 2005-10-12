@@ -96,6 +96,11 @@ class CONSTANT(object):
     """a way to represent a constant or field name in a sql expression"""
 
     __slots__=('name',)
+
+    def __getstate__(self):
+        return (self.name,)
+    def __setstate__(self, state):
+        (self.name,)=state
     
     def __init__(self, name):
         if not isinstance(name, basestring):
@@ -115,6 +120,12 @@ class SET(object):
     (foo IN ('spam', 'eggs', 'nougat'))
     """
     __slots__=('values','converter')
+
+    def __getstate__(self):
+        return self.values, self.converter
+
+    def __setstate__(self, state):
+        self.values, self.converter=state
     
     def __init__(self, *values):
         if not len(values):
