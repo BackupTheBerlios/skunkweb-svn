@@ -1,0 +1,62 @@
+.. -*-rst-*-
+
+SkunkWeb 4.0 PLAN
+~~~~~~~~~~~~~~~~~
+
+SkunkWeb 4.0 is to be a set of libraries that can be used to build web
+applications, potentially in cooperation with other web development
+tools (CherryPy, Paste, etc.).
+
+SkunkWeb's traditional strengths have been:
+
+  * rich configurability.
+  * robust multi-process model.
+  * granular caching.
+  * dynamic documents/component system.
+  * a virtual file system.
+  * "products" -- an application packaging system.
+
+These elements will be as loosely coupled as can be permitted.  
+
+I already have a year-old draft of many elements of this, but it needs
+to be reworked.  The first candidate for cleanup is the skunk.cache
+package, which is already useable.  I'm adding tests now, and want to
+get them 
+
+Then there is STML and components; these will need considerably more
+refactoring, as my earlier draft was very wary of dealing with
+configuration globals.  STML also requires vfs.  I want to extend vfs
+to support metadata (which used to be implemented, but was never used;
+now I will use it, to define properties like content-type that will
+determine how the framework handles a file -- what templating system
+to use to interpret it, etc.) and perhaps imports (which were broken;
+maybe I can figure it out properly this time).
+
+The next main piece is a WSGI application which invokes STML.  There
+needs to be some way to invoke the templating system conveniently from
+within various systems, and WSGI addresses that.  
+
+Big questions: 
+   configuration.  
+   api for request/response/context (including configuration).
+
+Generally speaking, I expect that object publishing will be the more
+common approach for a lot of stuff.
+
+SkunkWeb's multi-process server should be cleaned up and made to do
+the WSGI dance.  By default it would be set up to first check for
+published objects, using routes, and then look for a template.  Url
+rewriting would also have a hook, as would auth, and post-processing,
+etc.  However, nothing in the previously mentioned libraries would
+need the server; and other wsgi applications could be put in the
+server.  Also, the main loop could be a wsgi middleware itself -- it
+simply reorganizes the pipeline into hooks.  OTOH, maybe forcing WSGI
+apps into this mold is a mistake.
+
+
+
+
+
+
+
+
