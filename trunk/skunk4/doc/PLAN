@@ -20,8 +20,9 @@ These elements will be as loosely coupled as can be permitted.
 
 I already have a year-old draft of many elements of this, but it needs
 to be reworked.  The first candidate for cleanup is the skunk.cache
-package, which is already useable.  I'm adding tests now, and want to
-get them 
+package, which is already useable.  I'm adding tests now; the next
+step there is to write a decorator, or a factory for decorators, that
+make it easy to use the cache as a memoization facility.
 
 Then there is STML and components; these will need considerably more
 refactoring, as my earlier draft was very wary of dealing with

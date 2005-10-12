@@ -14,19 +14,19 @@ setup(author="Jacob Smullyan",
       version="4.0a",
       zip_safe=True,
       keywords="cache skunk skunkweb web",
-#      ext_modules=[Extension('skunk.util.signal_plus',
-#                             ['src/skunk/util/signal_plus.c'])],
+      ext_modules=[Extension('skunk.util.signal_plus',
+                             ['src/skunk/util/signal_plus.c'])],
       namespace_packages=['skunk'],
       packages=['skunk',
                 'skunk.cache',
-                'skunk.date'
+                'skunk.date',
+                'skunk.util'
                 ],
 
 # others later....      
 #                'skunk.config',
 #                'skunk.net',
 #                'skunk.net.server',
-#                'skunk.util',
 #                'skunk.web',
 #                'skunk.web.services']
 #                ]
