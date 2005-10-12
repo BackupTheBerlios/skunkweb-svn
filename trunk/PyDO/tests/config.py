@@ -56,6 +56,13 @@ def readCmdLine(args, usage=None):
                       help="pattern to match against to find tests by name",
                       metavar='PATTERN',
                       action='store')
+    parser.add_option('-u',
+                      '--unittest',
+                      dest='unittest',
+                      help="use unittest module",
+                      metavar='WITH_UNITTEST',
+                      action='store_true',
+                      default=False)
     opts, args=parser.parse_args(args)
     try:
         c=_readConfigFile(opts.config)
@@ -100,6 +107,6 @@ def readCmdLine(args, usage=None):
     else:
         pat=_defaultNamePat    
 
-    return retdrivers, tags, pat
+    return retdrivers, tags, pat, opts.unittest
 
 

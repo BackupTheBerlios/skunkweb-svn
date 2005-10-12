@@ -9,7 +9,7 @@ import logging
 sys.path.insert(0, '../src')
 
 import config
-from testingtesting import runNamespace, info, runModule
+from testingtesting import runNamespace, info, runModule, _defaultNamePat, _testsForModule
 from pydo import initAlias, delAlias, setLogLevel
 
 setLogLevel(logging.DEBUG)
@@ -23,9 +23,8 @@ from test_guesscache import *
 from test_multifetch import *
 from test_operators import *
 
-
 if __name__=='__main__':
-    drivers, tags, pat=config.readCmdLine(sys.argv[1:])
+    drivers, tags, pat, use_unit=config.readCmdLine(sys.argv[1:])
     res=0
     import runtests
     for d, connectArgs in drivers.iteritems():
@@ -37,7 +36,7 @@ if __name__=='__main__':
             info("testing with driver: %s", d)
         config.DRIVER=d
         try:
-            res |= runModule(runtests, curtags, pat)
+            res |= runModule(runtests, curtags, pat, use_unit)
         finally:
             delAlias('pydotest')
             del config.DRIVER

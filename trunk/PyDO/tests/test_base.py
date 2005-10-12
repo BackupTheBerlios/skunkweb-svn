@@ -904,3 +904,6 @@ class test_many_to_many1(base_fixture):
         j=o2.getC()
         assert len(j)==1
         assert j[0].id==1    
+
+
+

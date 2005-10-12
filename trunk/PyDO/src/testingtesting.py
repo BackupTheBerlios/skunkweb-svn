@@ -6,6 +6,7 @@ import re
 import sys
 import types
 import logging
+import unittest
 
 logger=logging.getLogger('testingtesting')
 exception=logger.exception
@@ -28,7 +29,9 @@ def _testsForNamespace(ns, namePat, tags):
                 if set(tags).issubset(ftags):
                     yield value
             
-def runtests(tests):
+def runtests(tests, with_unittest=False):
+    if with_unittest:
+        return runtests_with_unittest(tests)
     success=[]
     fail=[]
     for i, t in enumerate(tests):
@@ -55,13 +58,20 @@ def runtests(tests):
         return 1
     return 0
 
-def runModule(m, tags=None, namePat=_defaultNamePat):
-    return runtests(_testsForModule(m, namePat, tags))
+def runtests_with_unittest(tests):
+    cases=[unittest.FunctionTestCase(x) for x in tests]
+    suite=unittest.TestSuite(cases)
+    runner=unittest.TextTestRunner(verbosity=2)
+    result=runner.run(suite)
+    return not result.wasSuccessful()
 
-def runNamespace(tags=None, ns=None, namePat=_defaultNamePat):
+def runModule(m, tags=None, namePat=_defaultNamePat, with_unittest=False):
+    return runtests(_testsForModule(m, namePat, tags), with_unittest)
+
+def runNamespace(tags=None, ns=None, namePat=_defaultNamePat, with_unittest=False):
     if ns is None:
         ns=globals()
-    return runtests(_testsForNamespace(ns, namePat, tags))
+    return runtests(_testsForNamespace(ns, namePat, tags), with_unittest)
 
 def summarize_tests(success, fail):
     total=len(success)+len(fail)
