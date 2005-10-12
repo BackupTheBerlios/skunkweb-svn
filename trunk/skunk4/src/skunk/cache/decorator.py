@@ -1,3 +1,39 @@
+"""
+
+This module supplies a class, CacheDecorator, instances of which can
+be used as decorators that cache the return value of the wrapped
+function.  The cache policy and expiration can be set in the
+decorator, and also may be overridden when the function is called with
+the keyword arguments "cache" (for policy) and "expiration".
+
+Issues:
+
+   * the resulting function seems to have the wrong __module__ attribute.
+   * the function signature is genericized; it would nice to have it
+     be the same as the original function, plus the two additional optional
+     parameters.
+   * If the two additional parameters conflict with the original signature,
+     that would be a Bad Thing.
+
+Example usage:
+
+  >>> from skunk.cache import MemoryCache, CacheDecorator, YES, FORCE
+  >>> cache=CacheDecorator(MemoryCache())
+  >>> import time
+  >>> @cache(expiration="30s")
+  ... def timestamp():
+          return time.time()
+  >>> x=timestamp()
+  >>> y=timestamp()
+  >>> x==y
+  True
+  >>> z=timestamp(cache=FORCE)
+  >>> x<z
+  True
+
+"""
+
+
 from policy import YES
 
 
