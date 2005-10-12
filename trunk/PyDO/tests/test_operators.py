@@ -10,6 +10,7 @@ the moment.)
 from testingtesting import tag
 import config
 from fixture import base_fixture
+from cPickle import loads, dumps
 
 alltags=config.ALLDRIVERS + ['operators']
 
@@ -50,3 +51,9 @@ class test_converter2(base_fixture):
         assert len(res)==1
 
 
+@tag(*alltags)
+def test_pickleconstant1():
+    f=FIELD('ho')
+    f2=loads(dumps(f))
+    assert str(f)==str(f2)
+    

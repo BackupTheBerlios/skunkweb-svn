@@ -376,7 +376,7 @@ def test_schema1():
     assert A.schema=='pants'
 
 @tag(*alltags)
-def test_pickle1():
+def test_picklebase1():
     global zingo
     class zingo(P.PyDO):
         fields=(P.Sequence('id'),

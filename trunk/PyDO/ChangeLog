@@ -1,5 +1,8 @@
 2005-10-12  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* tests/test_operators.py (test_pickle1), tests/test_fields.py
+	(test_pickle1): tests for pickling. 
+
 	* src/pydo/operators.py, src/pydo/fields.py: define __getstate__
 	and __setstate__ for objects with slots.
 
