@@ -56,6 +56,8 @@ class CacheDecorator(object):
             policy=self.defaultPolicy
         if ondefer is _default:
             ondefer=self.defaultOndefer
+        # workaround for nested scope bug/wart -- you can't assign to
+        # variables in intermediate (not global, not local) scopes
         def wrapper(fn):
             if hasattr(fn, 'expiration') and def_exp:
                 expiration1=fn.expiration
