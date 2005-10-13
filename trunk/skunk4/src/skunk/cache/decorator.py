@@ -37,14 +37,16 @@ Example usage:
 from policy import YES
 
 
+_default=object()
 
 class CacheDecorator(object):
-    def __init__(self, cache, defaultExpiration='30s', defaultPolicy=YES):
+    def __init__(self, cache, defaultExpiration='30s', defaultPolicy=YES, defaultOndefer=None):
         self.cache=cache
         self.defaultExpiration=defaultExpiration
         self.defaultPolicy=defaultPolicy
+        self.defaultOndefer=defaultOndefer
 
-    def __call__(self, expiration=None, policy=None):
+    def __call__(self, expiration=None, policy=None, ondefer=_default):
         if expiration is None:
             def_exp=True
             expiration=self.defaultExpiration
@@ -52,6 +54,8 @@ class CacheDecorator(object):
             def_exp=False
         if policy is None:
             policy=self.defaultPolicy
+        if ondefer is _default:
+            ondefer=self.defaultOndefer
         def wrapper(fn):
             if hasattr(fn, 'expiration') and def_exp:
                 expiration1=fn.expiration
@@ -60,7 +64,8 @@ class CacheDecorator(object):
             def newfunc(*args, **kwargs):
                 policy2=kwargs.pop('cache', policy)
                 expiration2=kwargs.pop('expiration', expiration1)
-                res=self.cache.call(fn, (args, kwargs), policy2, expiration2)
+                ondefer2=kwargs.pop('ondefer', ondefer)
+                res=self.cache.call(fn, (args, kwargs), policy2, expiration2, ondefer2)
                 return res.value
             if hasattr(fn, '__doc__'):
                 newfunc.__doc__=fn.__doc__
@@ -71,6 +76,4 @@ class CacheDecorator(object):
             return newfunc
         return wrapper
     
-            
-        
 __all__=['CacheDecorator']
