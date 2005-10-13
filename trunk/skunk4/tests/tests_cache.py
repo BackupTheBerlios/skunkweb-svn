@@ -10,6 +10,9 @@ import shutil
 def dullfunc(*args, **kwargs):
     return time.time()
 
+def bypassfunc():
+    raise C.BypassCache, time.time()
+
 class CacheTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -53,6 +56,13 @@ class CacheTestCase(unittest.TestCase):
             c.invalidate('time.time')
             time.sleep(0.1)
             e2=c.call(time.time, None, C.YES, expiration="1s")
+            assert e2.value > e1.value
+
+    def test_bypass(self):
+        for c in self.diskcache, self.memcache:
+            e1=c.call(bypassfunc, None, C.YES, expiration="30m")
+            time.sleep(0.1)
+            e2=c.call(bypassfunc, None, C.YES, expiration="30m")
             assert e2.value > e1.value
 
             

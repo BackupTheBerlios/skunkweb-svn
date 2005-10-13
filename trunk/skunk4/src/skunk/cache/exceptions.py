@@ -7,3 +7,12 @@ class NotInCache(CacheException):
 
 class UnCacheable(CacheException):
     pass
+
+class BypassCache(Exception):
+    def value():
+        def fget(self):
+            if self.args:
+                return self.args[0]
+        return fget
+    value=property(value())
+    

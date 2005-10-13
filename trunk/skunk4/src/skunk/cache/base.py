@@ -3,7 +3,7 @@ from cPickle import PickleError, dumps as cPickle_dumps
 import sys
 from time import time
 from skunk.cache.log import debug
-from skunk.cache.exceptions import NotInCache, UnCacheable
+from skunk.cache.exceptions import NotInCache, UnCacheable, BypassCache
 from threading import RLock
 import warnings
 
@@ -80,7 +80,18 @@ class Cache(object):
                 return entry
 
         if policy.calculate or policy.defer:
-            val=callee(*args, **kwargs)
+            # the callee can bypass the cache by raising a BypassCache
+            # exception with the return value
+            try:
+                val=callee(*args, **kwargs)
+            except BypassCache, b:
+                val=b.value
+                now=time()
+                return CacheEntry(val,
+                                  created=now,
+                                  retrieved=now,
+                                  expiration=now)
+            
             # the callee has a chance to determine the expiration by
             # sending it out of band, through an "expiration"
             # attribute.  otherwise, value passed to this method will

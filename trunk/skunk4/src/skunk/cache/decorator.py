@@ -62,9 +62,12 @@ class CacheDecorator(object):
                 expiration2=kwargs.pop('expiration', expiration1)
                 res=self.cache.call(fn, (args, kwargs), policy2, expiration2)
                 return res.value
-            newfunc.__doc__=fn.__doc__
-            newfunc.__dict__.update(fn.__dict__)
-            newfunc.__name__=fn.__name__
+            if hasattr(fn, '__doc__'):
+                newfunc.__doc__=fn.__doc__
+            if hasattr(fn, "__dict__"):
+                newfunc.__dict__.update(fn.__dict__)
+            if hasattr(fn, '__name__'):
+                newfunc.__name__=fn.__name__
             return newfunc
         return wrapper
     
