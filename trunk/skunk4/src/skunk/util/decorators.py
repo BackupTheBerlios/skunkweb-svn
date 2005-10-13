@@ -1,8 +1,17 @@
 
-def _share_metadata(fn, dec):
-    dec.__name__=fn.__name__
-    dec.__doc__=fn.__doc__
-    dec.__dict__.update(fn.__dict__)
+def share_metadata(fn, dec):
+    try:
+        dec.__name__=fn.__name__
+    except AttributeError:
+        pass
+    try:
+        dec.__doc__=fn.__doc__
+    except AttributeError:
+        pass
+    try:
+        dec.__dict__.update(fn.__dict__)
+    except AttributeError:
+        pass
 
 
 def with_lock(lock):
@@ -20,7 +29,7 @@ def with_lock(lock):
                 return fn(*args, **kwargs)
             finally:
                 l.release()
-        _share_metadata(fn, newfunc)
+        share_metadata(fn, newfunc)
         return newfunc
     return wrapper
 

@@ -6,7 +6,7 @@ from skunk.vfs.readOnlyStream import ReadOnlyStream
 from skunk.vfs.pathutil import Archive, adjust_user_path
 
 class ZipFS(FS):
-    writeable=0
+    writeable=False
     
     def __init__(self, zippath, root='', prefix='/'):
         if not zipfile.is_zipfile(zippath):

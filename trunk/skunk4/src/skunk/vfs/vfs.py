@@ -8,6 +8,10 @@ from os.path import (dirname,
                      split as pathsplit)
 
 from skunk.vfs.pathutil import containedPaths
+from threading import RLock
+from skunk.util.decorators import with_lock
+
+
 
 # constants for "vstat"
 VST_SIZE=0
@@ -19,6 +23,9 @@ VFSRegistry={}
 
 _keyRE=re.compile(r'.*(\d+)$')
 
+_registerLock=RLock()
+
+@with_lock(_registerLock)
 def registerFS(fs, key='default'):
     for k, f in VFSRegistry.items():
         if fs is f:
@@ -33,6 +40,7 @@ def registerFS(fs, key='default'):
         key='%s%d' % (key, d)
     VFSRegistry[key]=fs
     return key
+
 
 class VFSException(exceptions.Exception):
     pass
@@ -90,22 +98,43 @@ def _movefile(fs, path, newpath, newfs):
         raise e
 
 
+class PropertyStore(object):
+    def properties(self, path, acquire=False, acquireRoot='/'):
+        raise NotImplementedError
+
+    def getproperty(self, path, propname, **kw):
+        raise NotImplementedError
+
+    def setproperty(self, path, propname, value):
+        raise NotImplementedError
+
+    def addproperty(self, path, propname, value):
+        raise NotImplementedError
+
+    def delproperty(self, path, propname):
+        raise NotImplementedError
+
+    def acquire(self, path, propname, root='/'):
+        raise NotImplementedError
+    
 
 class FS(object):
     """
     abstraction layer (common file model) for file systems.
     """
-    def isWriteable(self):
-        """
-        returns whether the fs supports write operations;
-        says nothing about whether a write is permitted
-        for a particular path
-        """
+##     def isWriteable(self):
+##         """
+##         returns whether the fs supports write operations;
+##         says nothing about whether a write is permitted
+##         for a particular path
+##         """
         
-        if hasattr(self.__class__, 'writeable'):
-            return self.__class__.writeable
-        else:
-            return None
+##         if hasattr(self.__class__, 'writeable'):
+##             return self.__class__.writeable
+##         else:
+##             return False
+
+    writeable=False
 
     def vstat(self, path):
         raise NotImplementedError
@@ -220,7 +249,7 @@ class FS(object):
     
 class LocalFS(FS):
 
-    writeable=1
+    writeable=True
 
     def __init__(self, root='/', followSymlinks=1):
         self.root=normpath(root)
@@ -257,6 +286,8 @@ class LocalFS(FS):
             shutil.rmtree(realpath)
         else:
             os.remove(realpath)
+
+        
     
     def open(self, path, mode='r'):
         """
@@ -300,6 +331,8 @@ class LocalFS(FS):
 frontslashRE=re.compile(r'^/')
 endslashRE=re.compile(r'/$')
 
+_mountLock=RLock()
+
 class MultiFS(FS):
     """
     
@@ -329,16 +362,22 @@ class MultiFS(FS):
         self._mountpoints=self.mounts.keys()
         self._sortMountPoints()
 
+
     def _sortMountPoints(self):
         """
         keeps mount points sorted longest first (and otherwise in
         alphabetical order, which doesn't actually matter)
         """
-        def lencmp(x, y):
-            xs, ys=map(str, (x, y))
-            return cmp(len(ys), len(xs)) or cmp(xs, ys)
-        self._mountpoints.sort(lencmp)
-        
+##         def lencmp(x, y):
+##             xs, ys=map(str, (x, y))
+##             return cmp(len(ys), len(xs)) or cmp(xs, ys)
+##         self._mountpoints.sort(lencmp)        
+        def lenkey(x):
+            xs=str(x)
+            return (len(xs), xs)
+        self._mountpoints.sort(key=lenkey)
+
+    @with_lock(_mountLock)
     def mount(self, fs, mountPoint='/'):
         if self.mounts.has_key(mountPoint):
             self.mounts[mountPoint].append(fs)
@@ -347,6 +386,7 @@ class MultiFS(FS):
             self._mountpoints.append(mountPoint)
             self._sortMountPoints()
 
+    @with_lock(_mountLock)
     def find_mount(self, path, strict=0):
         found=None
         # because of dynamic mounting, these need to be re-sorted
