@@ -1,7 +1,26 @@
+"""
+
+This cache currently does not support invalidation of cache entries by
+canonicalName, as memcached does not support partitioning the cache
+into sub-caches, or indexing the cache entries.
+
+A fairly expensive workaround is possible:creating a sequence in
+memcached for each canonicalName and adding to the key, and
+incrementing the sequence to invalidate that partition of the cache.
+This would mean that every cache hit would require at the very least a
+retrieval of the sequence.  That invalidation wouldn't actually free
+memory isn't as important.
+
+"""
+
 import memcache
 from skunk.cache.base import Cache
+from skunk.cache.log import error
+from skunk.cache.exceptions import NotImplementedWarning
 from time import time
-from log import error
+
+
+import warnings
 
 class MemcachedCache(Cache):
     def __init__(self, servers, debug=0):
@@ -23,7 +42,12 @@ class MemcachedCache(Cache):
             error("couldn't store entry!")
         
     def invalidate(self, canonicalName):
-        # should I raise an error?  flush all the entries?
-        pass
+        """
+        not implemented, but sends a warning, rather than an error.
+        """
+        warnings.warn("cache invalidation is not currently supported by the memcached backend",
+                      NotImplementedWarning)
+
+        
 
             

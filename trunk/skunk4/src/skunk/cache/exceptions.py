@@ -16,3 +16,5 @@ class BypassCache(Exception):
         return fget
     value=property(value())
     
+class NotImplementedWarning(Warning):
+    pass
