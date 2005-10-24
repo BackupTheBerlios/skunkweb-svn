@@ -21,6 +21,7 @@ import grp
 import logging
 import os
 import pwd
+import resource
 import signal
 import sys
 import time
@@ -41,6 +42,12 @@ class HupSignal(SignalException):
 class bag(object):
     def __init__(self, **kw):
         self.__dict__=kw
+
+try:
+    _devnull=os.devnull
+except AttributeError:
+    _devnull='/dev/null'
+    
     
 class ProcessManager(object):
     """a fixed, preforking process manager"""
@@ -159,20 +166,40 @@ class ProcessManager(object):
             self._run_as()
             sys.exit()
 
-        # suppress going to background (for running under daemontools)
         if not self.foreground:
            # become daemon and process group leader
            self.info("daemonizing...")
            if os.fork():
-               sys.exit()
+               os._exit(0)
+               #sys.exit()
            if os.fork():
-               sys.exit()
-           os.setsid()
+               #sys.exit()
+               os._exit(0)
+           os.setsid() 
         else:
+            # suppress going to background (for running under daemontools)
            self.info('not going to background')
 
         os.chdir('/')
-        # optional umask? XXX
+        os.umask(0)
+
+        # find number of possible file descriptors
+        maxfd = resource.getrlimit(resource.RLIMIT_NOFILE)[1]
+        if (maxfd == resource.RLIM_INFINITY):
+            maxfd = 1024
+  
+        # close all file descriptors.
+        for fd in xrange(0, maxfd):
+            try:
+                os.close(fd)
+            except OSError:
+                # wasn't open, that's OK
+                pass
+
+        # send the standard streams to the bit bucket
+        os.open(_devnull, os.O_RDWR)
+        os.dup2(0, 1)
+        os.dup2(0, 2)
         
         #write the pid file
         open(self.pidFile,'w').write('%s' % os.getpid())
@@ -252,7 +279,8 @@ class ProcessManager(object):
                 signal.signal(signal.SIGHUP, signal.SIG_DFL)
                 signal.signal(signal.SIGTERM, signal.SIG_DFL)
                 self._run_as()
-                sys.exit()
+                os._exit(0)
+                #sys.exit()
             self._children[kidPid] = 1
 
     def _die(self):

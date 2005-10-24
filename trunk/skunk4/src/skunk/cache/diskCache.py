@@ -87,7 +87,12 @@ class DiskCache(Cache):
         # multiple times between cache clears.
         tempname=tempfile.mkdtemp(suffix=".del",
                                   dir=dname)
-        os.rename(p, tempname)
+        try:
+            os.rename(p, tempname)
+        except OSError, e:
+            if e.errno==2:
+                # original file doesn't exist
+                pass
 
     def pack(self):
         """

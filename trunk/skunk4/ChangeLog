@@ -1,0 +1,8 @@
+2005-10-24  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/skunk/net/server/processmgr.py: deal with file descriptors
+	and call os._exit rather than sys.exit.
+
+	* src/skunk/cache/diskCache.py (DiskCache.invalidate): fix for
+	when cache item isn't in the cache.
+
