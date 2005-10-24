@@ -1,0 +1,2 @@
+Deferral is too crude -- it should be possible to specify a cutoff, so
+that if the cache is too old, you don't defer but do the work up-front.
