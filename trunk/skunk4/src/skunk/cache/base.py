@@ -76,7 +76,7 @@ class Cache(object):
             if entry and policy.accept(entry):
                 entry.retrieved=time()
                 if policy.defer and ondefer:
-                    ondefer(callee, callargs, expiration)
+                    return ondefer(entry, callee, callargs, expiration)
                 return entry
 
         if policy.calculate or policy.defer:

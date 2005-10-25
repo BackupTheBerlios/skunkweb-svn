@@ -1,3 +1,9 @@
+2005-10-25  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/skunk/cache/base.py (Cache.call): changing signature of
+	ondefer, so that the deferral callback can return the original
+	entry if it wants.
+
 2005-10-24  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/skunk/net/server/processmgr.py: deal with file descriptors
