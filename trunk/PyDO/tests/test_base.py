@@ -478,6 +478,23 @@ class test_update2(base_fixture):
         else:
             assert 0, "should have failed to update out-of-date instance"
 
+class test_update3(base_fixture):
+    usetables=['A']
+    tags=alltags
+
+    def pre(self):
+        self.A.new(name='dingbat',
+                   x=3,
+                   y=2,
+                   z=33)
+
+    def run(self):
+        obj=self.A.getUnique(name='dingbat')
+        # in PyDO 2.0b2, this raises an exception
+        # with mysql, because no row has actually
+        # changed.
+        obj.update(obj)
+
 class test_deleteSome1(base_fixture):
     usetables=('B',)
     tags=alltags
