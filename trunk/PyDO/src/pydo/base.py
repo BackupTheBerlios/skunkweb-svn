@@ -930,9 +930,10 @@ def OneToMany(this_side, that_side, kls):
         eq=[EQ(FIELD(x), self[y]) for x, y in zipped]
         if args and isinstance(args[0], basestring):
             # combining a string requires awkward special casing...
-            conn=self.getDB()
-            converter=conn.converter
+            conn=self.getDBI()
+            converter=conn.getConverter()
             sql, values=self._processWhere(conn, eq, {}, converter=converter)
+            converter.reset()
             extrasql, extravalues=self._processWhere(conn, args, kwargs, converter=converter)
             # merge sql strings
             sql=' AND '.join((sql, extrasql))

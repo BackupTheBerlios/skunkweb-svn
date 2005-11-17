@@ -1,7 +1,11 @@
 2005-11-17  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* tests/test_base.py (test_one_to_many3): test for 1-2->1 bug.
+
 	* src/pydo/base.py (PyDO._update_raw): use new has_sane_rowcount
 	flag.  This fixes berlios bug #5521.
+	(ForeignKey.getMany): fix for passing a sql string (various typos
+	and thinkos) reported by Jonan Santiago, much thanks.
 
 	* src/pydo/drivers/mysqlconn.py: set has_sane_rowcount to False.
 
