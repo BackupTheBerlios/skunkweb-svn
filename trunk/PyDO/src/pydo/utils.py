@@ -120,3 +120,26 @@ def getuser():
 
         
         
+def moduleize(module, kls, safe=True):
+    """
+    This can associate a dynamically created class
+    with a module so that it can be pickled properly.
+    That doesn't mean it can necessarily be unpickled;
+    the code that created and moduleized the class needs
+    to run before unpickling can succeed.
+    """
+    name=kls.__name__
+    if hasattr(module, name):
+        thing=getattr(module, name)
+        if kls is thing:
+            # no problem
+            return
+        elif safe:
+            raise ValueError, \
+                  "name already in use in module: %s.%s)" \
+                  % (module.__name__, name)
+    setattr(module, name, kls)
+    kls.__module__=module.__name__
+
+    
+    

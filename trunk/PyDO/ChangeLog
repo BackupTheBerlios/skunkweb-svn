@@ -1,5 +1,12 @@
 2005-11-17  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/pydo/base.py (PyDO.project): use moduleize when passed in a
+	module. (autoschema): ditto.
+
+	* src/pydo/utils.py (moduleize): convenience function for
+	associating a dynamically created class with a module, in order
+	to pickle or unpickle it.
+
 	* tests/test_base.py (test_one_to_many3): test for 1-2->1 bug.
 
 	* src/pydo/base.py (PyDO._update_raw): use new has_sane_rowcount

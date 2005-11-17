@@ -4,7 +4,7 @@ from pydo.guesscache import GuessCache
 from pydo.exceptions import PyDOError
 from pydo.operators import AND, EQ, FIELD, IS, NULL
 from pydo.dbtypes import unwrap
-from pydo.utils import (_tupleize, _setize, formatTexp,
+from pydo.utils import (_tupleize, _setize, formatTexp, moduleize,
                         _strip_tablename, every, string_to_obj)
 
 from itertools import izip
@@ -231,14 +231,13 @@ class PyDO(dict):
         if len(fields)==1 and isinstance(fields[0], (list, tuple)):
             fields=fields[0]
             
-        # only kwarg accepted currently is "mutable", but this is open
-        # to later expansion
-        acceptable=frozenset(('mutable',))
+        acceptable=frozenset(('mutable','module'))
         diff=frozenset(kwargs)-acceptable
         if diff:
             raise ValueError, "unrecognized keyword arguments: %s" \
                   % ', '.join(str(x) for x in diff)
         mutable=kwargs.get('mutable', cls.mutable)
+        module=kwargs.get('module', None)
         s=[]
         for f in fields:
             if isinstance(f, Field):
@@ -257,15 +256,17 @@ class PyDO(dict):
             s.append('_'.join(sorted('%s_%s' % x for x in kwargs.items())))        
         t=tuple(s)
         if cls._projections.has_key(t):
-            return cls._projections[t]
-
-        klsname='projection_%s__%s' % (cls.__name__,
-                                       '_'.join(s))
-        kls=type(klsname, (cls,), dict(fields=fields,
-                                       mutable=mutable,
-                                       table=cls.getTable(False),
-                                       _is_projection=True))
-        cls._projections[t]=kls
+            kls=cls._projections[t]
+        else:
+            klsname='projection_%s__%s' % (cls.__name__,
+                                           '_'.join(s))
+            kls=type(klsname, (cls,), dict(fields=fields,
+                                           mutable=mutable,
+                                           table=cls.getTable(False),
+                                           _is_projection=True))
+            cls._projections[t]=kls
+        if module:
+            moduleize(module, kls)
         return kls
 
 
@@ -807,7 +808,7 @@ class PyDO(dict):
             sql.append(conn.orderByString(order, limit, offset))                
         return ''.join(sql), vals
 
-def autoschema(alias, schema=None, guesscache=True):
+def autoschema(alias, schema=None, guesscache=True, module=None):
     """
     returns a dictionary of PyDO objects created automatically by
     schema introspection, keyed by class name.  Typical usage:
@@ -815,7 +816,8 @@ def autoschema(alias, schema=None, guesscache=True):
       globals().update(autoschema('myalias'))
 
     The PyDO objects created are extremely bare, but may be enough for
-    quick scripts. 
+    quick scripts.   If you want to pickle them, pass in a module
+    for them to live in for the "module" parameter.  
     """
     ns={}
     db=getConnection(alias)
@@ -827,6 +829,8 @@ def autoschema(alias, schema=None, guesscache=True):
                table=table)
         Table=table.capitalize()
         obj=type(Table, (PyDO,), d)
+        if module:
+            moduleize(module, obj)
         ns[Table]=obj
     return ns
 
