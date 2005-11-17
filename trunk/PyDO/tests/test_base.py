@@ -912,6 +912,10 @@ class test_one_to_many3(base_fixture):
     def run(self):
         tmp=self.ac1.getF(P.NE(P.FIELD('a_id'), 2))
         assert len(tmp)==4
+        tmp=self.ac1.getF("a_id > %s", 100)
+        assert len(tmp)==0
+        tmp=self.ac1.getF(a_id=4000)
+        assert len(tmp)==0
 
 
 class test_many_to_many1(base_fixture):
