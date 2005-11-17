@@ -1,5 +1,8 @@
 2005-11-17  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* doc/manual.rst: document the new module parameters to project
+	and autoschema.
+
 	* src/pydo/base.py (PyDO.project): use moduleize when passed in a
 	module. (autoschema): ditto.
 

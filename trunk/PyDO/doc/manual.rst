@@ -232,12 +232,16 @@ in a dictionary keyed by class name::
 
    globals().update(autoschema(alias='myDBAlias',
                                schema='public',
-                               guesscache=True)
+                               guesscache=True,
+                               module=someModule)
 
 By default, it will use the default ``GuessCache``, and specify no
 schema; you must give an alias (which should be initialized first with
-``initAlias``).  While convenient for scripts, this approach gives you
-no way of adding methods to your PyDO objects or customizing their
+``initAlias``).  The ``module`` parameter has the same effect as the
+``module`` parameter to ``PyDO.project()``: it causes the new classes
+to be associated with the provided module, so they can be pickled and
+unpickled.  While convenient for scripts, using ``autoschema`` gives
+you no way of adding methods to your PyDO objects or customizing their
 attributes, so isn't well suited for PyDO's main purpose, namely,
 crafting an application's data access layer.
 
@@ -286,9 +290,12 @@ include in the projection::
 
    myProjection=MyBaseClass.project('id', 'title')
 
-The ``project()`` method also accepts the keyword argument
-``mutable``, which if provided will override the ``mutable`` attribute
-of the base class.
+The ``project()`` method also accepts two keyword arguments:
+``mutable`` and ``module``, which if provided will respectively
+override the ``mutable`` attribute of the base class, and cause the
+projection to be stored in the namespace of the provided module, also
+setting the ``__module__`` attribute of the new class so that it can
+pickled and unpickled.  
 
 The return value is a subclass of ``myBaseClass`` with the fields
 ``id`` and ``title``. This class is cached, so if you call
