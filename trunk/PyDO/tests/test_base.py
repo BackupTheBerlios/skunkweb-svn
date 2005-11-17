@@ -459,7 +459,11 @@ class test_update1(base_fixture):
 
 class test_update2(base_fixture):
     usetables=['A']
-    tags=alltags
+    # this will fail with mysql, because we can't count
+    # on the rowcount property meaning that the update has
+    # failed when zero rows are affected -- the update
+    # could be vacuous.
+    tags=[x for x in alltags if x!='mysql']
 
     def pre(self):
         self.A.new(name='froggie',

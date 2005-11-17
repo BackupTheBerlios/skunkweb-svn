@@ -1,3 +1,18 @@
+2005-11-17  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/base.py (PyDO._update_raw): use new has_sane_rowcount
+	flag.  This fixes berlios bug #5521.
+
+	* src/pydo/drivers/mysqlconn.py: set has_sane_rowcount to False.
+
+	* src/pydo/dbi.py (has_sane_rowcount): new flag for driver
+	classes, indicating whether we ought to take rowcount seriously or
+	not. 
+
+	* tests/test_base.py (test_update2): excluding mysql from this
+	test, which mysql can't run successfully without failing another
+	test. 
+
 2005-10-12  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* tests/test_operators.py (test_pickle1), tests/test_fields.py

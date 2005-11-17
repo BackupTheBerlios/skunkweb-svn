@@ -310,9 +310,13 @@ class PyDO(dict):
                                              ", ".join(sqlbuff),
                                              where)
         result=conn.execute(sql, values)
-        if result != 1:
+        # mysql will return 0 if the update was vacuous,
+        # but that doesn't imply failure.  Postgresql and sqlite
+        # will return 1 in this case.  
+        if conn.has_sane_rowcount and result !=1:
             # hack/hook to enable updateable views to work that don't
-            # return a correct rowcount
+            # return a correct rowcount.  (This is probably unnecessary now 
+            # that we accept 0.)
             if self._ignore_update_rowcount:
                 pass
             else:

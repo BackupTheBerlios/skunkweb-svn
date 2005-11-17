@@ -24,6 +24,8 @@ class DBIBase(object):
     # default to postgresql style for sequences,
     # out of sheer postgresql bigotry. 
     auto_increment=False
+    # should we pay attention to rowcount by default?
+    has_sane_rowcount=True
     
     def __init__(self,
                  connectArgs,

@@ -21,6 +21,8 @@ class MysqlConverter(BindingConverter):
 class MysqlDBI(DBIBase):
     auto_increment=True
     autocommit=True
+    has_sane_rowcount=False
+    
     def __init__(self, connectArgs, pool=None, verbose=False, initFunc=None):
         if pool and not hasattr(pool, 'connect'):
             pool=ConnectionPool()
