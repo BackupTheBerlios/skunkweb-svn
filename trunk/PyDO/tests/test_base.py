@@ -896,6 +896,22 @@ class test_one_to_many2(base_fixture):
         tmp=self.ac2.getF()
         assert len(tmp)==3
 
+class test_one_to_many3(base_fixture):
+    usetables=('A_C', 'F')
+    tags=alltags
+
+    def pre(self):
+        self.A_C.getF=P.OneToMany(('a_id', 'c_id'), ('a_id', 'c_id'), self.F)
+        self.ac1=self.A_C.new(a_id=1, c_id=1)
+        self.ac2=self.A_C.new(a_id=2, c_id=2)
+        for i in range(4):
+            self.F.new(a_id=1, c_id=1)
+        for i in range(3):
+            self.F.new(a_id=2, c_id=2)
+
+    def run(self):
+        tmp=self.ac1.getF(P.NE(P.FIELD('a_id'), 2))
+        assert len(tmp)==4
 
 
 class test_many_to_many1(base_fixture):
