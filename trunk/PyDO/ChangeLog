@@ -1,5 +1,8 @@
 2005-11-17  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/pydo/__init__.py (__version__): upping version number to
+	2.0rc1. 
+
 	* doc/manual.rst: document the new module parameters to project
 	and autoschema.
 
