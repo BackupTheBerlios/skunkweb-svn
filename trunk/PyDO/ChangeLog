@@ -1,3 +1,13 @@
+2005-11-18  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/base.py (PyDO._joinTableSQL): fix for berlios bug #5665
+	-- bind values being passed in wrong order.
+	
+	* tests/test_base.py (test_getCount1): test for getCount.
+
+	* src/pydo/base.py (PyDO.getCount): adding getCount convenience
+	method (closes bug #4712).
+
 2005-11-17  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/__init__.py (__version__): upping version number to

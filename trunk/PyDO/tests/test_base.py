@@ -496,7 +496,7 @@ class test_update3(base_fixture):
         obj=self.A.getUnique(name='dingbat')
         # in PyDO 2.0b2, this raises an exception
         # with mysql, because no row has actually
-        # changed.
+        # changed.  Fixed in 2.0rc1.
         obj.update(obj)
 
 class test_deleteSome1(base_fixture):
@@ -948,3 +948,22 @@ class test_many_to_many1(base_fixture):
 
 
 
+class test_getCount1(base_fixture):
+    usetables=['D']
+    tags=alltags
+
+    def pre(self):
+        for x in range(20):
+            self.D.new(id=x, x=x)
+        
+    def run(self):
+        c=self.D.getCount(id=4)
+        assert c == 1
+        c=self.D.getCount()
+        assert c == 20
+        c=self.D.getCount("x < %s", 3)
+        assert c == 3
+        c=self.D.getCount(P.OR(P.EQ(P.FIELD('id'), 5), P.GT(P.FIELD('x'), 10)))
+        assert c == 10
+
+        

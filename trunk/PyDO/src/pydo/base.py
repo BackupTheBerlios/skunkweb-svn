@@ -652,6 +652,18 @@ class PyDO(dict):
         else:
             return []
 
+    @classmethod
+    def getCount(cls, *args, **fieldData):
+        """ Retrieve the number of object of this particular class,
+            optionally limited by query arguments.
+        """
+
+        proj=cls.project("COUNT(*) AS count")
+        res=proj.getSome(*args, **fieldData)
+        if res:
+            return res[0]['count']
+        return 0
+
 
     @classmethod
     def deleteSome(cls, *args, **fieldData):
@@ -803,7 +815,8 @@ class PyDO(dict):
                                            thatSideColumns)])
         sql.append(' AND '.join(joins))
         if wheresql:
-            sql.append(' AND (%s)' % wheresql)
+            #sql.append(' AND (%s)' % wheresql)
+            sql=' AND '.join(wheresql, sql)
         if filter(None, (order, limit, offset)):
             sql.append(conn.orderByString(order, limit, offset))                
         return ''.join(sql), vals
