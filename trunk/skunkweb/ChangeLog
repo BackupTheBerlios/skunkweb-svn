@@ -1,3 +1,8 @@
+2005-12-20  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* SkunkWeb/Services/mvc/__init__.py: adding misnamed mvc service
+	(m and v are missing).
+
 2005-09-20  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* pylibs/skunk/computils.py: convenience functions for dealing
