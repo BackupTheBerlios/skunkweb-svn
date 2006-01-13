@@ -281,7 +281,11 @@ class PsycopgDBI(DBIBase):
             debug("SQL: %s", (sql,))
         cur.execute(sql, (qtable,schema))
         for row in cur.fetchall():
-            L = [int(i) for i in row[0].split(' ')]
+            L=[int(i) for i in row[0].split(' ')]
+            if [x for x in L if x < 0]:
+                if self.verbose:
+                    debug("skipping constraint with system columns: %s" % row[0])
+                continue
             if self.verbose:
                 debug("Found unique index on %s" % L)
             if len(L) == 1:

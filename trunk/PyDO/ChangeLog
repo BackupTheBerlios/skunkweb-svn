@@ -1,3 +1,9 @@
+2006-01-13  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/drivers/psycopgconn.py (PsycopgDBI.describeTable): fix
+	for when indkey contains negative attnums in finding indices.
+	(Currently the policy is not to report such indexes at all.)
+
 2005-11-18  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/base.py (PyDO._joinTableSQL): fix for berlios bug #5665
