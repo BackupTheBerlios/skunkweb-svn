@@ -9,6 +9,7 @@ from pydo.utils import (_tupleize, _setize, formatTexp, moduleize,
 
 from itertools import izip
 import re
+from inspect import isfunction
 
 _group_pat=re.compile(r'\s*group ', re.I)
 
@@ -70,6 +71,16 @@ class _metapydo(type):
             # leave guess_tablename for subclasses
             cls.table=cl_name.lower()
 
+        # sequence mapping
+        sequence_mapper = namespace.get("sequence_mapper")
+        if sequence_mapper:
+            if isfunction(sequence_mapper):
+                cls.sequence_mapper = staticmethod(sequence_mapper)
+            else:
+                cls.sequence_mapper = sequence_mapper
+        elif cls.connectionAlias and hasattr(cls.getDBI(), "sequence_mapper"):
+            cls.sequence_mapper = staticmethod(cls.getDBI().sequence_mapper)
+
         # field guessing
         if namespace.get('guess_columns', False):
             if cls.guesscache == True:
@@ -84,7 +95,7 @@ class _metapydo(type):
             gfields, gunique=cls._getTableDescription()
             namespace['fields']=gfields.values()
             namespace['unique']=gunique
-
+        
         # create Field objects declared locally in this class
         # and store them in a temporary dict
         fielddict={}
@@ -144,7 +155,9 @@ class _metapydo(type):
         cls._sequenced={}
         for f in cls._fields.itervalues():
             if f.sequence:
-                cls._sequenced[f.name]=f.sequence
+                if f.sequence == True and cls.sequence_mapper:
+                    f.sequence = cls.sequence_mapper(cls.table, f.name)
+                cls._sequenced[f.name] = f.sequence
             if f.unique:
                 uniqueset.add(frozenset((f.name,)))
 
@@ -165,6 +178,7 @@ class PyDO(dict):
     # subclasses may customize these
     guess_tablename=True
     guess_columns=False
+    sequence_mapper=None
     use_attributes=True
     mutable=True
     connectionAlias=None
@@ -193,15 +207,17 @@ class PyDO(dict):
         compatible a pydo.GuessCache, and it will be consulted and
         populated. 
         """
-        
+        args = [cls.getTable(False), cls.schema]
+        if cls.sequence_mapper:
+            args.append(cls.sequence_mapper)
         if cls.guesscache:
             data=cls.guesscache.retrieve(cls)
             if not data:
-                data=cls.getDBI().describeTable(cls.getTable(False), cls.schema)
+                data=cls.getDBI().describeTable(*args)
                 cls.guesscache.store(cls, data)
             return data
         else:
-            return cls.getDBI().describeTable(cls.getTable(False), cls.schema)
+            return cls.getDBI().describeTable(*args)
     
     @staticmethod
     def _create_field(*args, **kwargs):
@@ -821,7 +837,7 @@ class PyDO(dict):
             sql.append(conn.orderByString(order, limit, offset))                
         return ''.join(sql), vals
 
-def autoschema(alias, schema=None, guesscache=True, module=None):
+def autoschema(alias, schema=None, guesscache=True, module=None, sequence_mapper=None):
     """
     returns a dictionary of PyDO objects created automatically by
     schema introspection, keyed by class name.  Typical usage:
@@ -840,6 +856,8 @@ def autoschema(alias, schema=None, guesscache=True, module=None):
                connectionAlias=alias,
                schema=schema,
                table=table)
+        if sequence_mapper:
+            d['sequence_mapper'] = sequence_mapper
         Table=table.capitalize()
         obj=type(Table, (PyDO,), d)
         if module:

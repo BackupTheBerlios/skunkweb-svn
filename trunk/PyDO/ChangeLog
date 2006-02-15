@@ -1,3 +1,13 @@
+2006-02-14  Hamish Lawson  <hbl@st-andrews.ac.uk>
+
+    * src/pydo/base.py: Added sequence_mapper attribute, a function taking 
+	parameters 'table' and 'column' and returning the sequence used in 
+	incrementing a column, for those databases that use a sequence for 
+	autoincrementing.
+    
+	* src/pydo/drivers/oracleconn.py: Added OracleDBI.describeTable.
+
+
 2006-01-13  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/drivers/psycopgconn.py (PsycopgDBI.describeTable): fix
