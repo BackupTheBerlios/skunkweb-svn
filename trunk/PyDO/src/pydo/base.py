@@ -513,8 +513,9 @@ class PyDO(dict):
 
     @classmethod
     def _sequence_for(cls, field):
-        mapper = cls.sequence_mapper or cls.getDBI().sequence_mapper
-        return mapper(cls.table, field)
+        mapper = cls.sequence_mapper or getattr(cls.getDBI(), 'sequence_mapper', None)
+        if mapper:
+            return mapper(cls.table, field)
         
     @classmethod
     def _matchUnique(cls, kw):

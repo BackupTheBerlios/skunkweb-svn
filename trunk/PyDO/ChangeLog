@@ -1,3 +1,8 @@
+2006-02-16  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* src/pydo/base.py (PyDO._sequence_for): don't assume that all
+	drivers have a "sequence_mapper" attribute.
+
 2006-02-16  Hamish Lawson  <hbl@st-andrews.ac.uk>
 
 	* src/pydo/base.py: Moved some sequence-mapping code from _metapydo to new 
