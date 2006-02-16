@@ -73,13 +73,10 @@ class _metapydo(type):
 
         # sequence mapping
         sequence_mapper = namespace.get("sequence_mapper")
-        if sequence_mapper:
-            if isfunction(sequence_mapper):
-                cls.sequence_mapper = staticmethod(sequence_mapper)
-            else:
-                cls.sequence_mapper = sequence_mapper
-        elif cls.connectionAlias and hasattr(cls.getDBI(), "sequence_mapper"):
-            cls.sequence_mapper = staticmethod(cls.getDBI().sequence_mapper)
+        if isfunction(sequence_mapper):
+            cls.sequence_mapper = staticmethod(sequence_mapper)
+        else:
+            cls.sequence_mapper = sequence_mapper
 
         # field guessing
         if namespace.get('guess_columns', False):
@@ -155,8 +152,6 @@ class _metapydo(type):
         cls._sequenced={}
         for f in cls._fields.itervalues():
             if f.sequence:
-                if f.sequence == True and cls.sequence_mapper:
-                    f.sequence = cls.sequence_mapper(cls.table, f.name)
                 cls._sequenced[f.name] = f.sequence
             if f.unique:
                 uniqueset.add(frozenset((f.name,)))
@@ -504,6 +499,8 @@ class PyDO(dict):
         if conn.auto_increment:
             for k, v in cls._sequenced.items():
                 if not fieldData.has_key(k):
+                    if v == True:
+                        v = cls._sequence_for(k)
                     fieldData[k] = conn.getAutoIncrement(v)
         # unwrap any wrapped values in fieldData
         fieldData=dict((k, unwrap(v)) for k,v in fieldData.iteritems())
@@ -514,6 +511,11 @@ class PyDO(dict):
             return cls(fieldData)
         return cls.getUnique(**fieldData)
 
+    @classmethod
+    def _sequence_for(cls, field):
+        mapper = cls.sequence_mapper or cls.getDBI().sequence_mapper
+        return mapper(cls.table, field)
+        
     @classmethod
     def _matchUnique(cls, kw):
         """return a tuple of column names that will uniquely identify

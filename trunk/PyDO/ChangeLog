@@ -1,3 +1,10 @@
+2006-02-16  Hamish Lawson  <hbl@st-andrews.ac.uk>
+
+	* src/pydo/base.py: Moved some sequence-mapping code from _metapydo to new 
+	method PyDO._sequence_for.
+    
+	* src/pydo/drivers/oracleconn.py: Tidying up of OracleDBI.describeTable.
+
 2006-02-14  Hamish Lawson  <hbl@st-andrews.ac.uk>
 
     * src/pydo/base.py: Added sequence_mapper attribute, a function taking 

@@ -162,12 +162,9 @@ class OracleDBI(DBIBase):
 				 AND trig.status = 'ENABLED'
             """
         cur.execute(sql, schema=schema, table_name=table)
-        def column_sequences():
-            for (column,) in cur:
-                sequence = sequence_mapper(table, column)
-                if sequence in sequences:
-                    yield column, sequence
-        for (column, sequence) in column_sequences():
-            fields[column].sequence = sequence
+        for (column,) in cur:
+            sequence = sequence_mapper(table, column)
+            if sequence in sequences:
+                fields[column].sequence = sequence
 
         return fields, unique
