@@ -1,3 +1,8 @@
+2006-03-02  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* pylibs/skunklib/_normpath.c: patch from Drew to use alloca
+	rather than malloc (possible fix for weird free() bug).
+
 2006-02-15  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* pylibs/formlib/form.py (DomainField.checkValue): better error
