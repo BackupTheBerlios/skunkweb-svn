@@ -1,4 +1,9 @@
-2006-03-08  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
+2006-03-08  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* MANIFEST.in: now including pdfs, thanks to Marien Zwart for
+	pointing out the omission.
+
+2006-03-08  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* doc/Makefile (RST2HTML): changing default paths for rst scripts. 
 
@@ -13,10 +18,11 @@
 
 2006-02-16  Hamish Lawson  <hbl@st-andrews.ac.uk>
 
-	* src/pydo/base.py: Moved some sequence-mapping code from _metapydo to new 
-	method PyDO._sequence_for.
+	* src/pydo/base.py: Moved some sequence-mapping code from
+	_metapydo to new method PyDO._sequence_for.
     
-	* src/pydo/drivers/oracleconn.py: Tidying up of OracleDBI.describeTable.
+	* src/pydo/drivers/oracleconn.py: Tidying up of
+	OracleDBI.describeTable.
 
 2006-02-14  Hamish Lawson  <hbl@st-andrews.ac.uk>
 
