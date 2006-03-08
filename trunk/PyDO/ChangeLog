@@ -1,3 +1,11 @@
+2006-03-08  Jacob Smullyan  <smulloni@bracknell.smullyan.org>
+
+	* doc/Makefile (RST2HTML): changing default paths for rst scripts. 
+
+	* src/pydo/__init__.py: upping version to 2.0.
+
+	* CLASSIFIERS: reclassifying as stable.
+
 2006-02-16  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/pydo/base.py (PyDO._sequence_for): don't assume that all

@@ -1,5 +1,5 @@
-RST2HTML=/usr/bin/docutils-rst2html.py
-RST2LATEX=/usr/bin/docutils-rst2latex.py
+RST2HTML=/usr/bin/rst2html.py
+RST2LATEX=/usr/bin/rst2latex.py
 PDFLATEX=/usr/bin/pdflatex
 HTMLSTYLESHEET=style.css
 HTMLOPTS=-s --footnote-references=brackets
