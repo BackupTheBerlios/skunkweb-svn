@@ -2,6 +2,7 @@
 import os
 import commands
 import re
+import sys
 
 def change_version(srcdir, version):
     for d, f, var, real_f in (('.', 'configure.in', 'SW_VERSION', 'configure'),
@@ -19,15 +20,18 @@ def change_version(srcdir, version):
            print >> sys.stderr, 'Cannot write %s : %s' % (full_f, val)
            sys.exit(1)
 
+
        # Run autoconf
        os.chdir(os.path.join(srcdir, d))
+       print "running autoconf...",
        ret, out = commands.getstatusoutput('autoconf')
        if ret:
            print 'Autoconf failed: returned %d: %s' % (ret, out)
            sys.exit(1)
+       else:
+           print "succeeded"
 
 if __name__=='__main__':
-    import sys
     if len(sys.argv)!=2:
         print >> sys.stderr, "usage: %s version" % os.path.basename(sys.argv[0])
         sys.exit(1)
