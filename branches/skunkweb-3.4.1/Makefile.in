@@ -85,7 +85,5 @@ make-tree:
 Makefile:	Makefile.in config.status
 	./config.status
 
-dist: 
-	PYTHONPATH=pylibs python util/make_distr.py
 
 .PHONY:	clean install build default make-tree
