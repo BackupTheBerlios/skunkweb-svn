@@ -1,1 +1,0 @@
-.. this should handle all those services that fit nowhere else
