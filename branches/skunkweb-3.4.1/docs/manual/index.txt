@@ -1,0 +1,83 @@
+.. -*-rst-*-
+
+===================
+The SkunkWeb Manual
+===================
+
+:Author: Brian Olsen, Drew Csillag, Jacob Smullyan, et al.
+:Version: 0.1
+:Status: Draft
+
+.. contents:: Table Of Contents
+.. section-numbering::
+
+-------
+Preface
+-------
+.. what SW is, what to expect from the 
+.. manual, links to other resources, etc.
+
+.. include:: preface.txt
+
+------------
+Installation
+------------
+
+.. How to install it; just enough about configuration to get the demo
+.. running.  Also covered should be installation alternatives; this is a
+.. departure from how you'd read it linearly, but will be for later
+.. reference.
+
+.. include:: installation.txt
+
+------------------------
+The SkunkWeb Environment
+------------------------
+
+.. covering basic usage: AE, web and templating -- in linear, 
+.. tutorial fashion.
+
+.. include:: ae_tut.txt
+
+-----------------
+SkunkWeb Services
+-----------------
+
+.. covering other services: databases, rewrite, sessions, 
+.. remote components, products ....
+
+.. include:: services.txt
+
+------------------
+SkunkWeb Utilities
+------------------
+
+.. formlib, PyDO
+
+.. include:: utilities.txt
+
+--------------
+STML Reference
+--------------
+
+.. one section for each tag; all concepts should have been explained earlier,
+.. so it is really a syntax reference.
+
+..  include:: stmlref.txt
+
+---------------------------------
+SkunkWeb Configuration and Tuning
+---------------------------------
+
+.. reference to configuration, and discussion
+.. of performance tuning.
+
+.. include:: config.txt
+
+------------------
+Extending SkunkWeb
+------------------
+
+.. creating tags, services, adding template types
+
+.. include:: extending.txt
