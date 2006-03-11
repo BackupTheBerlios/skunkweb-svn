@@ -4,6 +4,9 @@
 	directory out of this project, as these haven't been distributed
 	for some time.
 
+	* configure.in, configure, SkunkWeb/configure.in,
+	SkunkWeb/configure: upping version to 3.4.1.
+
 2006-03-02  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* pylibs/skunklib/_normpath.c: patch from Drew to use alloca
