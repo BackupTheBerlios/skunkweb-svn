@@ -1,4 +1,9 @@
-Changes in cvs
+Changes in 3.4.1
+================
+mvc service added
+
+
+Changes in 3.4
 ==============
 * http access logging, based on patch by JvD.
 * fixes for sessionHandler.PostgreSQLSessionStore, which was 
