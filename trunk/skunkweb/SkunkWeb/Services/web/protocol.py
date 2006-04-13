@@ -1,6 +1,6 @@
 ########################################################################
-# $Id: protocol.py,v 1.28 2004/01/11 04:01:25 smulloni Exp $
-# Time-stamp: <2003-12-29 22:50:30 smulloni>
+# $Id$
+# Time-stamp: <2006-04-12 22:42:29 smulloni>
 #  
 #  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>
 #  
@@ -45,6 +45,7 @@ headersOnlyStatuses=[100, 101, 102, 204, 304]
 
 HaveConnection=KeyedHook()
 PreHandleConnection=KeyedHook()
+RouteConnection=KeyedHook()
 HandleConnection=KeyedHook()
 ProcessResponse=Hook()
 
@@ -384,6 +385,7 @@ def _processRequest(requestData, sessionDict):
     except:
         logException()
     else:
+        RouteConnection(Configuration.job, connection, sessionDict)
         # DEBUG(WEB, 'handling connection')
         response=HandleConnection(Configuration.job, connection, sessionDict)
 

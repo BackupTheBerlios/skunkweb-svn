@@ -1,3 +1,11 @@
+2006-04-12  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* SkunkWeb/Services/web/protocol.py (_processRequest): new
+	RouteConnection hook, for mvc service.
+
+	* SkunkWeb/Services/mvc/services/routing.py: use new
+	RouteConnection hook, so routing occurs after vhost scoping.
+
 2006-03-11 Jacob Smullyan <smulloni@smullyan.org>
 	
 	* pylibs/{string8859.py,skunkdoc,pargen}: moving out to "misc"
