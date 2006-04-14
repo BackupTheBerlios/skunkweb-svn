@@ -1,3 +1,8 @@
+2006-04-14  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* pylibs/computils.py: syncing with wnyc version, and moving out
+	of skunk package (as skunk4 would override it anyway).
+
 2006-04-12  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* SkunkWeb/Services/web/protocol.py (_processRequest): new

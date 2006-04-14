@@ -68,7 +68,13 @@ def listdir(path):
     listing=C.documentRootFS.listdir(p)
     return listing
 
+def docroot_open(path):
+    p=_fixPath(C.documentRoot, relpath(path))
+    return C.documentRootFS.open(p)
 
+def docroot_exists(path):
+    p=_fixPath(C.documentRoot, relpath(path))
+    return C.documentRootFS.exists(p)
 
 __all__=('component',
          'stringcomp',
@@ -82,5 +88,7 @@ __all__=('component',
          'FORCE',
          'relpath',
          'curdir',
+         'docroot_open',
+         'docroot_exists',
          'listdir',
          'current_component')
