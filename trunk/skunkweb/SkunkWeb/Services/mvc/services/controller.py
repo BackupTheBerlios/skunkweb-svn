@@ -8,7 +8,8 @@ from logging import debug, info
 from mvc.utils import is_exposed, _import_a_class
 import types
 
-Cfg.mergeDefaults(controllers={})
+Cfg.mergeDefaults(controllers={},
+                  defaultErrorMimetype='text/html')
 
 def _resolve_string(controllerName):
     try:
