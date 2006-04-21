@@ -1,3 +1,13 @@
+2006-04-21  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* SkunkWeb/Services/mvc/__init__.py: making BaseController
+	available in mvc namespace.
+
+	* SkunkWeb/Services/web/protocol.py (HTTPConnection.redirect):
+	permit 302 redirects also with new optional parameter, "status". 
+
+	* SkunkWeb/Services/mvc/base.py: adding base controller class.
+
 2006-04-19  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* SkunkWeb/swpython.c.in: adding #include for alloca.h (thanks

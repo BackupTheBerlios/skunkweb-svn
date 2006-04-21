@@ -1,6 +1,6 @@
 ########################################################################
 # $Id$
-# Time-stamp: <2006-04-12 22:42:29 smulloni>
+# Time-stamp: <2006-04-21 16:51:39 smulloni>
 #  
 #  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>
 #  
@@ -224,9 +224,11 @@ class HTTPConnection:
             raise SkunkCriticalError, 'invalid status: %s' % status
         self._status = status
         
-    def redirect(self, url):
+    def redirect(self, url, status=301):
+        if status not in (301, 302):
+            raise ValueError, "invalid status for redirect: %s" % status
         self.responseHeaders['Location'] = url
-        self.setStatus(301)
+        self.setStatus(status)
         self._output=NullOutput()
         DEBUG(WEB, "Redirecting to %s" % url)
         
