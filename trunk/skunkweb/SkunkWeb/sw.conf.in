@@ -367,7 +367,7 @@ documentRoot = '@DOCROOT@'
 
 ########################################################################
 # Locations of logfiles.  The regularLog logs significant, but normal
-# events, the debugLog logs debug info according to initialDebugServices
+# events, the debugLog logs debug info according to debugServices
 # the accessLog logs access information, and the errorLog logs erroneous
 # conditions (mostly tracebacks)
 #

@@ -27,7 +27,7 @@ class Slot(object):
         self.name=name
 
 class ComponentSlot(Slot):
-    def __init__(self, name, compname, comptype=None, cache=NO, **kw):
+    def __init__(self, name, compname, comptype=None, cache=computils.NO, **kw):
         Slot.__init__(self, name)
         self.compname=relpath(compname)
         if comptype is None:
