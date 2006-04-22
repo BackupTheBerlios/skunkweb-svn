@@ -29,7 +29,7 @@ import controller
 # make sure that the context object is installed
 import context
 
-from logging import debug
+from mvc.log import debug
 
 __all__=['url_for', 'redirect_to']
 

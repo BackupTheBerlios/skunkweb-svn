@@ -7,13 +7,35 @@ from os.path import join as pathjoin
 C.mergeDefaults(slotConfigFilename='slotconf.pydcmp',
                 defaultTemplateFilename='template.comp')
 
+# require the context service
+import mvc.services.context
+
+def templatize(callback=None,
+               template=None):
+    """
+    invokes the layout templating mechanism; slots
+    can be further configured by setting a callback
+    """
+    conn=SkunkWeb.Context.connection
+    conn.setContentType('text/html')
+    slots=getConfiguredSlots(path=conn.uri)
+    if callback:
+        callback(slots,conn)
+    return stringcomp(getTemplatePath(template=template),
+                      SLOTS=slots)
 
 def getTemplatePath(template=None):
+    """
+    returns the path of the template
+    """
     if template is None:
         template=C.defaultTemplateFilename
     return getSkinComponentPath(template)
 
 def getSkinComponentPath(compname):
+    """
+    returns the path of a component in the current skin
+    """
     return pathjoin(C.skinDir, C.defaultSkin, compname)
 
 def getConfiguredSlots(path=None, slotfilename=None):
@@ -42,4 +64,7 @@ def getConfiguredSlots(path=None, slotfilename=None):
             slots.update(newslots)
     return slots
 
-__all__=['getConfiguredSlots', 'getTemplatePath', 'getSkinComponentPath']
+__all__=['getConfiguredSlots',
+         'getTemplatePath',
+         'getSkinComponentPath',
+         'templatize']

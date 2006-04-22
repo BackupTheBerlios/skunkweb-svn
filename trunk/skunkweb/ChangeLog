@@ -1,3 +1,7 @@
+2006-04-22  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* SkunkWeb/Services/layout/__init__.py: adding layout service.
+
 2006-04-21  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* SkunkWeb/Services/mvc/__init__.py: making BaseController

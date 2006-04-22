@@ -4,7 +4,7 @@ from web.protocol import PreemptiveResponse, HandleConnection
 from templating.Handler import _handleException
 from SkunkWeb.constants import WEB_JOB
 from SkunkWeb.LogObj import logException
-from logging import debug, info
+from mvc.log import debug, info
 from mvc.utils import is_exposed, _import_a_class
 import types
 
@@ -23,7 +23,6 @@ def _resolve_string(controllerName):
         return c
 
 def controllerHandler(connection, sessionDict):
-    debug("in controller handler")
     if not Cfg.MvcOn:
         return
     cname=sessionDict.get('CONTROLLER')
