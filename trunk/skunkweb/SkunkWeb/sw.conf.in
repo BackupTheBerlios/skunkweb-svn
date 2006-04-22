@@ -1,11 +1,7 @@
 # -*-python-*-
-
-# $Id: sw.conf.in,v 1.37 2004/03/01 16:27:04 smulloni Exp $
-# Time-stamp: <04/03/01 11:31:30 smulloni>
-
 ########################################################################
 #
-#  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>
+#  Copyright (C) 2001-2006 Andrew T. Csillag <drew_csillag@geocities.com>
 #  
 #      You may distribute under the terms of either the GNU General
 #      Public License or the SkunkWeb License, as specified in the
@@ -46,6 +42,34 @@ if "@RUNASROOT@" == "root":
 #                            AE components.  Requires requestHandler,
 #                            web, and ae_component.
 #
+# mvc                     -- controller framework.
+#
+# layout                  -- layout template support; adds <:slot:> and
+#                            <:calltemplate:> tags to STML
+#
+# sessionHandler          -- adds a session-scoped object to web's
+#                            HTTPConnection class which provides a simple form
+#                            of data persistence between requests, using cookies
+#                            and a pluggable data store (currently only MySQL,
+#                            PostgreSQL, and shelve files).
+#                            Requires web.
+#
+# rewrite                 -- supports common url rewriting tasks and supplies a
+#                            more complex tasks to be performed by other services
+#                            by means of a hook framework.
+#
+# auth                    -- service that provides various ways to do web
+#                            based authentication.  Requires web, and may
+#                            require sessionHandler.
+#
+# httpd                   -- service which handles http requests directly, as
+#                            opposed to via the mod_skunkweb Apache module.
+#                            Requires requestHandler.
+#
+# fcgiprot                -- FastCGI support.
+
+# Other services:
+#
 # remote                  -- server-side implementation of a remote call facility
 #                            for AE components.  Requires requestHandler and
 #                            ae_component.
@@ -55,53 +79,27 @@ if "@RUNASROOT@" == "root":
 #                            templating and its prerequisites;
 #                            does not require the remote service.
 #
-# sessionHandler          -- adds a session-scoped object to web's
-#                            HTTPConnection class which provides a simple form
-#                            of data persistence between requests, using cookies
-#                            and a pluggable data store (currently only MySQL,
-#                            PostgreSQL, and shelve files).
-#                            Requires web.
-#
-# httpd                   -- service which handles http requests directly, as
-#                            opposed to via the mod_skunkweb Apache module.
-#                            Requires requestHandler.
-#
-# basicauth               -- service that provides basic authentication to
-#                            locations configured to use it.  Requires
-#                            web.
-#
-# auth                    -- service that provides various ways to do web
-#                            based authentication.  Requires web, and may
-#                            require sessionHandler.
-#
-# oracle                  -- preloads the Oracle pylib and allows for
-#                            connection and stored procedure signature
-#                            caching
-#
-# postgresql              -- preloads the PostgreSql pylib and allows for
-#                            connection caching (using pgdb).
-#
-# pypgsqlcache            -- preloads the PyPgSQLcache pylib and allows for
-#                            connection caching (using the pyPgSQL db module)
-#
-# mysql                   -- preloads the MySQL pylib and allows for
-#                            connection caching
-#
-# rewrite                 -- supports common url rewriting tasks and supplies a
-#                            more complex tasks to be performed by other services
-#                            by means of a hook framework.
-#
 # extcgi                  -- supports external CGI's, i.e. regular ones,
 #                            as opposed to python CGI's which we will some
 #                            day be able to execute in place
 
+
+# Deprecated services:
+#
+# basicauth        
+# oracle
+# postgresql
+# pypgsqlcache
+# mysql
+
+# by default we load httpd, but don't use that for production -- use
+# aecgi (with mod_skunkweb) or fcgiprot
+
 services = ['requestHandler',
-            'aecgi',
             'ae_component',
             'web',
             'templating',
-            'remote',
-            'remote_client',
+            'layout',
             'httpd']
 
 ########################################################################
@@ -126,10 +124,9 @@ useCompileMemoryCache = 1
 #
 # stampEveryLine=0
 
-# services that are INITIALLY set to be debugged.
-# To determine what services are being debugged at runtime, use
-# SkunkWeb.ServiceRegistry.getDebugServices().
-initialDebugServices=[]
+# services set to be debugged.
+
+debugServices=[]
 
 ########################################################################
 # For the web service
@@ -176,7 +173,7 @@ RemoteListenPorts=['TCP:localhost:9887']
 
 ########################################################################
 # make the remote listen port do remote jobs; otherwise define default
-# job of templating
+# job of templating.  
 Scope(Port(9887, job=REMOTE_JOB))
 job=TEMPLATING_JOB
 
@@ -739,6 +736,22 @@ documentRoot = '@DOCROOT@'
 # # you want a persistent cookie
 #
 # usertrackingCookieExpires=None # for a two year cookie, 2*365*24*60*60
+
+########################################################################
+# For the layout service
+#
+# skinDir='/comp/skins'
+# defaultSkin='default'
+# slotConfigFilename='slotconf.pydcmp'
+# defaultTemplateFilename='template.comp'
+
+########################################################################
+# For the mvc service
+#
+# MvcOn = False    # must be true to use mvc in a scope
+# controllers={}   # add controllers here
+# routes=[]        # add routes here
+# defaultErrorMimetype='text/html'
 
 
 ########################################################################

@@ -1,5 +1,10 @@
 2006-04-22  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* SkunkWeb/sw.conf.in: some cleanup.
+
+	* SkunkWeb/SkunkWeb/LogObj.py: rename initialDebugServices to
+	debugServices.
+
 	* SkunkWeb/Services/layout/__init__.py: adding layout service.
 
 2006-04-21  Jacob Smullyan  <smulloni@smullyan.org>
