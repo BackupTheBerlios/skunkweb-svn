@@ -43,7 +43,8 @@ def __initHooks():
     HandleConnection.addFunction(Handler.plainHandler, jobGlob)
     HandleConnection.addFunction(Handler.fourOhFourHandler, jobGlob)
     RequestFailed.addFunction(_formatException, jobGlob)
-
+    import SkunkWeb.Configuration
+    SkunkWeb.Configuration.mergeDefaults(job=skc.TEMPLATING_JOB)
 
 
 ########################################################################

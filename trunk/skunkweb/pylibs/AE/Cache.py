@@ -51,7 +51,7 @@ Configuration.mergeDefaults(
     maxDeferStale = 3600, # 1 hour
     deferAdvance = 30, # how long to extend the life of a deferred component cache
     failoverRetry = 30, # how long should we use failover before checking NFS again
-    useCompileMemoryCache = 0,
+    useCompileMemoryCache = 1,
     findCommand = '/usr/bin/find',
     sedCommand = '/bin/sed',
     xargsCommand = '/usr/bin/xargs',
