@@ -5,7 +5,7 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: __init__.py,v 1.2 2003/05/01 20:45:54 drew_csillag Exp $
+# $Id$
 # Time-stamp: <01/05/04 11:31:32 smulloni>
 # fundamental service for handling single requests.
 ########################################################################
@@ -18,7 +18,8 @@ def __initConfig():
     from SkunkWeb import Configuration
     Configuration.mergeDefaults(DocumentTimeout=30,
                                 PostResponseTimeout=20,
-                                job=None)
+#                                job=None)
+                                )
 
 __initFlag()
 __initConfig()

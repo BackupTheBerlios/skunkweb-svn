@@ -56,7 +56,7 @@ class WSGIHandler(object):
     def __call__(self, connection, sessionDict=None):
         return self.call_application(connection)
     
-    def call_application(connection):
+    def call_application(self, connection):
         environ=self.get_wsgi_environ(connection)
         headers_set=[]
         headers_sent=[]
@@ -67,7 +67,7 @@ class WSGIHandler(object):
             elif not headers_sent:
                  status, response_headers = headers_sent[:] = headers_set
                  connection.responseHeaders['Status']=status
-                 for hk, kv in response_headers:
+                 for hk, hv in response_headers:
                      # N.B. the mapping to a dictionary won't work with multiple headers
                      connection.responseHeaders[hk]=hv
             output.write(data)
