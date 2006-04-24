@@ -101,7 +101,7 @@ if "@RUNASROOT@" == "root":
 # but don't use that for production -- use aecgi (with mod_skunkweb),
 # scgi or fcgiprot.
 
-services = ['templating'
+services = ['templating',
             'layout',
             'httpd']
 
