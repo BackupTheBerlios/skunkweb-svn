@@ -1,3 +1,7 @@
+2006-04-24  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* pylibs/wsgihandler.py: adding preliminary wsgi integration.
+
 2006-04-22  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* SkunkWeb/sw.conf.in: some cleanup.
