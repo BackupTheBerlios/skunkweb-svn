@@ -1,0 +1,211 @@
+dnl -*- m4 -*-
+dnl  
+dnl  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>
+dnl  
+dnl	 You may distribute under the terms of either the GNU General
+dnl	 Public License or the SkunkWeb License, as specified in the
+dnl	 README file.
+dnl   
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(SkunkWeb/mod_skunkweb/mod_skunkweb.c)
+
+AC_SUBST(SW_VERSION)
+SW_VERSION=3.4.1
+
+dnl add add help macro
+AC_DEFUN(AC_ADD_HELP,
+[AC_DIVERT_PUSH(AC_DIVERSION_NOTICE)dnl
+ac_help="$ac_help
+[$1]"
+AC_DIVERT_POP()])
+
+dnl Set some defaults
+AC_PREFIX_DEFAULT(/usr/local/skunk)
+
+dnl Checks for programs.
+AC_PROG_CC
+AC_PROG_MAKE_SET
+AC_PROG_RANLIB
+AC_PROG_INSTALL
+dnl deal with weird HP/UX stuff
+if test "`uname -s`" = "HP-UX"
+then
+    INSTALL="/bin/sh $INSTALL"
+fi
+
+AC_SUBST(DOCROOT)
+AC_ARG_WITH(docroot,
+[  --with-docroot          Specify default docroot location (default <SkunkRoot>/docroot)], [
+DOCROOT=$withval], [
+DOCROOT=])
+
+AC_SUBST(LOGDIR)
+AC_ARG_WITH(logdir,
+[  --with-logdir           Specify default directory for log files (default <SkunkRoot>/var/log)], [
+LOGDIR=$withval], [
+LOGDIR=])
+
+AC_SUBST(CACHE)
+AC_ARG_WITH(cache,
+[  --with-cache            Specify default cache location (default <SkunkRoot>/cache)], [
+CACHE=$withval], [
+CACHE=])
+
+AC_SUBST(DOCSDIR)
+AC_ARG_WITH(docsdir,
+[  --with-docsdir          Specify location for documentation (default <SkunkRoot>/docs)], [
+DOCSDIR=$withval], [
+DOCSDIR=])
+
+AC_SUBST(WITH_SKUNKWEB)
+WITH_SKUNKWEB=SkunkWeb
+
+# look for python
+AC_MSG_CHECKING([--with-python given])
+AC_ARG_WITH(python,
+[  --with-python=PATH      Specify path to python executable],[
+	AC_MSG_RESULT([yes $withval])
+	PYTHON=$withval],[
+	AC_MSG_RESULT([no, will look in \$PATH])
+	PYTHON=])
+
+if test -z "$PYTHON"
+then
+# Check for python in path
+AC_PATH_PROG(PYTHON,python)
+fi
+
+if test -z $PYTHON
+then
+    AC_MSG_ERROR([python interpreter is not found!])
+    exit 1;
+fi
+
+# Check python version
+AC_MSG_CHECKING([python version])
+if $PYTHON <<\EOF 
+import sys
+import string
+
+vers = string.split ( sys.version, ' ' )[[0]]
+
+sys.stdout.write ( 'version %s ' % vers )
+
+sys.exit ( not (vers >= '2.1') )
+EOF
+then
+    AC_MSG_RESULT([OK])
+else
+    AC_MSG_ERROR([python interpreter should be version 2.1 or newer])
+fi
+
+AC_MSG_CHECKING([Python development environment])
+if $PYTHON <<\EOF
+import sys
+import string
+mf = sys.prefix + '/lib/python%s/config/Makefile' % sys.version[[:3]]
+try:
+    open(mf, 'r')
+except:
+    sys.exit(1)
+else:
+    sys.exit(0)
+EOF
+then
+    AC_MSG_RESULT([OK])
+else
+    AC_MSG_ERROR([Python development files missing!  
+a) did you install Python via RPM?
+b) did you install the Python-dev RPM
+])
+fi
+# Check crypt module
+AC_MSG_CHECKING([python crypt module])
+if $PYTHON <<\EOF 
+import sys
+try:
+    import crypt
+except ImportError:
+    sys.exit ( 1 )
+sys.exit(0)
+EOF
+then
+    AC_MSG_RESULT([OK])
+else
+    AC_MSG_RESULT([WARNING: python is not compiled with crypt module support!
+The BasicAuth module will have reduced functionality, but this is probably
+not a problem.
+])
+fi
+
+dnl # check for mx package
+dnl AC_MSG_CHECKING([eGenix mxBase Python package])
+dnl if $PYTHON <<\EOF 
+dnl import sys
+dnl try:
+dnl     import mx.DateTime
+dnl except ImportError:
+dnl     sys.exit ( 1 )
+dnl sys.exit(0)
+dnl EOF
+dnl then
+dnl     AC_MSG_RESULT([OK])
+dnl else
+dnl     AC_MSG_RESULT([ERROR: Skunk requires the eGenix mxBase Python package
+dnl Get it at:
+dnl     http://www.lemburg.com/files/python/eGenix-mx-Extensions.html
+dnl ])
+dnl exit 1;
+dnl fi
+
+AC_SUBST(OWNER)
+AC_ARG_WITH(user, 
+[  --with-user=user        Make Skunk installation owned by user], [
+	OWNER=$withval], [
+	OWNER=`$PYTHON -c "import pwd,os; print pwd.getpwuid(os.getuid())[[0]]"`;])
+
+AC_SUBST(GROUP)
+AC_ARG_WITH(group, 
+[  --with-group=group      Make Skunk installation owned by group], [
+	GROUP=$withval], [
+	GROUP=`$PYTHON -c "import grp,os; print grp.getgrgid(os.getgid())[[0]]"`;])
+
+dnl Checks for library functions.
+
+# This is for mxDateTime module
+#AC_SUBST(MX_DATE_FUNCS)
+
+#AC_CHECK_FUNC(strftime,[MX_DATE_FUNCS="$MX_DATE_FUNCS -DHAVE_STRFTIME"])
+#AC_CHECK_FUNC(strptime,[MX_DATE_FUNCS="$MX_DATE_FUNCS -DHAVE_STRPTIME"])
+#AC_CHECK_FUNC(timegm,[MX_DATE_FUNCS="$MX_DATE_FUNCS -DHAVE_TIMEGM"])
+
+AC_PATH_PROG(LYNX, lynx)
+AC_PATH_PROG(LATEX, latex)
+AC_PATH_PROG(PDFLATEX, pdflatex)
+AC_PATH_PROG(DVIPS, dvips)
+
+test "x$prefix" = xNONE && prefix=$ac_default_prefix
+test "x$exec_prefix" = xNONE && exec_prefix=$prefix
+
+eval libdir=$libdir
+eval bindir=$bindir
+eval sysconfdir=$sysconfdir
+eval localstatedir=$localstatedir
+eval datadir=$datadir
+
+AC_CONFIG_SUBDIRS(SkunkWeb)
+
+AC_ADD_HELP([
+Additional options:
+  --with-webdoc           Install some sample content
+  --with-sudo=PATH        Specify path to sudo
+  --without-mod_skunkweb  Don't build mod_skunkweb
+  --with-apxs=PATH        Specify path to the apxs program
+  --with-runasroot        If you want to have SkunkWeb bind to low ports, add
+                          this switch.  (see the userToRunAs and groupToRunAs
+                          configuration variables)
+])
+
+AC_OUTPUT(Makefile pylibs/Makefile pylibs/setup-pylibs docs/Makefile)
+
+
