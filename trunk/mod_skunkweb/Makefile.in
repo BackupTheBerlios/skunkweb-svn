@@ -1,39 +1,45 @@
 #  
-#  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>
+#  Copyright (C) 2001-2006, Andrew T. Csillag <drew_csillag@geocities.com>
 #  
 #      You may distribute under the terms of either the GNU General
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
 #
-# The makefile for the mod_skunkweb module
+# The makefile for the mod_skunkweb module.  
+# It attempts to support both apache1 and apache2
 
 
-# This is a useful script provided by apache to compile shared modules
 APXS=@APXS@
 APXSFLAGS = -c
 CFLAGS=@CFLAGS@ -Wall -D_GNU_SOURCE @DEFS@ -DSW_VERSION='\"@SW_VERSION@\"'
-owner		= @OWNER@
-group		= @GROUP@
-INSTALL_FLAGS  = -o $(owner) -g $(group)
-INSTALL		= @INSTALL@ $(INSTALL_FLAGS)
-INSTALL_DATA	= @INSTALL_DATA@ $(INSTALL_FLAGS)
+INSTALL		= @INSTALL@ 
+INSTALL_DATA	= @INSTALL_DATA@ 
 prefix		= @prefix@
 share_dir       = @prefix@/share/skunk
 
 
 mod_skunkweb.o: mod_skunkweb.c
-	$(APXS) $(APXSFLAGS) -Wc,"$(CFLAGS)" mod_skunkweb.c
+	$(APXS) -c -Wc,"$(CFLAGS)" mod_skunkweb.c
 
-install:	mod_skunkweb.o
-	$(APXS) $(APXSFLAGS) -i -Wc,"$(CFLAGS)" mod_skunkweb.c
+install_modskunkweb_error.html:
 	$(INSTALL) -d $$DESTDIR$(share_dir)
 	$(INSTALL_DATA) modskunkweb_error.html $$DESTDIR$(share_dir)/modskunkweb_error.html
+
+install:	mod_skunkweb.o install_modskunkweb_error.html
+	if test -f .libs/mod_skunkweb.so; \
+        then \
+	$(APXS) -i -Wc,"$(CFLAGS)" -n mod_skunkweb .libs/mod_skunkweb.so; \
+        else \
+	$(APXS) -i -Wc,"$(CFLAGS)" -n mod_skunkweb mod_skunkweb.so; \
+	fi
+
+
 clean:
-	-rm -f mod_skunkweb.o mod_skunkweb.so *~ 
+	-rm -fr *.{o,so,slo,sla,la,a} *~ .libs
 
 distclean: clean
 	-rm -f Makefile httpd_conf.stub
 
-.PHONY:	clean distclean
+
 

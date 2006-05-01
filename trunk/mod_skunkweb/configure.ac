@@ -33,14 +33,20 @@ AC_ARG_WITH(apxs,
 	APXS=])
 
 # --with-apxs not supplied, try to find in PATH
+dnl Locate apache axps, needed to compile mod_skunkweb
+dnl try apxs2 first; try /usr/sbin, for typical sudo installs
+dnl where the path hasn't been root-ized
 if test -z "$APXS"
 then
-dnl Locate apache axps, needed to compile mod_skunkweb
-AC_PATH_PROG(APXS, apxs, "notfound", "$PATH:/usr/local/apache/bin")
+AC_PATH_PROG(APXS, apxs2, "notfound", "$PATH:/usr/sbin")
+if [[ "$APXS" = "notfound" ]]
+then
+AC_PATH_PROG(APXS, apxs, "notfound", "$PATH:/usr/sbin")
 
 if [[ "$APXS" = "notfound" ]]
 then
     AC_MSG_ERROR([apxs not found! Make sure Apache is installed])
+fi
 fi
 fi
 
