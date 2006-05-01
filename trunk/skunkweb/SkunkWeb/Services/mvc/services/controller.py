@@ -6,6 +6,7 @@ from SkunkWeb.constants import WEB_JOB
 from SkunkWeb.LogObj import logException
 from mvc.log import debug, info
 from mvc.utils import is_exposed, _import_a_class
+from mvc.base import Response
 import types
 
 Cfg.mergeDefaults(controllers={},
@@ -62,6 +63,9 @@ def controllerHandler(connection, sessionDict):
                 except PreemptiveResponse:
                     # not a problem, raise it
                     raise
+                except Response:
+                    res(connection)
+                    return connection.response()
                 except:
                     # OK, something bad.  This should be a server error.
                     return _handleException(connection)
@@ -70,7 +74,8 @@ def controllerHandler(connection, sessionDict):
                         if isinstance(res, basestring):
                             connection.write(res)
                         elif callable(res):
-                            res(connection)
+                            for thing in res(connection):
+                                connection.write(thing)
                         else:
                             # an iterable, hopefully
                             for thing in res:

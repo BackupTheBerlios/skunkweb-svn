@@ -11,6 +11,7 @@ import os
 import re
 import string
 import time
+import Cookie
 
 _schemepat=re.compile('^[a-z]+://.*')
 
@@ -44,11 +45,11 @@ class BaseController(object):
         elif mimetype not in ERROR_TEMPLATES:
             raise ValueError, "unsupported mimetype for error response: %s" % mimetype
         if message is None:
-            message=http_responses[error]
+            message=http_responses[status]
         conn=self.connection
         conn.setStatus(status)
         if template is None:
-            template=ERROR_TEMPLATES[status]
+            template=ERROR_TEMPLATES[mimetype]
         else:
             if not hasattr(template, "safe_substitute"):
                 template=string.Template(template)
@@ -106,6 +107,7 @@ class Response(Exception,object):
         self.headers=[]
         self.cookie=Cookie.SimpleCookie()
 
+
     def http_error(self, status, message=None, mimetype=None, template=None):
         if status not in http_responses:
             raise ValueError, "invalid status: %s" % status
@@ -114,15 +116,15 @@ class Response(Exception,object):
         elif mimetype not in ERROR_TEMPLATES:
             raise ValueError, "unsupported mimetype for error response: %s" % mimetype
         if message is None:
-            message=http_responses[error]
+            message=http_responses[status]
         self.status=status
         if template is None:
-            template=ERROR_TEMPLATES[status]
+            template=ERROR_TEMPLATES[mimetype]
         else:
             if not hasattr(template, "safe_substitute"):
                 template=string.Template(template)
-        conn.setContentType(mimetype)
-        self.write(template.safe_substitute(message))
+        self.headers.append(('Content-Type', mimetype))
+        self.write(template.safe_substitute(message=message))
 
     def __iter__(self):
         return self()
@@ -130,19 +132,15 @@ class Response(Exception,object):
     def write(self, data):
         self.buffer.append(data)
 
-    def __call__(self):
-        conn=SkunkWeb.Context.connection
+    def __call__(self, conn):
         conn.setStatus(self.status)
-        if headers:
-            for h in headers:
+        if self.headers:
+            for h in self.headers:
                 conn.responseHeaders[h[0]]=h[1]
         if self.cookie:
             conn.responseCookie.update(self.cookie)
-        if buffer:
-            for b in buffer:
-                yield b
-        else:
-            raise StopIteration
+        for b in self.buffer:
+            yield b
 
 
     def redirect(self, url, status=301, message=None):
@@ -150,7 +148,7 @@ class Response(Exception,object):
             url=os.path.normpath(os.path.join(SkunkWeb.Context.connection.uri,
                                               url))
         self.status=status
-        self.headers['Location']=url
+        self.headers.append(('Location', url))
         if message is None:
             message="redirecting to $url"
         self.write(string.Template(message).safe_substitute(url=url))
