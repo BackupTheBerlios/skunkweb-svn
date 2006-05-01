@@ -1,3 +1,9 @@
+2006-05-01  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* SkunkWeb/Services/mvc/base.py (HTTPError): adding Response
+	class, so that controllers can return (or raise) an object besides
+	a string.
+
 2006-04-24  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* pylibs/wsgihandler.py: adding preliminary wsgi integration.

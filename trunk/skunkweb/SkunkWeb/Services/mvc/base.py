@@ -53,7 +53,7 @@ class BaseController(object):
             if not hasattr(template, "safe_substitute"):
                 template=string.Template(template)
         conn.setContentType(mimetype)
-        return template.safe_substitute(message)
+        return template.safe_substitute(message=message)
     
 
     def do404(self, message=None):
@@ -83,7 +83,7 @@ class BaseController(object):
         cookie['flash']['path']='/'
         cookie['flash']['expires']=time.time()+1000
 
-    def get_flash(self, default=None):
+    def get_flash(self, default=None, responseCookie=None):
         """
         get a flashed message
         """
@@ -92,10 +92,82 @@ class BaseController(object):
         except KeyError:
             return default
         else:
-            self.connection.responseCookie['flash']=''
-            self.connection.responseCookie['flash']['expires']=-99999
+            if responseCookie is None:
+                responseCookie=self.connection.responseCookie
+            responseCookie['flash']=''
+            responseCookie['flash']['expires']=-99999
             return message
 
+
+class Response(Exception,object):
+    def __init__(self):
+        self.status=200
+        self.buffer=[]
+        self.headers=[]
+        self.cookie=Cookie.SimpleCookie()
+
+    def http_error(self, status, message=None, mimetype=None, template=None):
+        if status not in http_responses:
+            raise ValueError, "invalid status: %s" % status
+        if mimetype is None:
+            mimetype=SkunkWeb.Configuration.defaultErrorMimetype
+        elif mimetype not in ERROR_TEMPLATES:
+            raise ValueError, "unsupported mimetype for error response: %s" % mimetype
+        if message is None:
+            message=http_responses[error]
+        self.status=status
+        if template is None:
+            template=ERROR_TEMPLATES[status]
+        else:
+            if not hasattr(template, "safe_substitute"):
+                template=string.Template(template)
+        conn.setContentType(mimetype)
+        self.write(template.safe_substitute(message))
+
+    def __iter__(self):
+        return self()
+
+    def write(self, data):
+        self.buffer.append(data)
+
+    def __call__(self):
+        conn=SkunkWeb.Context.connection
+        conn.setStatus(self.status)
+        if headers:
+            for h in headers:
+                conn.responseHeaders[h[0]]=h[1]
+        if self.cookie:
+            conn.responseCookie.update(self.cookie)
+        if buffer:
+            for b in buffer:
+                yield b
+        else:
+            raise StopIteration
+
+
+    def redirect(self, url, status=301, message=None):
+        if not _schemepat.match(url):
+            url=os.path.normpath(os.path.join(SkunkWeb.Context.connection.uri,
+                                              url))
+        self.status=status
+        self.headers['Location']=url
+        if message is None:
+            message="redirecting to $url"
+        self.write(string.Template(message).safe_substitute(url=url))
+
+    def flash(self, message):
+        """
+        flash a message into a cookie
+        """
+        self.cookie['flash']=message
+        self.cookie['flash']['path']='/'
+        self.cookie['flash']['expires']=time.time()+1000
+
+        
+def HTTPError(status, message=None, mimetype=None, template=None):
+    r=Response()
+    r.http_error(status, message, mimetype, template)
+    return r
         
     
-__all__=['BaseController']
+__all__=['BaseController', 'Response', 'HTTPError']
