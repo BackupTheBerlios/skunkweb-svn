@@ -36,10 +36,10 @@ install:	mod_skunkweb.o install_modskunkweb_error.html
 
 
 clean:
-	-rm -fr *.{o,so,slo,sla,la,a} *~ .libs
+	-rm -fr *.{o,so,slo,sla,la,a,lo} *~ .libs
 
 distclean: clean
-	-rm -f Makefile httpd_conf.stub
+	-rm -f Makefile httpd_conf.stub config.log config.status
 
 
 

@@ -8,10 +8,10 @@ dnl	 README file.
 dnl   
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(mod_skunkweb.c, 3.4.1)
+AC_INIT(mod_skunkweb.c, 3.5)
 
 AC_SUBST(SW_VERSION)
-SW_VERSION=3.4.1
+SW_VERSION=3.5
 
 AC_PROG_CC
 AC_PROG_MAKE_SET
