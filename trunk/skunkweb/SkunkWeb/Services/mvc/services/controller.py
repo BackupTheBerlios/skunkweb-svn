@@ -74,8 +74,7 @@ def controllerHandler(connection, sessionDict):
                         if isinstance(res, basestring):
                             connection.write(res)
                         elif callable(res):
-                            for thing in res(connection):
-                                connection.write(thing)
+                            res(connection)
                         else:
                             # an iterable, hopefully
                             for thing in res:

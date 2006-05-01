@@ -126,9 +126,6 @@ class Response(Exception,object):
         self.headers.append(('Content-Type', mimetype))
         self.write(template.safe_substitute(message=message))
 
-    def __iter__(self):
-        return self()
-
     def write(self, data):
         self.buffer.append(data)
 
@@ -140,7 +137,7 @@ class Response(Exception,object):
         if self.cookie:
             conn.responseCookie.update(self.cookie)
         for b in self.buffer:
-            yield b
+            conn.write(b)
 
 
     def redirect(self, url, status=301, message=None):
