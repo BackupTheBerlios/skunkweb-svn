@@ -100,7 +100,7 @@ class BaseController(object):
             return message
 
 
-class Response(Exception,object):
+class Response(Exception):
     def __init__(self):
         self.status=200
         self.buffer=[]
