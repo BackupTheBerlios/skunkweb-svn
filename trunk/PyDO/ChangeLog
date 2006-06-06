@@ -1,3 +1,14 @@
+2005-06-05  Tim Golden  <mail@timgolden.me.uk>
+
+    * src/pydo/drivers/sqliteconn2.py: added new driver
+    for newer pysqlite2/sqlite3 functionality. Specific
+    changes: let pysqlite handle conversions. Slight
+    change in the method of fetching last inserted sequence.
+    autocommit - not supported directly by pysqlite2;
+    instead set isolation_level to None.
+    * src/pydo/dbi.py: added sqlite2 as driver name
+    * tests/fixture.py: special-case sqlite2 on cleanup
+
 2006-03-08  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* MANIFEST.in: now including pdfs, thanks to Marien Zwart for

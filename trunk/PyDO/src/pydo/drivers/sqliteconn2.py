@@ -76,7 +76,6 @@ class SqliteDBI(DBIBase):
       # for isolation level on pysqlite.
       #
       self._isolation_level = ""
-      self._autocommit = False
    
    def getConverter(self):
       return SqliteConverter(self.paramstyle)
@@ -155,16 +154,14 @@ class SqliteDBI(DBIBase):
    #
    def autocommit():
       def fget(self):
-         return self._autocommit
-         # (self.conn.isolation_level is None)
+         return (self.conn.isolation_level is None)
       def fset(self, val):
-         self._autocommit = val
-         #~ current_value = (self.conn.isolation_level is None)
-         #~ if bool (current_value) <> bool (val):
-           #~ if val:
-              #~ self._isolation_level = self.conn.isolation_level
-              #~ self.conn.isolation_level = None
-           #~ else:
-              #~ self.conn.isolation_level = self._isolation_level or ""
+         current_value = (self.conn.isolation_level is None)
+         if bool (current_value) <> bool (val):
+           if val:
+              self._isolation_level = self.conn.isolation_level
+              self.conn.isolation_level = None
+           else:
+              self.conn.isolation_level = self._isolation_level or ""
       return fget, fset, None, None
    autocommit=property(*autocommit())

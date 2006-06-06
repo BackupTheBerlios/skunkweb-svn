@@ -346,7 +346,7 @@ def test_guess_columns1():
                                 frozenset(('id',))))
 
     finally:
-        if db.autocommit:
+        if db.autocommit or config.DRIVER == "sqlite2":
             c.execute('drop table test_guess_columns1')
         else:
             db.rollback()
@@ -404,7 +404,7 @@ class test_new1(Fixture):
         c.close()
 
     def cleanup(self):
-        if self.db.autocommit:
+        if self.db.autocommit or config.DRIVER == "sqlite2":
             c=self.db.cursor()
             c.execute('DROP TABLE test_new1')
             c.close()
@@ -577,8 +577,10 @@ class test_updateSome3(base_fixture):
         c.close()
 
     def run(self):
-
-        self.B.updateSome(dict(x=2000), "x < %s", 500)
+        if config.DRIVER == 'sqlite2':
+          self.B.updateSome(dict(x=2000), "x < ?", 500)
+        else:
+          self.B.updateSome(dict(x=2000), "x < %s", 500)
         sql='SELECT COUNT(*) FROM b WHERE x = 2000'
         c=self.db.cursor()
         c.execute(sql)
@@ -912,7 +914,10 @@ class test_one_to_many3(base_fixture):
     def run(self):
         tmp=self.ac1.getF(P.NE(P.FIELD('a_id'), 2))
         assert len(tmp)==4
-        tmp=self.ac1.getF("a_id > %s", 100)
+        if config.DRIVER == "sqlite2":
+          tmp=self.ac1.getF("a_id > ?", 100)
+        else:
+          tmp=self.ac1.getF("a_id > %s", 100)
         assert len(tmp)==0
         tmp=self.ac1.getF(a_id=4000)
         assert len(tmp)==0
@@ -961,7 +966,10 @@ class test_getCount1(base_fixture):
         assert c == 1
         c=self.D.getCount()
         assert c == 20
-        c=self.D.getCount("x < %s", 3)
+        if config.DRIVER == "sqlite2":
+          c=self.D.getCount("x < ?", 3)
+        else:
+          c=self.D.getCount("x < %s", 3)
         assert c == 3
         c=self.D.getCount(P.OR(P.EQ(P.FIELD('id'), 5), P.GT(P.FIELD('x'), 10)))
         assert c == 10

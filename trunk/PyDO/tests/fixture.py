@@ -200,7 +200,6 @@ class base_fixture(Fixture):
         # sqlite2 transactions won't rollback table creation; only data
         #
         if self.db.autocommit or config.DRIVER == "sqlite2":
-            print "autocommit or sqlite2"
             c=self.db.cursor()
             for table in self.tables:
                 if self.usetables and table not in self.usetables:
