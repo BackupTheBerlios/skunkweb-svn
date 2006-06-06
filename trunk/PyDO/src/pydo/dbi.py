@@ -200,6 +200,7 @@ _driverConfig = {
     'mysql':       'pydo.drivers.mysqlconn.MysqlDBI',
     'psycopg':	   'pydo.drivers.psycopgconn.PsycopgDBI',
     'sqlite':      'pydo.drivers.sqliteconn.SqliteDBI',
+    'sqlite2':     'pydo.drivers.sqliteconn2.SqliteDBI',
     'mssql' :      'pydo.drivers.mssqlconn.MssqlDBI',
     'oracle' :     'pydo.drivers.oracleconn.OracleDBI'
     

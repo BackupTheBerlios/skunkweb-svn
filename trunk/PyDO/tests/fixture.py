@@ -4,6 +4,7 @@ import config
 
 def get_sequence_sql():
     return dict(sqlite='INTEGER PRIMARY KEY NOT NULL',
+                sqlite2='INTEGER PRIMARY KEY NOT NULL',
                 psycopg='SERIAL PRIMARY KEY',
                 mysql='INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY')[config.DRIVER]
 
@@ -28,9 +29,9 @@ class Fixture(object):
     def __call__(self):
         self.setup()
         try:
-            self.run()
+           self.run ()
         finally:
-            self.cleanup()
+           self.cleanup()
             
 
 
@@ -195,7 +196,11 @@ class base_fixture(Fixture):
             self.F=F
 
     def cleanup(self):
-        if self.db.autocommit:
+        #
+        # sqlite2 transactions won't rollback table creation; only data
+        #
+        if self.db.autocommit or config.DRIVER == "sqlite2":
+            print "autocommit or sqlite2"
             c=self.db.cursor()
             for table in self.tables:
                 if self.usetables and table not in self.usetables:
