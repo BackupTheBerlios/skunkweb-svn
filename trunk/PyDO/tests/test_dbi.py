@@ -185,8 +185,12 @@ class test_autocommit2(base_fixture):
     def post(self):
         self.db.autocommit=False
         c=self.db.cursor()
-        c.execute('drop table c')
-        self.db.commit()
+        try:
+            c.execute('drop table c')
+        except:
+            pass
+        else:
+            self.db.commit()
 
     def run(self):
         assert not self.db.autocommit
