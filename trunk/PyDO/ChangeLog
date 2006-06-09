@@ -1,7 +1,13 @@
+2006-06-08  Jacob Smullyan  <smulloni@smullyan.org>
+
+    * src/pydo/multifetch.py (iterfetch): patch from nine_k for when
+    there are no bind variables.
+   
+
 2006-06-07  Jacob Smullyan  <smulloni@smullyan.org>
 
-	* tests/test_dbi.py (test_autocommit2.post): catch and ignore
-	spurious error in post-test step.
+    * tests/test_dbi.py (test_autocommit2.post): catch and ignore
+    spurious error in post-test step.
 
 2005-06-05  Tim Golden  <mail@timgolden.me.uk>
 
@@ -18,14 +24,14 @@
 
 2006-03-08  Jacob Smullyan  <smulloni@smullyan.org>
 
-	* MANIFEST.in: now including pdfs, thanks to Marien Zwart for
-	pointing out the omission.
+    * MANIFEST.in: now including pdfs, thanks to Marien Zwart for
+    pointing out the omission.
 
 2006-03-08  Jacob Smullyan  <smulloni@smullyan.org>
 
-	* doc/Makefile (RST2HTML): changing default paths for rst scripts. 
+    * doc/Makefile (RST2HTML): changing default paths for rst scripts. 
 
-	* src/pydo/__init__.py: upping version to 2.0.
+    * src/pydo/__init__.py: upping version to 2.0.
 
 	* CLASSIFIERS: reclassifying as stable.
 

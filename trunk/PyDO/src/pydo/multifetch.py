@@ -118,7 +118,11 @@ def iterfetch(resultSpec, sqlTemplate, *values, **kwargs):
     if dbi.verbose:
         debug('SQL: %s', sql)
         debug('bind variables: %s', values)
-    c.execute(sql, values)
+    # psycopg may not like an empty tuple here
+    if values:
+        c.execute(sql, values)
+    else:
+        c.execute(sql)
     result=c.fetchall()
     c.close()
     if not result:
