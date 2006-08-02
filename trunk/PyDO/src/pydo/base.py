@@ -112,7 +112,7 @@ class _metapydo(type):
                 raise ValueError, "cannot coerce into a field: %s" % f
                 
             # add to field container
-            fielddict[f.name]=f
+            fielddict[f.asname]=f
 
         # handle inheritance of fields and unique declarations.
         # skipping object and dict is a trivial optimization,
@@ -152,9 +152,9 @@ class _metapydo(type):
         cls._sequenced={}
         for f in cls._fields.itervalues():
             if f.sequence:
-                cls._sequenced[f.name] = f.sequence
+                cls._sequenced[f.asname] = f.sequence
             if f.unique:
-                uniqueset.add(frozenset((f.name,)))
+                uniqueset.add(frozenset((f.asname,)))
 
         cls._unique=frozenset(uniqueset)
 
@@ -252,7 +252,7 @@ class PyDO(dict):
         s=[]
         for f in fields:
             if isinstance(f, Field):
-                s.append(f.name.lower())
+                s.append(f.asname.lower())
             elif isinstance(f, basestring):
                 s.append(f.lower())
             elif isinstance(f, tuple):
@@ -382,7 +382,7 @@ class PyDO(dict):
         raise NotImplementedError, "PyDO classes don't implement setdefault()"
     
     @classmethod
-    def getColumns(cls, qualifier=None):
+    def getColumns(cls, qualifier=None, with_as=False):
         """Returns a list of all columns in this table, in no
         particular order.
 
@@ -392,11 +392,13 @@ class PyDO(dict):
         will be used.
         
         """
-        if not qualifier:
+        if qualifier and not isinstance(qualifier, basestring):
+            qualifier=cls.getTable()
+        if with_as:
+            return [x.get_column_expression(qualifier) for x in cls._fields.itervalues()]
+        elif not qualifier:
             return cls._fields.keys()
         else:
-            if not isinstance(qualifier, basestring):
-                qualifier=cls.getTable()
             return ["%s.%s" % (qualifier, x) for x in cls._fields.iterkeys()]
 
     @classmethod
@@ -420,8 +422,9 @@ class PyDO(dict):
         """a simple field validator that verifies that the keys
         in the dictionary passed are declared fields in the class.
         """
+        asnames=cls._fields
         for k in adict:
-            if not cls._fields.has_key(k):
+            if not k in asnames:
                 raise KeyError, "object %s has no field %s" %\
                       (cls, k)
 
@@ -581,7 +584,7 @@ class PyDO(dict):
     @classmethod
     def _baseSelect(cls, qualified=False):
         """returns the beginning of a select statement for this object's table."""
-        return 'SELECT %s FROM %s' % (', '.join(cls.getColumns(qualified)),
+        return 'SELECT %s FROM %s' % (', '.join(cls.getColumns(qualified, with_as=True)),
                                       cls.getTable())
 
 

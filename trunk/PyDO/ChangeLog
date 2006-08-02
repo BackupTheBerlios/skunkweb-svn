@@ -1,3 +1,13 @@
+2006-08-02  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* tests/test_base.py (test_as1): test for asname.
+
+	* src/pydo/base.py: use new "asname" attribute and
+	get_column_expression. 
+
+	* src/pydo/field.py: support for "asname" attribute in Fields, and
+	added get_column_expression().
+
 2006-06-08  Jacob Smullyan  <smulloni@smullyan.org>
 
     * src/pydo/multifetch.py (iterfetch): patch from nine_k for when

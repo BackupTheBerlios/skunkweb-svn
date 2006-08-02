@@ -975,3 +975,27 @@ class test_getCount1(base_fixture):
         assert c == 10
 
         
+class test_as1(base_fixture):
+    usetables=['E']
+    tags=alltags
+
+    def pre(self):
+        self.E.new(user1='me', user2='you')
+        self.E.new(user1='me', user2='gonga')
+        self.E.new(user1='bongo', user2='you')
+
+    def run(self):
+        o1=self.E.getUnique(id=1)
+        assert o1.user1=='me'
+        assert o1.user2=='you'
+        p=self.E.project('user1', P.Field('count(*)', asname='count'))
+        res=p.getSome('user1=%s group by user1', 'me')
+        print res
+        assert len(res)==1
+        assert res[0].count==2
+        res=p.getSome('user1 = %s group by user1', 'bongo')
+        assert len(res)==1
+        assert res[0].count==1
+        
+
+        
