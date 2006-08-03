@@ -12,6 +12,7 @@ import re
 from inspect import isfunction
 
 _group_pat=re.compile(r'\s*group ', re.I)
+_as_pat=re.compile(r'^(\w+)\s+as\s+(\w+)$', re.I)
 
 def _restrict(flds, coll):
     """private method for cleaning a set or dict of any items that aren't
@@ -25,8 +26,8 @@ def _restrict(flds, coll):
     def infld(thing, flds):
         if thing in flds:
             return True
-        if hasattr(thing, 'name'):
-            if thing.name in flds:
+        if hasattr(thing, 'asname'):
+            if thing.asname in flds:
                 return True
         return False
     
@@ -102,8 +103,15 @@ class _metapydo(type):
         for f in namespace.get('fields', ()):
             # support for tuple syntax for plain Jane fields.
             if isinstance(f, basestring):
-                simplefields.add(f)                
-                f=cls._create_field(f)
+                m=_as_pat.match(f)
+                if m:
+                    name=m.group(1)
+                    asname=m.group(2)
+                    simplefields.add(asname)
+                    f=cls._create_field(name=name, asname=asname)
+                else:
+                    simplefields.add(f)                
+                    f=cls._create_field(f)
             elif isinstance(f, dict):
                 f=cls._create_field(**f)
             elif isinstance(f, (tuple, list)):
@@ -251,16 +259,16 @@ class PyDO(dict):
         module=kwargs.get('module', None)
         s=[]
         for f in fields:
-            if isinstance(f, Field):
-                s.append(f.asname.lower())
-            elif isinstance(f, basestring):
-                s.append(f.lower())
-            elif isinstance(f, tuple):
-                if not len(f):
-                    raise ValueError, "empty tuple in field list"
-                s.append(f[0].lower())
-            else:
-                raise ValueError, "weird thing in field list: %s" % f
+            if not isinstance(f, Field):
+                if isinstance(f, dict):
+                    f=cls._create_field(**f)
+                elif isinstance(f, (list, tuple)):
+                    f=cls._create_field(*f)
+                elif isinstance(f, basestring):
+                    f=cls._create_field(f)
+                else:
+                    raise ValueError, "weird thing in field list: %s" % f
+            s.append(f.asname.lower())
         s.sort()
         if kwargs:
             s.append('0')

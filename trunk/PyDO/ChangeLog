@@ -1,3 +1,12 @@
+2006-08-03  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* tests/test_base.py (test_project10, test_as2): new tests.
+
+	* src/pydo/base.py (PyDO.project): refactored to permit fields to
+	be specified as dicts (e.g., dict(name='foo', asname='nougat')).
+	(_metapydo.__init__): strings like "avg(x) as average_x" are now
+	parsed. 
+
 2006-08-02  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* tests/test_base.py (test_as1): test for asname.

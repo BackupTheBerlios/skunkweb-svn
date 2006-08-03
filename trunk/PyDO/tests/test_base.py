@@ -290,6 +290,18 @@ class test_project9(base_fixture):
         res=p1.getSome()
         assert len(res)==1
 
+
+class test_project10(base_fixture):
+    usetables=['E']
+    tags=alltags
+
+    def run(self):
+        p1=self.E.project('user1', dict(name='user2', asname='poop'))
+        cols=p1.getColumns()
+        assert len(cols)==2
+        assert 'user1' in cols
+        assert 'poop' in cols
+
 @tag(*alltags)
 def test_guess_tablename1():
     class base(P.PyDO):
@@ -990,7 +1002,7 @@ class test_as1(base_fixture):
         assert o1.user2=='you'
         p=self.E.project('user1', P.Field('count(*)', asname='count'))
         res=p.getSome('user1=%s group by user1', 'me')
-        print res
+        #print res
         assert len(res)==1
         assert res[0].count==2
         res=p.getSome('user1 = %s group by user1', 'bongo')
@@ -999,3 +1011,19 @@ class test_as1(base_fixture):
         
 
         
+class test_as2(base_fixture):
+    usetables=['E']
+    tags=alltags
+
+    def run(self):
+        p=self.E.project('user1', P.Field(name='user3', asname='plapitude'))
+        #p=self.E.project('user1', 'user3 as plapitude')
+        cols=p.getColumns()
+        assert 'plapitude' in cols
+        assert 'user1' in cols
+        assert len(cols)==2
+        p2=self.E.project('user1', 'user3 as plapitude')
+        cols=p2.getColumns()
+        assert 'plapitude' in cols
+        assert 'user1' in cols
+        assert len(cols)==2
