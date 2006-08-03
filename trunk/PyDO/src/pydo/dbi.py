@@ -201,6 +201,8 @@ _driverConfig = {
     'psycopg':	   'pydo.drivers.psycopgconn.PsycopgDBI',
     'sqlite':      'pydo.drivers.sqliteconn.SqliteDBI',
     'sqlite2':     'pydo.drivers.sqliteconn2.SqliteDBI',
+    # since the sqlite driver in Python2.5 is called sqlite3 ...
+    'sqlite3':     'pydo.drivers.sqliteconn2.SqliteDBI',
     'mssql' :      'pydo.drivers.mssqlconn.MssqlDBI',
     'oracle' :     'pydo.drivers.oracleconn.OracleDBI'
     

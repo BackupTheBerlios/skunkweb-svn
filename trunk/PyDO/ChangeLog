@@ -1,5 +1,8 @@
 2006-08-03  Jacob Smullyan  <smulloni@smullyan.org>
 
+	* src/pydo/dbi.py (_driverConfig): adding "sqlite3" as alias for
+	sqlite2 driver.
+
 	* tests/test_base.py (test_project10, test_as2): new tests.
 
 	* src/pydo/base.py (PyDO.project): refactored to permit fields to
