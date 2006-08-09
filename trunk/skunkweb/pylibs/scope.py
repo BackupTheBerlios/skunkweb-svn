@@ -60,7 +60,7 @@ class Scopeable:
             tmp=d
         kw.update(tmp)
         fridge['defaults']=kw
-        self.__dict__.update(kw)
+        self.__dict__=self.mash()
 
     def _lookup(self, attr):
         # not really intended to be used,
