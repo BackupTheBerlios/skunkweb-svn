@@ -1,3 +1,7 @@
+2006-08-09  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* pylibs/scope.py: some cleanup; possible fix for mysterious scoping error.
+
 2006-06-02  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* SkunkWeb/Services/mvc/base.py: removed "object" from
