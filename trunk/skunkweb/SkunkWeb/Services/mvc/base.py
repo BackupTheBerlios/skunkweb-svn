@@ -66,7 +66,7 @@ class BaseController(object):
                          message=message)
 
     def do401(self, message=None, mimetype=None, template=None):
-        return self.http_error(status, message, mimetype, template)
+        return self.http_error(401, message, mimetype, template)
 
 
     def redirect(self, url, status=301):
