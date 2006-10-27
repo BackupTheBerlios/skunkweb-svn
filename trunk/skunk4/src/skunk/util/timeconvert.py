@@ -49,6 +49,12 @@ def convert(thing, curdate=None):
             return convertDuration(thing, curdate)
         except TimeException:
             pass
+    elif isinstance(thing, (list,tuple)):
+        try:
+            return min(convert(x, curdate) for x in thing)
+        except TimeException:
+            pass
+                    
     return convertUntil(thing, curdate)
 
 def convertDuration(duration, curdate=None):
