@@ -93,12 +93,16 @@ class Cache(object):
                                   expiration=now)
             
             # the callee has a chance to determine the expiration by
-            # sending it out of band, through an "expiration"
-            # attribute.  otherwise, value passed to this method will
-            # be used.
+            # sending it out of band, through an "__expiration__"
+            # attribute on the return value or the callee.  otherwise,
+            # value passed to this method will be used.
             
             now=time()
-            expiration=getattr(callee, 'expiration', expiration) or 0
+            expiration=getattr(val,
+                               '__expiration__',
+                               getattr(callee,
+                                       '__expiration__',
+                                       expiration)) or 0
             if expiration:
                 expiration=time_convert(expiration)
             entry=CacheEntry(val,

@@ -35,7 +35,7 @@ class CacheTestCase(unittest.TestCase):
         for c in self.diskcache, self.memcache:
             e1=c.call(time.time, None, C.YES, expiration="2s")
             e2=c.call(time.time, None, C.YES, expiration="2s")
-            time.sleep(2)
+            time.sleep(2.01)
             e3=c.call(time.time, None, C.YES, expiration="2s")
             assert e1.value==e2.value
             assert e3.value > e1.value

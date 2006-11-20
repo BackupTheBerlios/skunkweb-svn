@@ -1,3 +1,13 @@
+2006-11-20    <smulloni@smullyan.org>
+
+	* src/skunk/cache/base.py (Cache.call): rather than checking
+	callee.expiration, to find out the expiration, use
+	val.__expiration__ and then callee.__expiration__.  Backwards
+	incompatible.
+
+	* tests/tests_cache.py (CacheTestCase.test_expire1): give
+	expiration a tenth of a second leg room
+
 2006-10-27  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* src/skunk/util/timeconvert.py (convert): convert now processes
