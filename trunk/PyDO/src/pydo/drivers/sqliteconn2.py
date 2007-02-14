@@ -30,17 +30,18 @@ except ImportError:
 # variants here (only has effect for some versions of
 # pysqlite2 (e.g., 2.2.2)
 #
-for _t in ('date', 'timestamp', 'datetime'):
+for t, ulist in (('date', ('DATE',)),
+                 ('timestamp', ('TIMESTAMP', 'DATE'))):
   try:
-    _c=sqlite.converters[_t]
+    c=sqlite.converters[t]
   except KeyError:
     continue
   else:
-    _u=_t.upper()
-    if _u not in sqlite.converters:
-      sqlite.register_converter(_u, _c)
-    del _c, _u
-del _t
+    for u in ulist:
+      if u not in sqlite.converters:
+        sqlite.register_converter(u, c)
+    del c, u
+del t, ulist
 
       
 #
