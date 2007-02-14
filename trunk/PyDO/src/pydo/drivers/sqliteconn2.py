@@ -27,12 +27,22 @@ except ImportError:
 # sqlite registers converters for date and timestamp.
 # But the matching is case-sensitive, and since I
 # always use uppercase datatypes, reregister the
-# variants here.
+# variants here (only has effect for some versions of
+# pysqlite2 (e.g., 2.2.2)
 #
-sqlite.register_converter("DATE", sqlite.converters["date"])
-sqlite.register_converter("TIMESTAMP", sqlite.converters["timestamp"])
-sqlite.register_converter("DATETIME", sqlite.converters["timestamp"])
+for _t in ('date', 'timestamp', 'datetime'):
+  try:
+    _c=sqlite.converters[_t]
+  except KeyError:
+    continue
+  else:
+    _u=_t.upper()
+    if _u not in sqlite.converters:
+      sqlite.register_converter(_u, _c)
+    del _c, _u
+del _t
 
+      
 #
 # pysqlite has its own mechanism for handling conversions between
 # database columns and Python datatypes: Dates and Datetimes are

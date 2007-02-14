@@ -1001,11 +1001,17 @@ class test_as1(base_fixture):
         assert o1.user1=='me'
         assert o1.user2=='you'
         p=self.E.project('user1', P.Field('count(*)', asname='count'))
-        res=p.getSome('user1=%s group by user1', 'me')
+        if config.DRIVER=='sqlite2':
+            res=p.getSome('user1=? group by user1', 'me')
+        else:
+            res=p.getSome('user1=%s group by user1', 'me')
         #print res
         assert len(res)==1
         assert res[0].count==2
-        res=p.getSome('user1 = %s group by user1', 'bongo')
+        if config.DRIVER=='sqlite2':
+            res=p.getSome('user1 = ? group by user1', 'bongo')
+        else:
+            res=p.getSome('user1 = %s group by user1', 'bongo')
         assert len(res)==1
         assert res[0].count==1
         
