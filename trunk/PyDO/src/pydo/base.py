@@ -848,6 +848,7 @@ class PyDO(dict):
             #sql.append(' AND (%s)' % wheresql)
             sql=' AND '.join(wheresql, sql)
         if filter(None, (order, limit, offset)):
+            sql.append(' ')
             sql.append(conn.orderByString(order, limit, offset))                
         return ''.join(sql), vals
 
