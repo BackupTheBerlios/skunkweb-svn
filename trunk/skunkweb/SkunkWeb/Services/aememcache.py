@@ -17,7 +17,7 @@ from Logger import logException, ERROR
 import SkunkWeb.Configuration as C
 
 C.mergeDefaults(memcacheCacheBackend=None,
-                memcachePathPrefix='component ')
+                memcachePathPrefix='component_')
 
 _clients={}
 def _get_memcache_client():
@@ -25,10 +25,12 @@ def _get_memcache_client():
     servers=C.memcacheCacheBackend
     if not servers:
         return None
+    servers.sort()
+    servers=tuple(servers)
     try:
         return _clients[servers]
     except KeyError:
-        client=memcache.Client(connargs, False)
+        client=memcache.Client(servers, False)
         _clients[servers]=client
         return client
 
@@ -41,7 +43,7 @@ def store_component(path, value, svr):
     try:
         res=client.set(fullpath, pickled)
     except:
-        ERROR(AE.Cache.CACHE, "exception storing component at path %s", fullpath)
+        ERROR("exception storing component at path %s" % fullpath)
         logException()
 
 def load_component(path, svr):
@@ -52,7 +54,7 @@ def load_component(path, svr):
     try:
         data=client.get(fullpath)
     except:
-        ERROR(AE.Cache.CACHE, "exception reaching memcached")
+        ERROR("exception reaching memcached")
     else:
         if data is not None:
             return cPickle.loads(data)
