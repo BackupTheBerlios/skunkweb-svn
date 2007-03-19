@@ -1,3 +1,8 @@
+2007-03-19    <smulloni@smullyan.org>
+
+	* SkunkWeb/Services/aememcache.py: first cut at memcached support
+	for the component cache.
+
 2006-09-25  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* SkunkWeb/Services/mvc/base.py (BaseController.do401): fix for
