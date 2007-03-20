@@ -40,8 +40,9 @@ def store_component(path, value, svr):
         return AE.Cache._disk_store(path, value, svr)
     fullpath=C.memcachePathPrefix+path
     pickled=cPickle.dumps(value, cPickle.HIGHEST_PROTOCOL)
+    exp_time=value.get('exp_time', 0)
     try:
-        res=client.set(fullpath, pickled)
+        res=client.set(fullpath, pickled, exp_time)
     except:
         ERROR("exception storing component at path %s" % fullpath)
         logException()
