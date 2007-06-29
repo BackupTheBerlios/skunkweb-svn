@@ -1,4 +1,8 @@
-2007-03-19    <smulloni@smullyan.org>
+2007-06-29  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* pylibs/formlib/form.py (DomainField.checkValue): typo fix for NameError
+
+2007-03-19  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* SkunkWeb/Services/aememcache.py: first cut at memcached support
 	for the component cache.
