@@ -1,3 +1,9 @@
+2007-07-30    <smulloni@smullyan.org>
+
+	* pylibs/AE/MsgCatalogTags.py (MessageTag.genCode): make default
+	message be "" for messages that aren't in the catalog, so using
+	the tag for non-existent messages does not blow up.
+
 2007-06-29  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* pylibs/formlib/form.py (DomainField.checkValue): typo fix for NameError
