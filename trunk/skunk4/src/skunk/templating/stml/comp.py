@@ -8,7 +8,7 @@ from skunk.templating.stml.parser import parse as stml_parse
 from skunk.templating.stml.tags import BaseTags
 from skunk.templating.stml.codeStream import PythonCodeOutputStream
 from skunk.templating.stml.tagutils import import_into
-from skunk.date.timeutil import convertDuration
+from skunk.util.timeconvert import convert
 
 class _namespaceholder:
     pass
@@ -178,7 +178,7 @@ def getDefaultComponentFactory(compileCache=None,
     handlers={'file' : LocalFileComponentHandler(map),
               'callable' : CallableComponentHandler()}
     if defaultExpiration==_DEFAULT_EXPIRATION:
-        defaultExpiration=convertDuration('30s')
+        defaultExpiration=convert('30s')
     return ComponentFactory(handlers,
                             compileCache,
                             componentCache,

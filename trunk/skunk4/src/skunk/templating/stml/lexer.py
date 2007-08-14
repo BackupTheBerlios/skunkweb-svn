@@ -127,11 +127,10 @@ class STMLToken(object):
         return self.text or ""
         
 
-def lex(s):
+def lex(s, pre=False):
     """
     tokenizes the STML string s, returning a generator which yields successive tokens.
     """
-    pre=DEFAULT_PRE
     state=s_TEXT
     offset=0
     l=len(s)
@@ -330,11 +329,11 @@ def lex(s):
         raise StopIteration
 
         
-def dump_tokens(s):
+def dump_tokens(s, pre=False):
     """
     tokenizes an STML string and returns all tokens as a list.
     """
-    return list(lex(s))
+    return list(lex(s, pre))
 
 __all__=['lex',
          'dump_tokens',

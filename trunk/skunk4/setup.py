@@ -11,7 +11,7 @@ setup(author="Jacob Smullyan",
       license="BSD/GPL",
       name="SkunkWeb",
       url="http://skunkweb.org/",
-      version="4.0a",
+      version="4.0a1",
       zip_safe=True,
       keywords="cache skunk skunkweb web config",
       ext_modules=[Extension('skunk.util.signal_plus',
@@ -21,7 +21,10 @@ setup(author="Jacob Smullyan",
                 'skunk.cache',
                 'skunk.date',
                 'skunk.util',
-                'skunk.config'
+                'skunk.config',
+                'skunk.templating',
+                'skunk.templating.stml',
+                'skunk.components'
                 ],
 
 # others later....      

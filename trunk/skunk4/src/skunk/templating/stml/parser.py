@@ -316,13 +316,13 @@ class RootNode(Node):
         
 
 
-def parse(s, tagVocabulary):
+def parse(s, tagVocabulary, pre=False):
     """
     given a string containing STML and a tag vocabulary, returns a
     parsed RootNode.
     """
     n=RootNode(globalTagDict=tagVocabulary)
-    n.parse(lex(s))
+    n.parse(lex(s, pre))
     return n
 
 __all__=['Node', 'RootNode', 'Expr', 'parse']
