@@ -1,4 +1,8 @@
-2007-07-30    <smulloni@smullyan.org>
+2007-08-26  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* SkunkWeb/Services/usertracking.py: fix for Python 2.5 (old uuid module won't load)
+
+2007-07-30  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* pylibs/AE/MsgCatalogTags.py (MessageTag.genCode): make default
 	message be "" for messages that aren't in the catalog, so using
