@@ -5,7 +5,7 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-#$Id: Executables.py,v 1.13 2004/02/23 19:36:21 drew_csillag Exp $
+#$Id$
 import sys
 import cStringIO
 import copy
@@ -71,7 +71,7 @@ class PythonExecutable:
             except Exceptions.ReturnValue, val:
                 if self.compType != DT_DATA:
                     raise
-                return val
+                return val.args[0]
 
             except DTExcept.DTHaltError:
                 pass
