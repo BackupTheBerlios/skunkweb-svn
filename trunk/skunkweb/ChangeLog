@@ -1,3 +1,16 @@
+2007-08-27  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* [many files]: removed CVS keywords that were making patches
+	difficult.
+	
+	* configure.in, configure, SkunkWeb/configure.in,
+	SkunkWeb/configure: version bump to 3.4.4.
+	
+	* pylibs/AE/Exceptions.py: ReturnValue is now a class.
+	
+	* pylibs/AE/Executables.py: handle ReturnValue differently now
+	that it is a class.
+
 2007-08-26  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* SkunkWeb/Services/usertracking.py: fix for Python 2.5 (old uuid module won't load)
