@@ -1,0 +1,43 @@
+#  
+#  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>
+#  
+#      You may distribute under the terms of either the GNU General
+#      Public License or the SkunkWeb License, as specified in the
+#      README file.
+#   
+#
+# The makefile for the mod_skunkweb module
+#
+# $Id$
+
+# This is a useful script provided by apache to compile shared modules
+APXS=@APXS@
+APXSFLAGS = -i -c
+CFLAGS=@CFLAGS@ -Wall -D_GNU_SOURCE @DEFS@ -DSW_VERSION='\"@SW_VERSION@\"'
+owner		= @OWNER@
+group		= @GROUP@
+INSTALL_FLAGS  = -o $(owner) -g $(group)
+INSTALL		= @INSTALL@ $(INSTALL_FLAGS)
+INSTALL_DATA	= @INSTALL_DATA@ $(INSTALL_FLAGS)
+prefix		= @prefix@
+share_dir       = @prefix@/share/skunk
+
+# Can be given on command line
+#DEBUG=
+
+#ifdef DEBUG
+#   CFLAGS += -DDEBUG
+#endif
+
+mod_skunkweb.o: mod_skunkweb.c
+	$(APXS) $(APXSFLAGS) -Wc,"$(CFLAGS)" mod_skunkweb.c
+
+install:	mod_skunkweb.o
+	$(APXS) $(APXSFLAGS) -Wc,"$(CFLAGS)" mod_skunkweb.c
+	$(INSTALL) -d $$DESTDIR$(share_dir)
+	$(INSTALL_DATA) modskunkweb_error.html $$DESTDIR$(share_dir)/modskunkweb_error.html
+clean:
+	-rm -f mod_skunkweb.o mod_skunkweb.so *~ 
+
+distclean: clean
+	-rm -f Makefile httpd_conf.stub
