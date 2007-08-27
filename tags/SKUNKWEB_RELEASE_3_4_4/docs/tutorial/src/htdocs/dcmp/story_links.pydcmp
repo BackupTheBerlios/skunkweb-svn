@@ -1,9 +1,0 @@
-# $Id$
-# returns a list of story titles and ids.
-import hoptime.hopapi as HAPI
-
-
-
-raise ReturnValue, HAPI.getLatestStoryLinks(limit)
-    
-        
