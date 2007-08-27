@@ -71,8 +71,11 @@ class PythonExecutable:
             except Exceptions.ReturnValue, val:
                 if self.compType != DT_DATA:
                     raise
-                return val.args[0]
-
+                try:
+                    return val.args[0]
+                except (IndexError,AttributeError):
+                    return val
+                
             except DTExcept.DTHaltError:
                 pass
                 
