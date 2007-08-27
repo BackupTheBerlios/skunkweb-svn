@@ -9,7 +9,6 @@
 #
 # This is a script which facilitates creation of versioned releases
 #
-#$Id: make_pydo_distr.py,v 1.3 2003/05/01 20:46:03 drew_csillag Exp $
 
 import commands
 import re

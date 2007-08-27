@@ -1,5 +1,4 @@
 # Time-stamp: <2003-12-27 23:18:32 smulloni>
-# $Id: xhtml.py,v 1.7 2003/12/28 04:22:05 smulloni Exp $
 
 ######################################################################## 
 #  Copyright (C) 2002 Jacob Smullyan <smulloni@smullyan.org>

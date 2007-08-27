@@ -1,5 +1,4 @@
 # Time-stamp: <02/10/30 09:27:03 smulloni>
-# $Id: service.py,v 1.2 2002/11/01 17:54:17 smulloni Exp $
 
 # default values for Configuration variables go here.
 import SkunkWeb.Configuration as C

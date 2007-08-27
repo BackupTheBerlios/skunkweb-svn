@@ -1,5 +1,4 @@
 # Time-stamp: <2005-04-01 22:46:16 drew>
-# $Id$
 #  Copyright (C) 2001, 2003 Jacob Smullyan <smulloni@smullyan.org>
 #  
 #      You may distribute under the terms of either the GNU General

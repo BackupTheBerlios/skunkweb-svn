@@ -8,7 +8,6 @@
 """
 Here the message catalog tags are implemented
 """
-# $Id$
 
 import string
 

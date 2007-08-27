@@ -8,7 +8,6 @@
 """
 This module implements the component family of tags
 """
-# $Id: ComponentTag.py,v 1.5 2003/05/01 20:45:58 drew_csillag Exp $
 
 import Component
 from CommonStuff import *

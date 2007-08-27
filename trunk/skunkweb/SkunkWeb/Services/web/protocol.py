@@ -1,5 +1,4 @@
 ########################################################################
-# $Id$
 # Time-stamp: <2006-04-21 16:51:39 smulloni>
 #  
 #  Copyright (C) 2001 Andrew T. Csillag <drew_csillag@geocities.com>

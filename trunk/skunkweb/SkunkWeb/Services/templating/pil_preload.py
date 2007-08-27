@@ -5,7 +5,6 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: pil_preload.py,v 1.2 2003/05/01 20:45:54 drew_csillag Exp $
 # Time-stamp: <01/04/25 16:10:18 smulloni>
 ########################################################################
 """

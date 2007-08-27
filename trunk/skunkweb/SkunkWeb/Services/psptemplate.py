@@ -5,7 +5,6 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: psptemplate.py,v 1.2 2003/05/01 20:45:53 drew_csillag Exp $
 ########################################################################
 from SkunkWeb import Configuration, ServiceRegistry, Hooks
 from SkunkWeb.LogObj import DEBUG

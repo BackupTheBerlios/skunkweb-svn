@@ -1,5 +1,4 @@
 # Time-stamp: <02/08/12 11:34:50 smulloni>
-# $Id: sqliteconn.py,v 1.5 2003/05/01 20:46:01 drew_csillag Exp $
 #  
 #  Copyright (C) 2002 Jacob Smullyan <smulloni@smullyan.org>,
 #                     Andrew T. Csillag <drew_csillag@geocities.com>

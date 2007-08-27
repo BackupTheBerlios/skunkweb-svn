@@ -5,7 +5,6 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id$
 # Time-stamp: <01/04/25 16:10:18 smulloni>
 ########################################################################
 """

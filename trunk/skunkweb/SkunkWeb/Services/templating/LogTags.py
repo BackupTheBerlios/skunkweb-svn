@@ -5,7 +5,6 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: LogTags.py,v 1.2 2003/05/01 20:45:54 drew_csillag Exp $
 # Time-stamp: <01/04/12 12:52:32 smulloni>
 ########################################################################
 

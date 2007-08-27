@@ -5,7 +5,6 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: Component.py,v 1.13 2004/07/28 17:23:52 smulloni Exp $
 # Time-stamp: <2001-07-10 12:20:38 drew>
 ########################################################################
 

@@ -1,5 +1,4 @@
 # Time-stamp: <02/11/12 09:08:19 smulloni> 
-# $Id: hopapi.py,v 1.6 2002/11/12 19:53:47 smulloni Exp $
 
 import PyDO
 import sys

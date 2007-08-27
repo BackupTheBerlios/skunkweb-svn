@@ -5,7 +5,6 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: Config.py,v 1.3 2003/05/01 20:45:57 drew_csillag Exp $
 """
 An implementation of a general purpose 'Config' class. 
 It can be used to store information pertinent to a 

@@ -8,7 +8,6 @@
 """
 Tag cache - description???
 """
-# $Id: CacheTag.py,v 1.4 2004/02/11 04:05:49 smulloni Exp $
 
 from CommonStuff import *
 from DT import DTExcept

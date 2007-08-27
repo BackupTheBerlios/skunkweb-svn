@@ -5,7 +5,6 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: constants.py,v 1.6 2003/05/01 20:45:56 drew_csillag Exp $
 # Time-stamp: <01/05/04 13:31:34 smulloni>
 ########################################################################
 

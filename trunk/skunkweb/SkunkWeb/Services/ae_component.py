@@ -5,7 +5,6 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: ae_component.py,v 1.9 2003/06/03 13:27:02 smulloni Exp $
 # Time-stamp: <01/05/04 11:27:17 smulloni>
 ########################################################################
 

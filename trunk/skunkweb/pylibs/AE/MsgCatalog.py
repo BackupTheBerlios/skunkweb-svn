@@ -5,7 +5,6 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: MsgCatalog.py,v 1.4 2003/05/01 20:45:58 drew_csillag Exp $
 # Time-stamp: <01/04/26 14:56:47 smulloni>
 ########################################################################
 

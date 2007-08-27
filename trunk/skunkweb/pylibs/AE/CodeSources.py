@@ -5,7 +5,6 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: CodeSources.py,v 1.3 2003/05/01 20:45:58 drew_csillag Exp $
 # Time-stamp: <01/04/10 14:19:30 smulloni>
 ########################################################################
 

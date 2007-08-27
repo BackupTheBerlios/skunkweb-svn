@@ -47,7 +47,6 @@ to <tt>'localhost'</tt>.</li>
 </ul>
 
 """
-# $Id: MailServices.py,v 1.8 2004/01/11 04:01:25 smulloni Exp $
 
 import rfc822, mimetools, mimify
 import string

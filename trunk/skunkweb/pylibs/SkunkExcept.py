@@ -5,7 +5,6 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: SkunkExcept.py,v 1.5 2004/02/26 17:01:01 drew_csillag Exp $
 
 """
 This module provides a set of exception classes for use in

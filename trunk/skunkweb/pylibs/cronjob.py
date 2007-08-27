@@ -6,7 +6,6 @@
 #      README file.
 #   
 # Time-stamp: <03/06/06 13:36:27 smulloni>
-# $Id: cronjob.py,v 1.6 2003/06/06 17:39:54 smulloni Exp $
 
 """
 a simple cron implementation.  

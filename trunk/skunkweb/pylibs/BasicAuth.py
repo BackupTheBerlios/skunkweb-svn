@@ -5,7 +5,6 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: BasicAuth.py,v 1.3 2003/05/01 20:45:56 drew_csillag Exp $
 """
 This module implements the back-end details of "basic" 
 authentication as used by many HTTP servers 

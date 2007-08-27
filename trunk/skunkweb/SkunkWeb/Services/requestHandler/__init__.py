@@ -5,7 +5,6 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id$
 # Time-stamp: <01/05/04 11:31:32 smulloni>
 # fundamental service for handling single requests.
 ########################################################################

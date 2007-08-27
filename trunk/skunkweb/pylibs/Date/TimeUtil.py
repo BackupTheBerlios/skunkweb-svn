@@ -6,7 +6,6 @@
 #      README file.
 #   
 """miscellaneous time routines"""
-#$Id: TimeUtil.py,v 1.4 2003/05/01 20:45:59 drew_csillag Exp $
 
 try:
     from mx import DateTime

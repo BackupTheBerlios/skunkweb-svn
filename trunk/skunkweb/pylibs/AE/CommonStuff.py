@@ -5,7 +5,6 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-#$Id: CommonStuff.py,v 1.2 2003/05/01 20:45:58 drew_csillag Exp $
 
 # These are common import for tags - to avoid having to import it all the 
 # time

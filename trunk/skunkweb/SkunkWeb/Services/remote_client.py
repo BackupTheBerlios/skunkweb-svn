@@ -5,7 +5,6 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: remote_client.py,v 1.5 2003/05/01 20:45:53 drew_csillag Exp $
 # Time-stamp: <01/05/09 14:36:02 smulloni>
 ########################################################################
 

@@ -5,7 +5,6 @@
 #      Public License or the SkunkWeb License, as specified in the
 #      README file.
 #   
-# $Id: __init__.py,v 1.5 2004/03/01 16:27:04 smulloni Exp $
 # Time-stamp: <01/05/04 13:27:45 smulloni>
 ########################################################################
 

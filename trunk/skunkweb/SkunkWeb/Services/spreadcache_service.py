@@ -1,5 +1,4 @@
 # Time-stamp: <03/04/15 00:23:55 smulloni>
-# $Id: spreadcache_service.py,v 1.2 2003/05/01 20:45:53 drew_csillag Exp $
 
 ########################################################################  
 #  Copyright (C) 2003 Jacob Smullyan <smulloni@smullyan.org>
