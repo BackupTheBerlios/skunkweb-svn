@@ -1,0 +1,27 @@
+<:compargs user:>
+<:if `user`:>
+ <:datacomp games /dcmp/games.pydcmp 
+            user=`user` 
+            statuses=`('published', 
+                       'joining', 
+                       'playing', 
+                       'editing')`:>
+ <:if `games`:>
+  <h3><:val `user['username']`:>'s Games</h3>
+  <:catalog /msgcat/statuses.msg statcat:>
+  <:for `games.iteritems()` i:>
+   <:call `status, glist=i`:>
+   <:if `glist`:>
+     <h4><:msg statcat `status`:></h4> 
+     
+     <ul>
+     <:for `glist` g:>
+      <li><:component /comp/game_summary.comp game=`g`:></li>
+     <:/for:>
+     </ul>
+   <:/if:>
+  <:/for:>
+ <:/if:>
+
+<:/if:>
+
