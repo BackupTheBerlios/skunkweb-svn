@@ -53,8 +53,6 @@ typedef struct {
     char nodeID[6];
 } uuid_node_t;
 
-#undef uuid_t
-
 typedef struct _uuid_t
 {
     unsigned32	time_low;
@@ -63,7 +61,7 @@ typedef struct _uuid_t
     unsigned8	clock_seq_hi_and_reserved;
     unsigned8	clock_seq_low;
     unsigned8	node[6];
-} uuid_t;
+} sk_uuid_t;
 
 /* data type for UUID generator persistent state */
 	
@@ -72,14 +70,14 @@ typedef struct {
     unsigned16 cs;        /* saved clock sequence */
 } uuid_state;
 
-extern const uuid_t null_locktoken;
+extern const sk_uuid_t null_locktoken;
 
 /* in dav_opaquelock.c */
-int dav_create_opaquelocktoken(uuid_state *st, uuid_t *u);
+int dav_create_opaquelocktoken(uuid_state *st, sk_uuid_t *u);
 void dav_create_uuid_state(uuid_state *st);
-char *dav_format_opaquelocktoken(const uuid_t *u);
-int dav_compare_opaquelocktoken(const uuid_t a, const uuid_t b);
-int dav_parse_opaquelocktoken(const char *char_token, uuid_t *bin_token);
+char *dav_format_opaquelocktoken(const sk_uuid_t *u);
+int dav_compare_opaquelocktoken(const sk_uuid_t a, const sk_uuid_t b);
+int dav_parse_opaquelocktoken(const char *char_token, sk_uuid_t *bin_token);
 
 /* in mod_dav.c */
     /*uuid_state *dav_get_uuid_state(request_rec *r);*/

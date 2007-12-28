@@ -14,7 +14,7 @@ uuid_getuuid(PyObject* self, PyObject* args)
     PyObject* ret;
     char* lt;
     uuid_state st;
-    uuid_t u;
+    sk_uuid_t u;
 
     if (!PyArg_ParseTuple(args, ""))
 	return NULL;
