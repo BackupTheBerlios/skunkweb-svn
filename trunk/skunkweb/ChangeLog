@@ -1,3 +1,8 @@
+2008-02-29  Jacob Smullyan  <smulloni@smullyan.org>
+
+	* SkunkWeb/Services/mvc/services/routing.py: configure Routes' request_config with a pseudo-wsgi environ,
+	to support Routes functionality like dispatch based on method.
+
 2007-08-27  Jacob Smullyan  <smulloni@smullyan.org>
 
 	* [many files]: removed CVS keywords that were making patches

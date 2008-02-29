@@ -51,6 +51,14 @@ def routing_hook(connection, sessionDict):
         rcfg.protocol='HTTPS'
     else:
         rcfg.protocol='HTTP'
+    env=connection.env.copy()
+    env['wsgi.version']=(1,0)
+    env['wsgi.multithread']=False
+    env['wsgi.multiprocess']=True
+    env['wsgi.run_once']=False
+    env['wsgi.url_scheme']='https' if env.get('HTTPS', 'off') in ('on', '1') else 'http'
+    env['SCRIPT_NAME']=''
+    rcfg.environ=env
         
     # initialize the map
     for r in Cfg.routes:
